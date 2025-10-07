@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Ref__ref_search_documentation",
+      "mcp__exa__get_code_context_exa",
+      "mcp__Ref__ref_read_url",
+      "WebSearch",
+      "WebFetch(domain:developer.atlassian.com)",
+      "Bash(go mod init:*)",
+      "Bash(go mod:*)",
+      "Bash(go get:*)",
+      "Bash(go test:*)",
+      "Bash(yes)",
+      "Bash(fd:*)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
