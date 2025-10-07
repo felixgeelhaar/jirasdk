@@ -4,6 +4,10 @@ package project
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/felixgeelhaar/jira-connect/internal/pagination"
 )
 
 // Service provides operations for Project resources.
@@ -13,7 +17,9 @@ type Service struct {
 
 // RoundTripper is the interface for executing HTTP requests.
 type RoundTripper interface {
-	// Methods will be implemented
+	NewRequest(ctx context.Context, method, path string, body interface{}) (*http.Request, error)
+	Do(ctx context.Context, req *http.Request) (*http.Response, error)
+	DecodeResponse(resp *http.Response, target interface{}) error
 }
 
 // NewService creates a new Project service.
@@ -25,28 +31,416 @@ func NewService(transport RoundTripper) *Service {
 
 // Project represents a Jira project.
 type Project struct {
+	ID              string           `json:"id"`
+	Key             string           `json:"key"`
+	Name            string           `json:"name"`
+	Description     string           `json:"description,omitempty"`
+	Self            string           `json:"self,omitempty"`
+	ProjectTypeKey  string           `json:"projectTypeKey,omitempty"`
+	Lead            *User            `json:"lead,omitempty"`
+	AvatarURLs      *AvatarURLs      `json:"avatarUrls,omitempty"`
+	IssueTypes      []*IssueType     `json:"issueTypes,omitempty"`
+	Components      []*Component     `json:"components,omitempty"`
+	Versions        []*Version       `json:"versions,omitempty"`
+	Archived        bool             `json:"archived,omitempty"`
+	Deleted         bool             `json:"deleted,omitempty"`
+	Simplified      bool             `json:"simplified,omitempty"`
+	Style           string           `json:"style,omitempty"`
+	Insight         *ProjectInsight  `json:"insight,omitempty"`
+}
+
+// User represents a Jira user.
+type User struct {
+	Self         string      `json:"self,omitempty"`
+	AccountID    string      `json:"accountId,omitempty"`
+	EmailAddress string      `json:"emailAddress,omitempty"`
+	DisplayName  string      `json:"displayName,omitempty"`
+	Active       bool        `json:"active,omitempty"`
+	TimeZone     string      `json:"timeZone,omitempty"`
+	AccountType  string      `json:"accountType,omitempty"`
+	AvatarURLs   *AvatarURLs `json:"avatarUrls,omitempty"`
+}
+
+// AvatarURLs contains URLs for different sizes of avatars.
+type AvatarURLs struct {
+	Size16 string `json:"16x16,omitempty"`
+	Size24 string `json:"24x24,omitempty"`
+	Size32 string `json:"32x32,omitempty"`
+	Size48 string `json:"48x48,omitempty"`
+}
+
+// IssueType represents an issue type in a project.
+type IssueType struct {
 	ID          string `json:"id"`
-	Key         string `json:"key"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
-	Self        string `json:"self,omitempty"`
-	ProjectType string `json:"projectTypeKey,omitempty"`
+	Subtask     bool   `json:"subtask,omitempty"`
+	IconURL     string `json:"iconUrl,omitempty"`
+}
+
+// Component represents a project component.
+type Component struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Lead        *User  `json:"lead,omitempty"`
+}
+
+// Version represents a project version.
+type Version struct {
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description,omitempty"`
+	Archived    bool       `json:"archived,omitempty"`
+	Released    bool       `json:"released,omitempty"`
+	StartDate   string     `json:"startDate,omitempty"`
+	ReleaseDate string     `json:"releaseDate,omitempty"`
+}
+
+// ProjectInsight contains project insights.
+type ProjectInsight struct {
+	TotalIssueCount     int        `json:"totalIssueCount,omitempty"`
+	LastIssueUpdateTime *time.Time `json:"lastIssueUpdateTime,omitempty"`
+}
+
+// GetOptions configures the Get operation.
+type GetOptions struct {
+	// Expand specifies additional information to include
+	Expand []string
+}
+
+// ListOptions configures the List operation.
+type ListOptions struct {
+	// Expand specifies additional information to include
+	Expand []string
+
+	// Recent limits to projects the user has recently interacted with
+	Recent int
+
+	// Properties specifies project properties to include
+	Properties []string
+
+	pagination.Options
 }
 
 // Get retrieves a project by key or ID.
-func (s *Service) Get(ctx context.Context, projectKeyOrID string) (*Project, error) {
+//
+// Example:
+//
+//	project, err := client.Project.Get(ctx, "PROJ", &project.GetOptions{
+//		Expand: []string{"lead", "issueTypes", "description"},
+//	})
+func (s *Service) Get(ctx context.Context, projectKeyOrID string, opts *GetOptions) (*Project, error) {
 	if projectKeyOrID == "" {
 		return nil, fmt.Errorf("project key or ID is required")
 	}
 
-	// TODO: Implement
+	path := fmt.Sprintf("/rest/api/3/project/%s", projectKeyOrID)
 
-	return nil, fmt.Errorf("not implemented yet")
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add expand query parameter
+	if opts != nil && len(opts.Expand) > 0 {
+		q := req.URL.Query()
+		for _, expand := range opts.Expand {
+			q.Add("expand", expand)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var project Project
+	if err := s.transport.DecodeResponse(resp, &project); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &project, nil
 }
 
 // List retrieves all projects.
-func (s *Service) List(ctx context.Context) ([]*Project, error) {
-	// TODO: Implement
+//
+// Example:
+//
+//	projects, err := client.Project.List(ctx, &project.ListOptions{
+//		Expand: []string{"lead", "description"},
+//	})
+func (s *Service) List(ctx context.Context, opts *ListOptions) ([]*Project, error) {
+	path := "/rest/api/3/project/search"
 
-	return nil, fmt.Errorf("not implemented yet")
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	if opts != nil {
+		q := req.URL.Query()
+
+		if len(opts.Expand) > 0 {
+			for _, expand := range opts.Expand {
+				q.Add("expand", expand)
+			}
+		}
+
+		if opts.Recent > 0 {
+			q.Set("recent", fmt.Sprintf("%d", opts.Recent))
+		}
+
+		if len(opts.Properties) > 0 {
+			for _, prop := range opts.Properties {
+				q.Add("properties", prop)
+			}
+		}
+
+		opts.Options.ApplyToURL(req.URL)
+		req.URL.RawQuery = q.Encode()
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var result struct {
+		Values     []*Project          `json:"values"`
+		StartAt    int                 `json:"startAt"`
+		MaxResults int                 `json:"maxResults"`
+		Total      int                 `json:"total"`
+		IsLast     bool                `json:"isLast"`
+	}
+
+	if err := s.transport.DecodeResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return result.Values, nil
+}
+
+// CreateInput contains the data for creating a project.
+type CreateInput struct {
+	Key             string `json:"key"`
+	Name            string `json:"name"`
+	ProjectTypeKey  string `json:"projectTypeKey"`
+	Description     string `json:"description,omitempty"`
+	ProjectTemplate string `json:"projectTemplateKey,omitempty"`
+	LeadAccountID   string `json:"leadAccountId,omitempty"`
+	URL             string `json:"url,omitempty"`
+	AssigneeType    string `json:"assigneeType,omitempty"`
+}
+
+// Create creates a new project.
+//
+// Example:
+//
+//	project, err := client.Project.Create(ctx, &project.CreateInput{
+//		Key:            "NEWPROJ",
+//		Name:           "New Project",
+//		ProjectTypeKey: "software",
+//		Description:    "A new software project",
+//	})
+func (s *Service) Create(ctx context.Context, input *CreateInput) (*Project, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is required")
+	}
+
+	if input.Key == "" {
+		return nil, fmt.Errorf("project key is required")
+	}
+
+	if input.Name == "" {
+		return nil, fmt.Errorf("project name is required")
+	}
+
+	if input.ProjectTypeKey == "" {
+		return nil, fmt.Errorf("project type is required")
+	}
+
+	path := "/rest/api/3/project"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var project Project
+	if err := s.transport.DecodeResponse(resp, &project); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &project, nil
+}
+
+// UpdateInput contains the data for updating a project.
+type UpdateInput struct {
+	Name          string `json:"name,omitempty"`
+	Description   string `json:"description,omitempty"`
+	LeadAccountID string `json:"leadAccountId,omitempty"`
+	URL           string `json:"url,omitempty"`
+	AssigneeType  string `json:"assigneeType,omitempty"`
+}
+
+// Update updates an existing project.
+//
+// Example:
+//
+//	project, err := client.Project.Update(ctx, "PROJ", &project.UpdateInput{
+//		Name:        "Updated Project Name",
+//		Description: "Updated description",
+//	})
+func (s *Service) Update(ctx context.Context, projectKeyOrID string, input *UpdateInput) (*Project, error) {
+	if projectKeyOrID == "" {
+		return nil, fmt.Errorf("project key or ID is required")
+	}
+
+	if input == nil {
+		return nil, fmt.Errorf("input is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/project/%s", projectKeyOrID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var project Project
+	if err := s.transport.DecodeResponse(resp, &project); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &project, nil
+}
+
+// Delete deletes a project.
+//
+// Example:
+//
+//	err := client.Project.Delete(ctx, "PROJ")
+func (s *Service) Delete(ctx context.Context, projectKeyOrID string) error {
+	if projectKeyOrID == "" {
+		return fmt.Errorf("project key or ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/project/%s", projectKeyOrID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Close response body
+	defer resp.Body.Close()
+
+	// Delete returns 204 No Content on success
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+// Archive archives a project.
+//
+// Example:
+//
+//	err := client.Project.Archive(ctx, "PROJ")
+func (s *Service) Archive(ctx context.Context, projectKeyOrID string) error {
+	if projectKeyOrID == "" {
+		return fmt.Errorf("project key or ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/project/%s/archive", projectKeyOrID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Close response body
+	defer resp.Body.Close()
+
+	// Archive returns 204 No Content on success
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+// Restore restores an archived project.
+//
+// Example:
+//
+//	err := client.Project.Restore(ctx, "PROJ")
+func (s *Service) Restore(ctx context.Context, projectKeyOrID string) error {
+	if projectKeyOrID == "" {
+		return fmt.Errorf("project key or ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/project/%s/restore", projectKeyOrID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Close response body
+	defer resp.Body.Close()
+
+	// Restore returns 200 OK on success
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
 }

@@ -34,6 +34,7 @@ import (
 	"github.com/felixgeelhaar/jira-connect/auth"
 	"github.com/felixgeelhaar/jira-connect/core/issue"
 	"github.com/felixgeelhaar/jira-connect/core/project"
+	"github.com/felixgeelhaar/jira-connect/core/search"
 	"github.com/felixgeelhaar/jira-connect/core/user"
 	"github.com/felixgeelhaar/jira-connect/core/workflow"
 	"github.com/felixgeelhaar/jira-connect/transport"
@@ -69,6 +70,7 @@ type Client struct {
 	Project  *project.Service
 	User     *user.Service
 	Workflow *workflow.Service
+	Search   *search.Service
 }
 
 // Config holds the client configuration.
@@ -154,6 +156,7 @@ func NewClient(opts ...Option) (*Client, error) {
 	client.Project = project.NewService(tr)
 	client.User = user.NewService(tr)
 	client.Workflow = workflow.NewService(tr)
+	client.Search = search.NewService(tr)
 
 	return client, nil
 }
