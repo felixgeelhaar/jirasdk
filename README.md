@@ -138,8 +138,10 @@ client, err := jira.NewClient(
 ### Issues
 
 ```go
-// Get issue
-issue, err := client.Issue.Get(ctx, "PROJ-123", nil)
+// Get issue with specific fields
+issue, err := client.Issue.Get(ctx, "PROJ-123", &issue.GetOptions{
+    Fields: []string{"summary", "status", "assignee", "priority"},
+})
 
 // Create issue
 input := &issue.CreateInput{
@@ -147,6 +149,8 @@ input := &issue.CreateInput{
         Project:   &issue.Project{Key: "PROJ"},
         Summary:   "New issue",
         IssueType: &issue.IssueType{Name: "Task"},
+        Priority:  &issue.Priority{Name: "High"},
+        Labels:    []string{"bug", "urgent"},
     },
 }
 created, err := client.Issue.Create(ctx, input)
@@ -155,6 +159,7 @@ created, err := client.Issue.Create(ctx, input)
 updateInput := &issue.UpdateInput{
     Fields: map[string]interface{}{
         "summary": "Updated summary",
+        "priority": map[string]string{"name": "Medium"},
     },
 }
 err = client.Issue.Update(ctx, "PROJ-123", updateInput)
@@ -167,30 +172,136 @@ transitionInput := &issue.TransitionInput{
     Transition: &issue.Transition{ID: "11"},
 }
 err = client.Issue.DoTransition(ctx, "PROJ-123", transitionInput)
+
+// Assign issue
+err = client.Issue.Assign(ctx, "PROJ-123", "accountId")
+
+// Comments
+comment, err := client.Issue.AddComment(ctx, "PROJ-123", &issue.AddCommentInput{
+    Body: "This is a comment",
+})
+comments, err := client.Issue.ListComments(ctx, "PROJ-123")
+
+// Watchers and Voters
+watchers, err := client.Issue.GetWatchers(ctx, "PROJ-123")
+err = client.Issue.AddWatcher(ctx, "PROJ-123", "accountId")
+votes, err := client.Issue.GetVotes(ctx, "PROJ-123")
+err = client.Issue.AddVote(ctx, "PROJ-123")
 ```
 
-### Projects (Planned)
+### Search
+
+```go
+// Simple JQL search
+results, err := client.Search.Search(ctx, &search.SearchOptions{
+    JQL:        "project = PROJ AND status = Open",
+    MaxResults: 50,
+})
+
+// Query Builder
+query := search.NewQueryBuilder().
+    Project("PROJ").
+    And().
+    Status("In Progress").
+    And().
+    Assignee("currentUser()").
+    OrderBy("created", "DESC")
+
+results, err := client.Search.Search(ctx, &search.SearchOptions{
+    JQL:        query.Build(),
+    MaxResults: 100,
+    Fields:     []string{"summary", "status", "priority"},
+})
+
+// Pagination
+for i := 0; i < results.Total; i += 50 {
+    page, err := client.Search.Search(ctx, &search.SearchOptions{
+        JQL:        "project = PROJ",
+        MaxResults: 50,
+        StartAt:    i,
+    })
+}
+```
+
+### Projects
 
 ```go
 // Get project
-project, err := client.Project.Get(ctx, "PROJ")
+project, err := client.Project.Get(ctx, "PROJ", &project.GetOptions{
+    Expand: []string{"lead", "description"},
+})
 
 // List projects
-projects, err := client.Project.List(ctx)
+projects, err := client.Project.List(ctx, &project.ListOptions{
+    Recent: 10,
+})
+
+// Get project components
+components, err := client.Project.GetComponents(ctx, "PROJ")
+
+// Get project versions
+versions, err := client.Project.GetVersions(ctx, "PROJ", &project.VersionOptions{
+    OrderBy: "releaseDate",
+})
+
+// Create version
+version, err := client.Project.CreateVersion(ctx, &project.CreateVersionInput{
+    Name:       "v1.0.0",
+    ProjectID:  "10000",
+    Released:   false,
+})
 ```
 
-### Users (Planned)
+### Users
 
 ```go
-// Get user
-user, err := client.User.Get(ctx, "account-id")
+// Get current user
+user, err := client.User.GetMyself(ctx)
+
+// Get user by account ID
+user, err := client.User.Get(ctx, "accountId", &user.GetOptions{
+    Expand: []string{"groups", "applicationRoles"},
+})
+
+// Search users
+users, err := client.User.Search(ctx, &user.SearchOptions{
+    Query:      "john",
+    MaxResults: 50,
+})
+
+// Find assignable users for project
+users, err := client.User.FindAssignableUsers(ctx, &user.FindAssignableOptions{
+    Project: "PROJ",
+    Query:   "smith",
+})
+
+// Bulk get users
+users, err := client.User.BulkGet(ctx, &user.BulkGetOptions{
+    AccountIDs: []string{"id1", "id2", "id3"},
+})
 ```
 
-### Workflows (Planned)
+### Workflows
 
 ```go
-// Get available transitions
-transitions, err := client.Workflow.GetTransitions(ctx, "PROJ-123")
+// Get available transitions for an issue
+transitions, err := client.Workflow.GetTransitions(ctx, "PROJ-123", &workflow.GetTransitionsOptions{
+    Expand: []string{"transitions.fields"},
+})
+
+// List all workflows
+workflows, err := client.Workflow.List(ctx, &workflow.ListOptions{
+    WorkflowName: "Classic",
+})
+
+// Get workflow by ID
+workflow, err := client.Workflow.Get(ctx, "classic-default-workflow")
+
+// Get all statuses
+statuses, err := client.Workflow.GetAllStatuses(ctx)
+
+// Get specific status
+status, err := client.Workflow.GetStatus(ctx, "10000")
 ```
 
 ## Architecture
@@ -291,32 +402,43 @@ go test -cover ./...
 go test -race ./...
 ```
 
+## Examples
+
+See the [examples](examples/) directory for complete, runnable examples:
+
+- **[examples/basic](examples/basic/main.go)** - Basic usage patterns (get user, issues, search, projects)
+- **[examples/advanced](examples/advanced/main.go)** - Custom middleware and advanced configuration
+- **[examples/workflow](examples/workflow/main.go)** - Workflow operations, comments, watchers, voters
+
 ## Roadmap
 
-### Phase 1: Foundation (Current)
+### Phase 1: Foundation ✅ **Complete**
 - [x] Core client architecture
 - [x] Authentication (API Token, PAT, Basic Auth)
 - [x] HTTP transport with middleware
 - [x] Retry logic and rate limiting
-- [ ] Comprehensive testing
+- [x] Comprehensive testing (80%+ coverage)
 
-### Phase 2: Core Resources
-- [ ] Issue CRUD operations
-- [ ] Project management
-- [ ] User operations
-- [ ] Workflow transitions
+### Phase 2: Core Resources ✅ **Complete**
+- [x] Issue CRUD operations
+- [x] Project management
+- [x] User operations
+- [x] Workflow transitions
+- [x] JQL search with QueryBuilder
+- [x] Comments and watchers/voters
+- [x] Pagination support
 
-### Phase 3: Advanced Features
-- [ ] JQL search
-- [ ] Custom fields
-- [ ] Attachments
-- [ ] Comments and watchers
+### Phase 3: Advanced Features (In Progress)
+- [ ] Custom fields support
+- [ ] Attachments upload/download
+- [ ] Advanced issue linking
+- [ ] Bulk operations optimization
 
-### Phase 4: Enterprise Features
+### Phase 4: Enterprise Features (Planned)
 - [ ] OAuth 2.0 authentication
 - [ ] Webhook support
-- [ ] Pagination helpers
 - [ ] Observability (metrics, tracing)
+- [ ] Connection pooling optimization
 
 ## Contributing
 
