@@ -9,6 +9,9 @@ import (
 	"time"
 
 	jira "github.com/felixgeelhaar/jira-connect"
+	"github.com/felixgeelhaar/jira-connect/core/issue"
+	"github.com/felixgeelhaar/jira-connect/core/project"
+	"github.com/felixgeelhaar/jira-connect/core/search"
 )
 
 func main() {
@@ -33,18 +36,67 @@ func main() {
 	}
 
 	// Create context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Example: Get an issue
-	issueKey := "PROJ-123" // Replace with your issue key
-	issue, err := client.Issue.Get(ctx, issueKey, nil)
+	fmt.Println("=== Basic Jira Operations ===\n")
+
+	// 1. Get authenticated user
+	fmt.Println("1. Getting current user...")
+	user, err := client.User.GetMyself(ctx)
 	if err != nil {
-		log.Fatalf("Failed to get issue: %v", err)
+		log.Fatalf("Failed to get current user: %v", err)
+	}
+	fmt.Printf("   Logged in as: %s (%s)\n\n", user.DisplayName, user.EmailAddress)
+
+	// 2. Get an issue
+	issueKey := "PROJ-123" // Replace with your issue key
+	fmt.Printf("2. Getting issue %s...\n", issueKey)
+	iss, err := client.Issue.Get(ctx, issueKey, &issue.GetOptions{
+		Fields: []string{"summary", "status", "assignee", "created"},
+	})
+	if err != nil {
+		log.Printf("   Warning: Could not get issue %s: %v\n", issueKey, err)
+	} else {
+		fmt.Printf("   Issue: %s\n", iss.Key)
+		fmt.Printf("   Summary: %s\n", iss.Fields.Summary)
+		fmt.Printf("   Status: %s\n", iss.Fields.Status.Name)
+		if iss.Fields.Assignee != nil {
+			fmt.Printf("   Assignee: %s\n", iss.Fields.Assignee.DisplayName)
+		}
+		fmt.Printf("   Created: %s\n\n", iss.Fields.Created.Format(time.RFC3339))
 	}
 
-	fmt.Printf("Issue: %s\n", issue.Key)
-	fmt.Printf("Summary: %s\n", issue.Fields.Summary)
-	fmt.Printf("Status: %s\n", issue.Fields.Status.Name)
-	fmt.Printf("Created: %s\n", issue.Fields.Created)
+	// 3. Search for issues using JQL
+	fmt.Println("3. Searching for open issues...")
+	searchResult, err := client.Search.Search(ctx, &search.SearchOptions{
+		JQL:        "status = Open ORDER BY created DESC",
+		MaxResults: 5,
+	})
+	if err != nil {
+		log.Printf("   Warning: Could not search issues: %v\n", err)
+	} else {
+		fmt.Printf("   Found %d issues:\n", len(searchResult.Issues))
+		for i, issue := range searchResult.Issues {
+			fmt.Printf("   %d. %s - %s\n", i+1, issue.Key, issue.Fields.Summary)
+		}
+		fmt.Println()
+	}
+
+	// 4. List projects
+	fmt.Println("4. Listing projects...")
+	projects, err := client.Project.List(ctx, &project.ListOptions{
+		Recent: 5,
+	})
+	if err != nil {
+		log.Printf("   Warning: Could not list projects: %v\n", err)
+	} else {
+		fmt.Printf("   Found %d projects:\n", len(projects))
+		for i, proj := range projects {
+			fmt.Printf("   %d. [%s] %s\n", i+1, proj.Key, proj.Name)
+		}
+		fmt.Println()
+	}
+
+	fmt.Println("=== Basic operations completed successfully! ===")
 }
