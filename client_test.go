@@ -1,9 +1,11 @@
 package jiraconnect
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
+	"github.com/felixgeelhaar/jira-connect/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -300,6 +302,194 @@ func TestWithUserAgent(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.userAgent, cfg.userAgent)
+			}
+		})
+	}
+}
+
+func TestWithPAT(t *testing.T) {
+	tests := []struct {
+		name    string
+		token   string
+		wantErr bool
+	}{
+		{
+			name:    "valid PAT",
+			token:   "pat-token-123",
+			wantErr: false,
+		},
+		{
+			name:    "empty PAT",
+			token:   "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := &Config{}
+			opt := WithPAT(tt.token)
+			err := opt(cfg)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, cfg.authenticator)
+			}
+		})
+	}
+}
+
+func TestWithBasicAuth(t *testing.T) {
+	tests := []struct {
+		name     string
+		username string
+		password string
+		wantErr  bool
+	}{
+		{
+			name:     "valid credentials",
+			username: "admin",
+			password: "password123",
+			wantErr:  false,
+		},
+		{
+			name:     "empty username",
+			username: "",
+			password: "password123",
+			wantErr:  true,
+		},
+		{
+			name:     "empty password",
+			username: "admin",
+			password: "",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := &Config{}
+			opt := WithBasicAuth(tt.username, tt.password)
+			err := opt(cfg)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, cfg.authenticator)
+			}
+		})
+	}
+}
+
+func TestWithRateLimitBuffer(t *testing.T) {
+	tests := []struct {
+		name    string
+		buffer  time.Duration
+		wantErr bool
+	}{
+		{
+			name:    "valid buffer",
+			buffer:  10 * time.Second,
+			wantErr: false,
+		},
+		{
+			name:    "zero buffer",
+			buffer:  0,
+			wantErr: false,
+		},
+		{
+			name:    "negative buffer",
+			buffer:  -5 * time.Second,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := &Config{}
+			opt := WithRateLimitBuffer(tt.buffer)
+			err := opt(cfg)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.buffer, cfg.rateLimitBuffer)
+			}
+		})
+	}
+}
+
+func TestWithHTTPClient(t *testing.T) {
+	tests := []struct {
+		name    string
+		client  *http.Client
+		wantErr bool
+	}{
+		{
+			name:    "valid HTTP client",
+			client:  &http.Client{Timeout: 60 * time.Second},
+			wantErr: false,
+		},
+		{
+			name:    "nil HTTP client",
+			client:  nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := &Config{}
+			opt := WithHTTPClient(tt.client)
+			err := opt(cfg)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.client, cfg.httpClient)
+			}
+		})
+	}
+}
+
+func TestWithMiddleware(t *testing.T) {
+	testMiddleware := func(next transport.RoundTripFunc) transport.RoundTripFunc {
+		return next
+	}
+
+	tests := []struct {
+		name       string
+		middleware transport.Middleware
+		wantErr    bool
+	}{
+		{
+			name:       "valid middleware",
+			middleware: testMiddleware,
+			wantErr:    false,
+		},
+		{
+			name:       "nil middleware",
+			middleware: nil,
+			wantErr:    false, // WithMiddleware doesn't validate nil, just appends
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := &Config{}
+			opt := WithMiddleware(tt.middleware)
+			err := opt(cfg)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Len(t, cfg.middlewares, 1)
 			}
 		})
 	}

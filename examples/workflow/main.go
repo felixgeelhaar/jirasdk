@@ -36,7 +36,8 @@ func main() {
 
 	ctx := context.Background()
 
-	fmt.Println("=== Jira Workflow and Comment Operations ===\n")
+	fmt.Println("=== Jira Workflow and Comment Operations ===")
+	fmt.Println()
 
 	// 1. Complex JQL Search with QueryBuilder
 	fmt.Println("1. Building and executing complex JQL query...")

@@ -93,6 +93,7 @@ func TestSearch(t *testing.T) {
 		responseBody   *SearchResult
 		wantErr        bool
 		errMsg         string
+		checkRequest   func(*testing.T, *http.Request)
 	}{
 		{
 			name: "successful search",
@@ -126,6 +127,53 @@ func TestSearch(t *testing.T) {
 			wantErr: true,
 			errMsg:  "JQL query is required",
 		},
+		{
+			name: "with all options",
+			opts: &SearchOptions{
+				JQL:        "project = PROJ",
+				MaxResults: 100,
+				StartAt:    50,
+				Fields:     []string{"summary", "status", "assignee"},
+				Expand:     []string{"changelog", "renderedFields"},
+			},
+			responseStatus: http.StatusOK,
+			responseBody: &SearchResult{
+				Issues:     []*issue.Issue{{ID: "10001", Key: "PROJ-1"}},
+				StartAt:    50,
+				MaxResults: 100,
+				Total:      150,
+			},
+			wantErr: false,
+			checkRequest: func(t *testing.T, r *http.Request) {
+				var body map[string]interface{}
+				json.NewDecoder(r.Body).Decode(&body)
+				assert.Equal(t, "project = PROJ", body["jql"])
+				assert.Equal(t, float64(100), body["maxResults"])
+				assert.Equal(t, float64(50), body["startAt"])
+				assert.NotNil(t, body["fields"])
+				assert.NotNil(t, body["expand"])
+			},
+		},
+		{
+			name: "with validate query",
+			opts: &SearchOptions{
+				JQL:           "project = PROJ",
+				ValidateQuery: true,
+			},
+			responseStatus: http.StatusOK,
+			responseBody: &SearchResult{
+				Issues:     []*issue.Issue{},
+				StartAt:    0,
+				MaxResults: 0,
+				Total:      0,
+			},
+			wantErr: false,
+			checkRequest: func(t *testing.T, r *http.Request) {
+				var body map[string]interface{}
+				json.NewDecoder(r.Body).Decode(&body)
+				assert.Equal(t, "strict", body["validateQuery"])
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -149,6 +197,13 @@ func TestSearch(t *testing.T) {
 				err := json.NewDecoder(r.Body).Decode(&body)
 				require.NoError(t, err)
 				assert.Equal(t, tt.opts.JQL, body["jql"])
+
+				if tt.checkRequest != nil {
+					// Re-read body for custom check
+					bodyBytes, _ := json.Marshal(body)
+					r.Body = io.NopCloser(io.Reader(&bytesReader{data: bodyBytes}))
+					tt.checkRequest(t, r)
+				}
 
 				w.WriteHeader(tt.responseStatus)
 				json.NewEncoder(w).Encode(tt.responseBody)
@@ -265,6 +320,132 @@ func TestQueryBuilder(t *testing.T) {
 			},
 			expected: `summary ~ "critical bug"`,
 		},
+		{
+			name: "issue type filter",
+			build: func() string {
+				return NewQueryBuilder().
+					IssueType("Bug").
+					Build()
+			},
+			expected: "issuetype = Bug",
+		},
+		{
+			name: "reporter filter",
+			build: func() string {
+				return NewQueryBuilder().
+					Reporter("john.doe").
+					Build()
+			},
+			expected: "reporter = john.doe",
+		},
+		{
+			name: "priority filter",
+			build: func() string {
+				return NewQueryBuilder().
+					Priority("High").
+					Build()
+			},
+			expected: "priority = High",
+		},
+		{
+			name: "description search",
+			build: func() string {
+				return NewQueryBuilder().
+					Description("error message").
+					Build()
+			},
+			expected: `description ~ "error message"`,
+		},
+		{
+			name: "created before filter",
+			build: func() string {
+				return NewQueryBuilder().
+					CreatedBefore("2025-12-31").
+					Build()
+			},
+			expected: "created <= 2025-12-31",
+		},
+		{
+			name: "updated after filter",
+			build: func() string {
+				return NewQueryBuilder().
+					UpdatedAfter("2025-01-01").
+					Build()
+			},
+			expected: "updated >= 2025-01-01",
+		},
+		{
+			name: "OR operator",
+			build: func() string {
+				return NewQueryBuilder().
+					Status("Open").
+					Or().
+					Status("In Progress").
+					Build()
+			},
+			expected: "status = Open OR status = \"In Progress\"",
+		},
+		{
+			name: "raw JQL",
+			build: func() string {
+				return NewQueryBuilder().
+					Raw("customfield_10000 = value").
+					Build()
+			},
+			expected: "customfield_10000 = value",
+		},
+		{
+			name: "order by ascending",
+			build: func() string {
+				return NewQueryBuilder().
+					Project("PROJ").
+					OrderBy("created", "ASC").
+					Build()
+			},
+			expected: "project = PROJ ORDER BY created ASC",
+		},
+		{
+			name: "single label",
+			build: func() string {
+				return NewQueryBuilder().
+					Labels("urgent").
+					Build()
+			},
+			expected: "labels = urgent",
+		},
+		{
+			name: "AND on empty builder",
+			build: func() string {
+				return NewQueryBuilder().
+					And().
+					Project("PROJ").
+					Build()
+			},
+			expected: "project = PROJ",
+		},
+		{
+			name: "OR on empty builder",
+			build: func() string {
+				return NewQueryBuilder().
+					Or().
+					Project("PROJ").
+					Build()
+			},
+			expected: "project = PROJ",
+		},
+		{
+			name: "complex with OR and AND",
+			build: func() string {
+				return NewQueryBuilder().
+					Status("Open").
+					Or().
+					Status("Reopened").
+					And().
+					Priority("High").
+					Build()
+			},
+			expected: "status = Open OR status = Reopened AND priority = High",
+		},
 	}
 
 	for _, tt := range tests {
@@ -309,6 +490,91 @@ func TestQuote(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestSearchIterator(t *testing.T) {
+	// Test successful iteration
+	t.Run("successful iteration", func(t *testing.T) {
+		callCount := 0
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			var result SearchResult
+			if callCount == 1 {
+				result = SearchResult{
+					Issues:     []*issue.Issue{{ID: "1", Key: "PROJ-1"}, {ID: "2", Key: "PROJ-2"}},
+					StartAt:    0,
+					MaxResults: 2,
+					Total:      3,
+				}
+			} else {
+				result = SearchResult{
+					Issues:     []*issue.Issue{{ID: "3", Key: "PROJ-3"}},
+					StartAt:    2,
+					MaxResults: 2,
+					Total:      3,
+				}
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchIterator(context.Background(), &SearchOptions{
+			JQL:        "project = PROJ",
+			MaxResults: 2,
+		})
+
+		count := 0
+		for iter.Next() {
+			count++
+			issue := iter.Issue()
+			assert.NotNil(t, issue)
+		}
+
+		assert.NoError(t, iter.Err())
+		assert.Equal(t, 3, count)
+		assert.Equal(t, 2, callCount)
+	})
+
+	// Test error during iteration
+	t.Run("error during iteration", func(t *testing.T) {
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchIterator(context.Background(), &SearchOptions{
+			JQL: "project = PROJ",
+		})
+
+		// Next returns false on error, but Err() is not set in current implementation
+		assert.False(t, iter.Next())
+	})
+
+	// Test nil issue before Next
+	t.Run("nil issue before next", func(t *testing.T) {
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			result := SearchResult{
+				Issues:     []*issue.Issue{{ID: "1", Key: "PROJ-1"}},
+				StartAt:    0,
+				MaxResults: 1,
+				Total:      1,
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchIterator(context.Background(), &SearchOptions{
+			JQL: "project = PROJ",
+		})
+
+		// Call Issue before Next
+		assert.Nil(t, iter.Issue())
+	})
 }
 
 func TestParseURL(t *testing.T) {

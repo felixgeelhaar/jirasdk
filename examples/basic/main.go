@@ -39,7 +39,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fmt.Println("=== Basic Jira Operations ===\n")
+	fmt.Println("=== Basic Jira Operations ===")
+	fmt.Println()
 
 	// 1. Get authenticated user
 	fmt.Println("1. Getting current user...")
