@@ -157,6 +157,66 @@ Review criteria:
 - ✅ No breaking changes (or clearly marked)
 - ✅ Commit messages follow conventions
 
+## Continuous Integration
+
+### GitHub Actions Workflow
+
+All pull requests and commits to `main` or `develop` branches trigger automated CI/CD pipelines:
+
+#### Test Job
+- Runs on Ubuntu Latest
+- Tests against Go versions 1.21, 1.22, and 1.23
+- Executes full test suite with race detection
+- Generates coverage reports
+- Uploads coverage to Codecov (on Go 1.23)
+
+#### Lint Job
+- Runs `golangci-lint` with all linters enabled
+- 5-minute timeout for comprehensive analysis
+- Enforces code style and best practices
+
+#### Security Job
+- Runs Gosec security scanner
+- Generates SARIF report for GitHub Security tab
+- Scans for common security vulnerabilities
+
+#### Coverage Job
+- Verifies all packages maintain >80% test coverage
+- Fails if coverage drops below threshold
+
+#### Build Job
+- Verifies all packages build successfully
+- Builds all example programs
+
+### Running CI Locally
+
+Before pushing, run these checks locally:
+
+```bash
+# Run tests
+go test -race ./...
+
+# Run linter
+golangci-lint run --timeout=5m
+
+# Run security scanner
+gosec ./...
+
+# Check coverage
+go test -cover ./...
+
+# Build all
+go build ./...
+```
+
+### CI/CD Best Practices
+
+1. **All tests must pass** before merging
+2. **Maintain >80% coverage** for all packages
+3. **Fix linting issues** before committing
+4. **Address security findings** promptly
+5. **Ensure builds succeed** on all platforms
+
 ## Release Process
 
 Releases follow [Semantic Versioning](https://semver.org/):
@@ -164,6 +224,14 @@ Releases follow [Semantic Versioning](https://semver.org/):
 - **MAJOR**: Breaking changes
 - **MINOR**: New features (backward compatible)
 - **PATCH**: Bug fixes (backward compatible)
+
+### Release Checklist
+
+1. Update CHANGELOG.md with release notes
+2. Update version in go.mod if needed
+3. Create and push git tag: `git tag -a v1.0.0 -m "Release v1.0.0"`
+4. Push tag: `git push origin v1.0.0`
+5. GitHub Actions will create the release automatically
 
 ## License
 
