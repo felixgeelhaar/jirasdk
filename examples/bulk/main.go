@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	jira "github.com/felixgeelhaar/jirasdk"
-	"github.com/felixgeelhaar/jirasdk/auth"
 	"github.com/felixgeelhaar/jirasdk/core/bulk"
 )
 
@@ -30,7 +28,7 @@ func main() {
 	// Create authenticated client
 	client, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 	)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -191,7 +189,7 @@ func main() {
 	fmt.Println("=== Handling Large Batches ===")
 
 	// Simulate a large batch of issues to create
-	largeB​atch := make([]bulk.IssueUpdate, 2500)
+	largeBatch := make([]bulk.IssueUpdate, 2500)
 	for i := range largeBatch {
 		largeBatch[i] = bulk.IssueUpdate{
 			Fields: map[string]interface{}{

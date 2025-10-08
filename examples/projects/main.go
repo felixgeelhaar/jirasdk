@@ -7,7 +7,6 @@ import (
 	"os"
 
 	jira "github.com/felixgeelhaar/jirasdk"
-	"github.com/felixgeelhaar/jirasdk/auth"
 	"github.com/felixgeelhaar/jirasdk/core/project"
 )
 
@@ -22,10 +21,13 @@ func main() {
 	}
 
 	// Create authenticated client
-	client := jira.NewClient(
+	client, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 	)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
 
 	ctx := context.Background()
 
@@ -55,7 +57,7 @@ func main() {
 
 	// Example 2: Get specific project details
 	fmt.Printf("\n=== Getting Project Details: %s ===\n", projectKey)
-	projectDetails, err := client.Project.Get(ctx, projectKey)
+	projectDetails, err := client.Project.Get(ctx, projectKey, nil)
 	if err != nil {
 		log.Fatalf("Failed to get project: %v", err)
 	}
@@ -295,7 +297,7 @@ func main() {
 	// Example 7: Project analysis
 	fmt.Println("\n=== Project Analysis ===")
 	for _, p := range projects {
-		details, err := client.Project.Get(ctx, p.Key)
+		details, err := client.Project.Get(ctx, p.Key, nil)
 		if err != nil {
 			continue
 		}

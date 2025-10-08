@@ -7,7 +7,8 @@ import (
 	"os"
 
 	jira "github.com/felixgeelhaar/jirasdk"
-	"github.com/felixgeelhaar/jirasdk/auth"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
+	"github.com/felixgeelhaar/jirasdk/core/search"
 	boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
 	"github.com/felixgeelhaar/bolt"
 )
@@ -30,7 +31,7 @@ func main() {
 
 	client, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 		jira.WithLogger(boltadapter.NewAdapter(jsonLogger)),
 	)
 	if err != nil {
@@ -41,7 +42,9 @@ func main() {
 
 	// Fetch an issue - logs will be in JSON format
 	fmt.Println("Fetching issue PROJ-1 (JSON logs)...")
-	_, err = client.Issue.Get(ctx, "PROJ-1")
+	_, err = client.Issue.Get(ctx, "PROJ-1", &issue.GetOptions{
+		Fields: []string{"summary", "status"},
+	})
 	if err != nil {
 		fmt.Printf("Error (expected if issue doesn't exist): %v\n", err)
 	}
@@ -55,7 +58,7 @@ func main() {
 
 	clientDev, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 		jira.WithLogger(boltadapter.NewAdapter(consoleLogger)),
 	)
 	if err != nil {
@@ -64,7 +67,8 @@ func main() {
 
 	// Search for issues - logs will be in console format
 	fmt.Println("Searching for issues (Console logs)...")
-	_, err = clientDev.Search.SearchIssues(ctx, "project = PROJ", &jira.SearchOptions{
+	_, err = clientDev.Search.Search(ctx, &search.SearchOptions{
+		JQL:        "project = PROJ",
 		MaxResults: 5,
 	})
 	if err != nil {
@@ -85,7 +89,7 @@ func main() {
 
 	clientStructured, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 		jira.WithLogger(boltadapter.NewAdapter(structuredLogger)),
 	)
 	if err != nil {
@@ -93,7 +97,9 @@ func main() {
 	}
 
 	fmt.Println("All requests will include service, environment, and version fields...")
-	_, err = clientStructured.Issue.Get(ctx, "PROJ-1")
+	_, err = clientStructured.Issue.Get(ctx, "PROJ-1", &issue.GetOptions{
+		Fields: []string{"summary", "status"},
+	})
 	if err != nil {
 		fmt.Printf("Request completed (error expected if issue doesn't exist)\n")
 	}
@@ -130,7 +136,7 @@ func main() {
 
 	clientLevels, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 		jira.WithLogger(boltadapter.NewAdapter(levelLogger)),
 	)
 	if err != nil {
@@ -138,7 +144,9 @@ func main() {
 	}
 
 	fmt.Println("Logger set to INFO level (DEBUG logs will be suppressed)...")
-	_, err = clientLevels.Issue.Get(ctx, "PROJ-1")
+	_, err = clientLevels.Issue.Get(ctx, "PROJ-1", &issue.GetOptions{
+		Fields: []string{"summary", "status"},
+	})
 	if err != nil {
 		fmt.Printf("Request completed\n")
 	}

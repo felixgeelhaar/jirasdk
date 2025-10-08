@@ -7,7 +7,6 @@ import (
 	"os"
 
 	jira "github.com/felixgeelhaar/jirasdk"
-	"github.com/felixgeelhaar/jirasdk/auth"
 	"github.com/felixgeelhaar/jirasdk/core/issue"
 )
 
@@ -22,10 +21,13 @@ func main() {
 	}
 
 	// Create authenticated client
-	client := jira.NewClient(
+	client, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 	)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
 
 	ctx := context.Background()
 

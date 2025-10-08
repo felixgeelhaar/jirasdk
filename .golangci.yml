@@ -5,8 +5,7 @@ run:
   timeout: 5m
   issues-exit-code: 1
   tests: true
-  skip-dirs:
-    - examples  # Skip example programs (may have old/demo code)
+  skip-dirs: []
   skip-files: []
   modules-download-mode: readonly
 

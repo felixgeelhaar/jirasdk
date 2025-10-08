@@ -7,7 +7,7 @@ import (
 	"os"
 
 	jira "github.com/felixgeelhaar/jirasdk"
-	"github.com/felixgeelhaar/jirasdk/auth"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
 	"github.com/felixgeelhaar/jirasdk/resilience/fortify"
 )
 
@@ -46,7 +46,7 @@ func main() {
 	resilience := fortify.NewAdapter(defaultConfig)
 	client, err := jira.NewClient(
 		jira.WithBaseURL(baseURL),
-		jira.WithAuth(auth.NewBasicAuth(email, apiToken)),
+		jira.WithAPIToken(email, apiToken),
 		jira.WithResilience(resilience),
 	)
 	if err != nil {
@@ -56,7 +56,9 @@ func main() {
 	ctx := context.Background()
 
 	fmt.Println("Making API request with full resilience protection...")
-	_, err = client.Issue.Get(ctx, "PROJ-1")
+	_, err = client.Issue.Get(ctx, "PROJ-1", &issue.GetOptions{
+		Fields: []string{"summary", "status"},
+	})
 	if err != nil {
 		fmt.Printf("Request completed (error expected if issue doesn't exist): %v\n", err)
 	} else {

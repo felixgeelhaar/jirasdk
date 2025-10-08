@@ -38,7 +38,16 @@
       "Bash(if ! grep -q 'jira \"\"github.com/felixgeelhaar/jirasdk\"\"' \"$file\")",
       "Bash(then)",
       "Bash(echo \"$file\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(do echo \"=== $pkg ===\")",
+      "Bash(xargs go:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": [],
     "ask": []
