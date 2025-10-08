@@ -46,3 +46,4 @@ dist/
 /customfields
 /attachments
 /oauth2
+.claude/
