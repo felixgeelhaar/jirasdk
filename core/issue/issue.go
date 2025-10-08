@@ -3,8 +3,10 @@ package issue
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -51,8 +53,89 @@ type IssueFields struct {
 	DueDate     *time.Time   `json:"duedate,omitempty"`
 	Labels      []string     `json:"labels,omitempty"`
 	Components  []*Component `json:"components,omitempty"`
-	// Custom fields are handled as map[string]interface{}
-	// Users can type assert to specific types as needed
+
+	// Custom contains custom field values
+	// Use the type-safe CustomFields methods for setting/getting values
+	Custom CustomFields `json:"-"`
+
+	// unknownFields stores any additional fields from the API response
+	// This includes both custom fields and any future fields added by Jira
+	unknownFields map[string]interface{}
+}
+
+// MarshalJSON implements custom JSON marshaling for IssueFields.
+// It merges standard fields with custom fields for API requests.
+func (f *IssueFields) MarshalJSON() ([]byte, error) {
+	// Create a map with standard fields
+	type Alias IssueFields
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(f),
+	}
+
+	// Marshal standard fields
+	data, err := json.Marshal(aux)
+	if err != nil {
+		return nil, err
+	}
+
+	// If no custom fields, return standard fields
+	if len(f.Custom) == 0 {
+		return data, nil
+	}
+
+	// Unmarshal to map to merge with custom fields
+	var result map[string]interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, err
+	}
+
+	// Merge custom fields
+	for fieldID, field := range f.Custom {
+		result[fieldID] = field.Value
+	}
+
+	return json.Marshal(result)
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for IssueFields.
+// It extracts custom fields from the API response.
+func (f *IssueFields) UnmarshalJSON(data []byte) error {
+	// Unmarshal standard fields
+	type Alias IssueFields
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(f),
+	}
+
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	// Unmarshal to map to extract custom fields
+	var raw map[string]interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	// Initialize Custom if nil
+	if f.Custom == nil {
+		f.Custom = NewCustomFields()
+	}
+
+	// Extract custom fields (fields starting with "customfield_")
+	for key, value := range raw {
+		if strings.HasPrefix(key, "customfield_") {
+			f.Custom[key] = &CustomField{
+				ID:    key,
+				Value: value,
+			}
+		}
+	}
+
+	return nil
 }
 
 // IssueType represents an issue type.

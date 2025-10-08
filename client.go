@@ -215,6 +215,27 @@ func WithPAT(token string) Option {
 	}
 }
 
+// WithOAuth2 configures OAuth 2.0 authentication.
+//
+// Example:
+//
+//	oauth := auth.NewOAuth2Authenticator(&auth.OAuth2Config{
+//	    ClientID:     "your-client-id",
+//	    ClientSecret: "your-client-secret",
+//	    RedirectURL:  "http://localhost:8080/callback",
+//	    Scopes:       []string{"read:jira-work", "write:jira-work"},
+//	})
+//	WithOAuth2(oauth)
+func WithOAuth2(oauth *auth.OAuth2Authenticator) Option {
+	return func(cfg *Config) error {
+		if oauth == nil {
+			return fmt.Errorf("OAuth 2.0 authenticator is required")
+		}
+		cfg.authenticator = oauth
+		return nil
+	}
+}
+
 // WithBasicAuth configures basic authentication (legacy, not recommended).
 //
 // Example:

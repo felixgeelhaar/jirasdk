@@ -111,6 +111,33 @@ jira.WithMaxRetries(5)
 jira.WithRateLimitBuffer(10 * time.Second)
 ```
 
+### OAuth 2.0 Authentication
+
+```go
+// Create OAuth 2.0 authenticator
+oauth := auth.NewOAuth2Authenticator(&auth.OAuth2Config{
+    ClientID:     "your-client-id",
+    ClientSecret: "your-client-secret",
+    RedirectURL:  "http://localhost:8080/callback",
+    Scopes:       []string{"read:jira-work", "write:jira-work"},
+})
+
+// Get authorization URL
+authURL := oauth.GetAuthURL("state-string")
+fmt.Println("Visit:", authURL)
+
+// Exchange authorization code for token
+token, err := oauth.Exchange(ctx, authorizationCode)
+
+// Create client with OAuth 2.0
+client, err := jira.NewClient(
+    jira.WithBaseURL("https://your-domain.atlassian.net"),
+    jira.WithOAuth2(oauth),
+)
+
+// Token is automatically refreshed when expired
+```
+
 ### Custom Middleware
 
 ```go
@@ -187,6 +214,69 @@ watchers, err := client.Issue.GetWatchers(ctx, "PROJ-123")
 err = client.Issue.AddWatcher(ctx, "PROJ-123", "accountId")
 votes, err := client.Issue.GetVotes(ctx, "PROJ-123")
 err = client.Issue.AddVote(ctx, "PROJ-123")
+
+// Attachments
+file, _ := os.Open("document.pdf")
+defer file.Close()
+attachments, err := client.Issue.AddAttachment(ctx, "PROJ-123", &issue.AttachmentMetadata{
+    Filename: "document.pdf",
+    Content:  file,
+})
+
+// Upload from string/bytes
+report := strings.NewReader("Report content here")
+attachments, err = client.Issue.AddAttachment(ctx, "PROJ-123", &issue.AttachmentMetadata{
+    Filename: "report.txt",
+    Content:  report,
+})
+
+// Get attachment metadata
+metadata, err := client.Issue.GetAttachment(ctx, "10000")
+fmt.Printf("File: %s, Size: %d bytes\n", metadata.Filename, metadata.Size)
+
+// Download attachment
+content, err := client.Issue.DownloadAttachment(ctx, "10000")
+defer content.Close()
+data, _ := io.ReadAll(content)
+
+// Delete attachment
+err = client.Issue.DeleteAttachment(ctx, "10000")
+
+// Custom Fields
+customFields := issue.NewCustomFields().
+    SetString("customfield_10001", "Sprint 23").
+    SetNumber("customfield_10002", 8.5).
+    SetDate("customfield_10003", time.Now()).
+    SetSelect("customfield_10004", "High").
+    SetMultiSelect("customfield_10005", []string{"Backend", "API"}).
+    SetLabels("customfield_10006", []string{"feature", "urgent"}).
+    SetUser("customfield_10007", "accountId123")
+
+// Create issue with custom fields
+created, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "New issue",
+        IssueType: &issue.IssueType{Name: "Task"},
+        Custom:    customFields,
+    },
+})
+
+// Read custom fields from an issue
+retrieved, err := client.Issue.Get(ctx, "PROJ-123", nil)
+if sprint, ok := retrieved.Fields.Custom.GetString("customfield_10001"); ok {
+    fmt.Printf("Sprint: %s\n", sprint)
+}
+if storyPoints, ok := retrieved.Fields.Custom.GetNumber("customfield_10002"); ok {
+    fmt.Printf("Story Points: %.1f\n", storyPoints)
+}
+
+// Update custom fields
+updates := issue.NewCustomFields().
+    SetString("customfield_10001", "Sprint 24")
+err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
+    Fields: updates.ToMap(),
+})
 ```
 
 ### Search
