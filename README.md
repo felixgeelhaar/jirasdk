@@ -662,6 +662,53 @@ err = client.Permission.RemoveActorFromProjectRole(ctx, "PROJ", 10002, "user", "
 err = client.Permission.RemoveActorFromProjectRole(ctx, "PROJ", 10002, "group", "developers")
 ```
 
+### Bulk Operations
+
+```go
+// Bulk create issues (max 1000 per request)
+result, err := client.Bulk.CreateIssues(ctx, &bulk.CreateIssuesInput{
+    IssueUpdates: []bulk.IssueUpdate{
+        {
+            Fields: map[string]interface{}{
+                "project":   map[string]string{"key": "PROJ"},
+                "summary":   "Bulk created issue 1",
+                "issuetype": map[string]string{"name": "Task"},
+            },
+        },
+        {
+            Fields: map[string]interface{}{
+                "project":   map[string]string{"key": "PROJ"},
+                "summary":   "Bulk created issue 2",
+                "issuetype": map[string]string{"name": "Bug"},
+                "labels":    []string{"bulk", "urgent"},
+            },
+        },
+    },
+})
+
+// Check for errors
+if len(result.Errors) > 0 {
+    for _, err := range result.Errors {
+        fmt.Printf("Error on element %d\n", err.FailedElementNumber)
+    }
+}
+
+// Bulk delete issues (max 1000 per request)
+err = client.Bulk.DeleteIssues(ctx, &bulk.DeleteIssuesInput{
+    IssueIDs: []string{"PROJ-123", "PROJ-124", "PROJ-125"},
+})
+
+// Track bulk operation progress
+progress, err := client.Bulk.GetProgress(ctx, taskID)
+fmt.Printf("Operation is %d%% complete\n", progress.ProgressPercent)
+
+// Wait for bulk operation to complete (blocking)
+progress, err := client.Bulk.WaitForCompletion(ctx, taskID, 5*time.Second)
+if progress.Status == bulk.BulkOperationStatusComplete {
+    fmt.Printf("Success: %d items processed\n", progress.Result.SuccessCount)
+}
+```
+
 ### Workflows
 
 ```go
@@ -799,6 +846,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/projects](examples/projects/main.go)** - Project CRUD, component management, and version management
 - **[examples/agile](examples/agile/main.go)** - Agile boards, sprints, epics, and backlog management
 - **[examples/permissions](examples/permissions/main.go)** - Permission checking, schemes, and project role management
+- **[examples/bulk](examples/bulk/main.go)** - Bulk operations for creating and deleting multiple issues efficiently
 
 ## Roadmap
 
@@ -825,12 +873,12 @@ See the [examples](examples/) directory for complete, runnable examples:
 - [x] Time tracking and worklogs
 - [x] OAuth 2.0 authentication
 
-### Phase 4: Enterprise Features (In Progress)
+### Phase 4: Enterprise Features ✅ **Complete**
 - [x] Enhanced workflow operations (transitions, statuses, schemes)
 - [x] Enhanced project configuration (component and version management)
 - [x] Agile/Scrum features (boards, sprints, epics, backlog)
 - [x] Permissions API (schemes, project roles, permission checking)
-- [ ] Bulk operations optimization
+- [x] Bulk operations (create, delete, progress tracking)
 - [ ] Webhook support
 - [ ] Observability (metrics, tracing)
 - [ ] Connection pooling optimization

@@ -33,6 +33,7 @@ import (
 
 	"github.com/felixgeelhaar/jira-connect/auth"
 	"github.com/felixgeelhaar/jira-connect/core/agile"
+	"github.com/felixgeelhaar/jira-connect/core/bulk"
 	"github.com/felixgeelhaar/jira-connect/core/issue"
 	"github.com/felixgeelhaar/jira-connect/core/permission"
 	"github.com/felixgeelhaar/jira-connect/core/project"
@@ -75,6 +76,7 @@ type Client struct {
 	Search     *search.Service
 	Agile      *agile.Service
 	Permission *permission.Service
+	Bulk       *bulk.Service
 }
 
 // Config holds the client configuration.
@@ -163,6 +165,7 @@ func NewClient(opts ...Option) (*Client, error) {
 	client.Search = search.NewService(tr)
 	client.Agile = agile.NewService(tr)
 	client.Permission = permission.NewService(tr)
+	client.Bulk = bulk.NewService(tr)
 
 	return client, nil
 }
