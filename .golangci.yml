@@ -14,13 +14,15 @@ output:
     - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
-  uniq-by-line: true
   sort-results: true
 
 linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
+
+  staticcheck:
+    checks: ["all", "-SA9003"]  # Disable empty branch check (we use TODO comments)
 
   govet:
     enable-all: true
@@ -85,7 +87,6 @@ linters:
 
     # Code quality - best effort
     - gofmt         # Check formatting
-    - goimports     # Check imports
     - misspell      # Fix spelling errors
     - unconvert     # Remove unnecessary type conversions
     - goconst       # Find repeated strings that could be constants
@@ -94,6 +95,7 @@ linters:
     - gosec         # Security checks
 
   # Disabled linters:
+  # - goimports: Import grouping differences between CI and local
   # - unused: Too strict, reports exported API elements
   # - unparam: Noisy for public APIs
   # - gocyclo: Complexity metrics not critical for library code
@@ -105,6 +107,7 @@ linters:
   # - noctx: Tests use http.NewRequest which is acceptable
 
 issues:
+  uniq-by-line: true
   exclude-rules:
     # Exclude some linters from running on tests files
     - path: _test\.go
