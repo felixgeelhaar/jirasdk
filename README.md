@@ -422,29 +422,82 @@ for i := 0; i < results.Total; i += 50 {
 
 ```go
 // Get project
-project, err := client.Project.Get(ctx, "PROJ", &project.GetOptions{
-    Expand: []string{"lead", "description"},
-})
+proj, err := client.Project.Get(ctx, "PROJ")
 
 // List projects
 projects, err := client.Project.List(ctx, &project.ListOptions{
     Recent: 10,
 })
 
-// Get project components
-components, err := client.Project.GetComponents(ctx, "PROJ")
-
-// Get project versions
-versions, err := client.Project.GetVersions(ctx, "PROJ", &project.VersionOptions{
-    OrderBy: "releaseDate",
+// Create project
+newProject, err := client.Project.Create(ctx, &project.CreateInput{
+    Key:            "DEMO",
+    Name:           "Demo Project",
+    ProjectTypeKey: "software",
+    LeadAccountID:  "accountId123",
 })
+
+// Update project
+_, err = client.Project.Update(ctx, "PROJ", &project.UpdateInput{
+    Name:        "Updated Name",
+    Description: "Updated description",
+})
+
+// Archive and restore
+err = client.Project.Archive(ctx, "PROJ")
+err = client.Project.Restore(ctx, "PROJ")
+
+// Delete project
+err = client.Project.Delete(ctx, "PROJ")
+
+// Component Management
+// List components
+components, err := client.Project.ListProjectComponents(ctx, "PROJ")
+
+// Create component
+component, err := client.Project.CreateComponent(ctx, &project.CreateComponentInput{
+    Name:         "Backend Services",
+    Description:  "All backend microservices",
+    Project:      "PROJ",
+    AssigneeType: "PROJECT_DEFAULT",
+})
+
+// Update component
+component, err = client.Project.UpdateComponent(ctx, "10000", &project.UpdateComponentInput{
+    Description: "Updated description",
+})
+
+// Get component
+component, err = client.Project.GetComponent(ctx, "10000")
+
+// Delete component
+err = client.Project.DeleteComponent(ctx, "10000")
+
+// Version Management
+// List versions
+versions, err := client.Project.ListProjectVersions(ctx, "PROJ")
 
 // Create version
 version, err := client.Project.CreateVersion(ctx, &project.CreateVersionInput{
-    Name:       "v1.0.0",
-    ProjectID:  "10000",
-    Released:   false,
+    Name:        "v1.0.0",
+    Description: "First release",
+    Project:     "PROJ",
+    StartDate:   "2024-01-01",
+    ReleaseDate: "2024-06-30",
+    Released:    false,
 })
+
+// Update version (mark as released)
+released := true
+version, err = client.Project.UpdateVersion(ctx, "10000", &project.UpdateVersionInput{
+    Released: &released,
+})
+
+// Get version
+version, err = client.Project.GetVersion(ctx, "10000")
+
+// Delete version
+err = client.Project.DeleteVersion(ctx, "10000")
 ```
 
 ### Users
@@ -610,6 +663,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/issuelinks](examples/issuelinks/main.go)** - Create and manage issue relationships
 - **[examples/worklogs](examples/worklogs/main.go)** - Time tracking and worklog management
 - **[examples/workflows](examples/workflows/main.go)** - Workflow configuration, transitions, statuses, and schemes
+- **[examples/projects](examples/projects/main.go)** - Project CRUD, component management, and version management
 
 ## Roadmap
 
@@ -638,7 +692,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 
 ### Phase 4: Enterprise Features (In Progress)
 - [x] Enhanced workflow operations (transitions, statuses, schemes)
-- [ ] Enhanced project configuration
+- [x] Enhanced project configuration (component and version management)
 - [ ] Agile/Scrum features (boards, sprints, epics)
 - [ ] Permissions API
 - [ ] Bulk operations optimization
