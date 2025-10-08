@@ -38,3 +38,11 @@ Thumbs.db
 # Build artifacts
 bin/
 dist/
+
+# Example binaries (built from examples/*/)
+/basic
+/advanced
+/workflow
+/customfields
+/attachments
+/oauth2
