@@ -91,6 +91,7 @@ type Config struct {
 	userAgent         string
 	enableCompression bool
 	logger            Logger
+	resilience        Resilience
 }
 
 // Option is a functional option for configuring the Client.
@@ -116,6 +117,7 @@ func NewClient(opts ...Option) (*Client, error) {
 		enableCompression: true,
 		middlewares:       []transport.Middleware{},
 		logger:            NewNoopLogger(),
+		resilience:        NewNoopResilience(),
 	}
 
 	// Apply all options
@@ -365,16 +367,38 @@ func WithUserAgent(userAgent string) Option {
 // Example:
 //
 //	import "github.com/felixgeelhaar/jira-connect/logger/bolt"
-//	import "github.com/felixgeelhaar/bolt/log"
+//	import "github.com/felixgeelhaar/bolt"
 //
-//	logger := log.New(log.WithJSONHandler(os.Stdout))
-//	WithLogger(bolt.NewAdapter(logger))
+//	logger := bolt.New(bolt.NewJSONHandler(os.Stdout))
+//	WithLogger(boltadapter.NewAdapter(logger))
 func WithLogger(logger Logger) Option {
 	return func(cfg *Config) error {
 		if logger == nil {
 			return fmt.Errorf("logger cannot be nil")
 		}
 		cfg.logger = logger
+		return nil
+	}
+}
+
+// WithResilience sets custom resilience patterns for the client.
+//
+// By default, basic retry and rate limiting are used. Use the fortify adapter for
+// production-grade resilience patterns including circuit breakers, advanced retries,
+// rate limiting, timeouts, and bulkheads.
+//
+// Example:
+//
+//	import "github.com/felixgeelhaar/jira-connect/resilience/fortify"
+//
+//	resilience := fortify.NewAdapter(jira.DefaultResilienceConfig())
+//	WithResilience(resilience)
+func WithResilience(resilience Resilience) Option {
+	return func(cfg *Config) error {
+		if resilience == nil {
+			return fmt.Errorf("resilience cannot be nil")
+		}
+		cfg.resilience = resilience
 		return nil
 	}
 }
