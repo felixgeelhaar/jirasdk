@@ -72,7 +72,59 @@ client, err := jira.NewClient(
 
 ## Configuration Options
 
-### Authentication
+### Environment Variables (Recommended)
+
+Configure your client automatically from environment variables, following AWS SDK and Azure SDK patterns:
+
+```bash
+# Jira Cloud (API Token)
+export JIRA_BASE_URL="https://your-domain.atlassian.net"
+export JIRA_EMAIL="user@example.com"
+export JIRA_API_TOKEN="your-api-token"
+
+# Jira Server/Data Center (PAT)
+export JIRA_BASE_URL="https://jira.company.com"
+export JIRA_PAT="your-personal-access-token"
+
+# Optional configuration
+export JIRA_TIMEOUT="60"              # Timeout in seconds (default: 30)
+export JIRA_MAX_RETRIES="5"           # Max retries (default: 3)
+export JIRA_RATE_LIMIT_BUFFER="10"    # Buffer in seconds (default: 5)
+export JIRA_USER_AGENT="MyApp/1.0.0"  # Custom user agent
+```
+
+Then create your client with one line:
+
+```go
+// Automatic configuration from environment
+client, err := jira.LoadConfigFromEnv()
+
+// Or combine with other options
+client, err := jira.NewClient(
+    jira.WithEnv(),                    // Load from environment
+    jira.WithTimeout(90*time.Second),  // Override specific settings
+)
+```
+
+**Supported Environment Variables:**
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `JIRA_BASE_URL` | Jira instance URL | ✅ Yes |
+| `JIRA_EMAIL` | Email for API token auth | With `JIRA_API_TOKEN` |
+| `JIRA_API_TOKEN` | API token (Jira Cloud) | With `JIRA_EMAIL` |
+| `JIRA_PAT` | Personal Access Token (Server/DC) | Alternative to API token |
+| `JIRA_USERNAME` | Username for basic auth | With `JIRA_PASSWORD` |
+| `JIRA_PASSWORD` | Password for basic auth | With `JIRA_USERNAME` |
+| `JIRA_OAUTH_CLIENT_ID` | OAuth client ID | With OAuth secrets |
+| `JIRA_OAUTH_CLIENT_SECRET` | OAuth client secret | With OAuth ID |
+| `JIRA_OAUTH_REDIRECT_URL` | OAuth redirect URL | With OAuth credentials |
+| `JIRA_TIMEOUT` | HTTP timeout in seconds | No (default: 30) |
+| `JIRA_MAX_RETRIES` | Maximum retry attempts | No (default: 3) |
+| `JIRA_RATE_LIMIT_BUFFER` | Rate limit buffer seconds | No (default: 5) |
+| `JIRA_USER_AGENT` | Custom user agent string | No |
+
+### Authentication (Programmatic)
 
 ```go
 // API Token (Jira Cloud - Recommended)
@@ -849,6 +901,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/bulk](examples/bulk/main.go)** - Bulk operations for creating and deleting multiple issues efficiently
 - **[examples/observability](examples/observability/main.go)** - Structured logging with bolt for zero-allocation observability
 - **[examples/resilience](examples/resilience/main.go)** - Production-grade resilience patterns with circuit breakers, retry, rate limiting, timeouts, and bulkheads
+- **[examples/environment](examples/environment/main.go)** - Environment variable configuration following AWS SDK and Azure SDK patterns
 
 ## Observability
 
