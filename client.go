@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/felixgeelhaar/jira-connect/auth"
+	"github.com/felixgeelhaar/jira-connect/core/agile"
 	"github.com/felixgeelhaar/jira-connect/core/issue"
 	"github.com/felixgeelhaar/jira-connect/core/project"
 	"github.com/felixgeelhaar/jira-connect/core/search"
@@ -71,6 +72,7 @@ type Client struct {
 	User     *user.Service
 	Workflow *workflow.Service
 	Search   *search.Service
+	Agile    *agile.Service
 }
 
 // Config holds the client configuration.
@@ -157,6 +159,7 @@ func NewClient(opts ...Option) (*Client, error) {
 	client.User = user.NewService(tr)
 	client.Workflow = workflow.NewService(tr)
 	client.Search = search.NewService(tr)
+	client.Agile = agile.NewService(tr)
 
 	return client, nil
 }

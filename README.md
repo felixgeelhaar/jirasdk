@@ -529,6 +529,78 @@ users, err := client.User.BulkGet(ctx, &user.BulkGetOptions{
 })
 ```
 
+### Agile/Scrum
+
+```go
+// Boards
+// List all boards
+boards, err := client.Agile.GetBoards(ctx, &agile.BoardsOptions{
+    Type:       "scrum",  // or "kanban"
+    MaxResults: 50,
+})
+
+// Get specific board
+board, err := client.Agile.GetBoard(ctx, 123)
+
+// Create board
+newBoard, err := client.Agile.CreateBoard(ctx, &agile.CreateBoardInput{
+    Name:     "Sprint Board",
+    Type:     "scrum",
+    FilterID: 10000,
+})
+
+// Delete board
+err = client.Agile.DeleteBoard(ctx, 123)
+
+// Sprints
+// List board sprints
+sprints, err := client.Agile.GetBoardSprints(ctx, 123, &agile.SprintsOptions{
+    State:      "active,future",
+    MaxResults: 50,
+})
+
+// Get specific sprint
+sprint, err := client.Agile.GetSprint(ctx, 456)
+
+// Create sprint
+newSprint, err := client.Agile.CreateSprint(ctx, &agile.CreateSprintInput{
+    Name:          "Sprint 25",
+    OriginBoardID: 123,
+    StartDate:     "2024-06-01T09:00:00.000Z",
+    EndDate:       "2024-06-14T17:00:00.000Z",
+    Goal:          "Complete user authentication",
+})
+
+// Update sprint
+sprint, err = client.Agile.UpdateSprint(ctx, 456, &agile.UpdateSprintInput{
+    State: "active",
+    Goal:  "Updated goal",
+})
+
+// Delete sprint
+err = client.Agile.DeleteSprint(ctx, 456)
+
+// Move issues to sprint
+err = client.Agile.MoveIssuesToSprint(ctx, 456, &agile.MoveIssuesToSprintInput{
+    Issues: []string{"PROJ-123", "PROJ-124"},
+})
+
+// Epics
+// List board epics
+epics, err := client.Agile.GetBoardEpics(ctx, 123, &agile.EpicsOptions{
+    MaxResults: 50,
+})
+
+// Get specific epic
+epic, err := client.Agile.GetEpic(ctx, 789)
+
+// Backlog
+// Get backlog issues
+backlog, err := client.Agile.GetBacklog(ctx, 123, &agile.BoardsOptions{
+    MaxResults: 50,
+})
+```
+
 ### Workflows
 
 ```go
@@ -664,6 +736,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/worklogs](examples/worklogs/main.go)** - Time tracking and worklog management
 - **[examples/workflows](examples/workflows/main.go)** - Workflow configuration, transitions, statuses, and schemes
 - **[examples/projects](examples/projects/main.go)** - Project CRUD, component management, and version management
+- **[examples/agile](examples/agile/main.go)** - Agile boards, sprints, epics, and backlog management
 
 ## Roadmap
 
@@ -693,7 +766,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 ### Phase 4: Enterprise Features (In Progress)
 - [x] Enhanced workflow operations (transitions, statuses, schemes)
 - [x] Enhanced project configuration (component and version management)
-- [ ] Agile/Scrum features (boards, sprints, epics)
+- [x] Agile/Scrum features (boards, sprints, epics, backlog)
 - [ ] Permissions API
 - [ ] Bulk operations optimization
 - [ ] Webhook support
