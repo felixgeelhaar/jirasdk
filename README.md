@@ -242,6 +242,75 @@ data, _ := io.ReadAll(content)
 // Delete attachment
 err = client.Issue.DeleteAttachment(ctx, "10000")
 
+// Issue Links
+// Create a "blocks" relationship
+err = client.Issue.CreateIssueLink(ctx, &issue.CreateIssueLinkInput{
+    Type:         issue.BlocksLinkType(),
+    InwardIssue:  &issue.IssueRef{Key: "PROJ-123"},
+    OutwardIssue: &issue.IssueRef{Key: "PROJ-456"},
+    Comment: &issue.LinkComment{
+        Body: "These issues are related",
+    },
+})
+
+// List available link types
+linkTypes, err := client.Issue.ListIssueLinkTypes(ctx)
+
+// Get links for an issue
+links, err := client.Issue.GetIssueLinks(ctx, "PROJ-123")
+
+// Delete issue link
+err = client.Issue.DeleteIssueLink(ctx, "10000")
+
+// Available helper functions:
+// - issue.BlocksLinkType() - "blocks" / "is blocked by"
+// - issue.DuplicatesLinkType() - "duplicates" / "is duplicated by"
+// - issue.RelatesToLinkType() - "relates to" / "relates to"
+// - issue.CausesLinkType() - "causes" / "is caused by"
+// - issue.ClonesLinkType() - "clones" / "is cloned by"
+
+// Time Tracking / Worklogs
+now := time.Now()
+
+// Add worklog with time string
+worklog, err := client.Issue.AddWorklog(ctx, "PROJ-123", &issue.AddWorklogInput{
+    TimeSpent: "3h 20m",
+    Started:   &now,
+    Comment:   "Implemented feature",
+})
+
+// Add worklog with seconds
+worklog, err = client.Issue.AddWorklog(ctx, "PROJ-123", &issue.AddWorklogInput{
+    TimeSpentSeconds: 7200, // 2 hours
+    Started:          &now,
+    Comment:          "Code review",
+})
+
+// List worklogs
+worklogs, err := client.Issue.ListWorklogs(ctx, "PROJ-123", nil)
+
+// List with date filters
+yesterday := time.Now().AddDate(0, 0, -1)
+worklogs, err = client.Issue.ListWorklogs(ctx, "PROJ-123", &issue.ListWorklogsOptions{
+    StartedAfter: &yesterday,
+    MaxResults:   10,
+})
+
+// Get specific worklog
+worklog, err = client.Issue.GetWorklog(ctx, "PROJ-123", "10000")
+
+// Update worklog
+worklog, err = client.Issue.UpdateWorklog(ctx, "PROJ-123", "10000", &issue.UpdateWorklogInput{
+    TimeSpent: "4h",
+    Comment:   "Updated estimate",
+})
+
+// Delete worklog
+err = client.Issue.DeleteWorklog(ctx, "PROJ-123", "10000")
+
+// Format duration helper
+formatted := issue.FormatDuration(12000) // Returns "3h 20m"
+
 // Custom Fields
 customFields := issue.NewCustomFields().
     SetString("customfield_10001", "Sprint 23").
@@ -499,6 +568,11 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/basic](examples/basic/main.go)** - Basic usage patterns (get user, issues, search, projects)
 - **[examples/advanced](examples/advanced/main.go)** - Custom middleware and advanced configuration
 - **[examples/workflow](examples/workflow/main.go)** - Workflow operations, comments, watchers, voters
+- **[examples/customfields](examples/customfields/main.go)** - Working with custom fields
+- **[examples/attachments](examples/attachments/main.go)** - Upload, download, and manage attachments
+- **[examples/oauth2](examples/oauth2/main.go)** - OAuth 2.0 authentication flow
+- **[examples/issuelinks](examples/issuelinks/main.go)** - Create and manage issue relationships
+- **[examples/worklogs](examples/worklogs/main.go)** - Time tracking and worklog management
 
 ## Roadmap
 
@@ -518,14 +592,19 @@ See the [examples](examples/) directory for complete, runnable examples:
 - [x] Comments and watchers/voters
 - [x] Pagination support
 
-### Phase 3: Advanced Features (In Progress)
-- [ ] Custom fields support
-- [ ] Attachments upload/download
-- [ ] Advanced issue linking
-- [ ] Bulk operations optimization
+### Phase 3: Advanced Features ✅ **Complete**
+- [x] Custom fields support with type-safe API
+- [x] Attachments upload/download
+- [x] Issue linking (blocks, duplicates, relates, causes, clones)
+- [x] Time tracking and worklogs
+- [x] OAuth 2.0 authentication
 
-### Phase 4: Enterprise Features (Planned)
-- [ ] OAuth 2.0 authentication
+### Phase 4: Enterprise Features (In Progress)
+- [ ] Enhanced workflow operations
+- [ ] Enhanced project configuration
+- [ ] Agile/Scrum features (boards, sprints, epics)
+- [ ] Permissions API
+- [ ] Bulk operations optimization
 - [ ] Webhook support
 - [ ] Observability (metrics, tracing)
 - [ ] Connection pooling optimization
