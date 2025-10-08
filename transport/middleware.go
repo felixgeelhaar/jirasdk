@@ -123,7 +123,7 @@ func rateLimitMiddleware(buffer time.Duration) Middleware {
 
 			// Check for rate limit headers (X-RateLimit-*)
 			if remaining := resp.Header.Get("X-RateLimit-Remaining"); remaining == "0" {
-				// Log or emit metric about approaching rate limit
+				// TODO: Log or emit metric about approaching rate limit
 				// In a real implementation, this could trigger adaptive rate limiting
 			}
 
@@ -164,6 +164,7 @@ func calculateBackoff(attempt int) time.Duration {
 	}
 
 	// Add jitter (±25%)
+	//nolint:gosec // G404: Weak random OK for jitter, doesn't need crypto/rand
 	jitter := delay * 0.25 * (rand.Float64()*2 - 1)
 	finalDelay := time.Duration(delay + jitter)
 
