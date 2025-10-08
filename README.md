@@ -1,6 +1,8 @@
-# Jira Connect - Idiomatic Go Library
+# jirasdk - Enterprise Jira Client for Go
 
 [![Go Version](https://img.shields.io/badge/go-1.21+-blue.svg)](https://golang.org)
+[![Go Reference](https://pkg.go.dev/badge/github.com/felixgeelhaar/jirasdk.svg)](https://pkg.go.dev/github.com/felixgeelhaar/jirasdk)
+[![Go Report Card](https://goreportcard.com/badge/github.com/felixgeelhaar/jirasdk)](https://goreportcard.com/report/github.com/felixgeelhaar/jirasdk)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A production-grade, idiomatic Go client library for Jira Cloud and Server/Data Center REST APIs.
