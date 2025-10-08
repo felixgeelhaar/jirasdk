@@ -17,7 +17,7 @@ import (
 	"context"
 	"net/http"
 
-	jira "github.com/felixgeelhaar/jira-connect"
+	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/fortify/bulkhead"
 	"github.com/felixgeelhaar/fortify/circuitbreaker"
 	"github.com/felixgeelhaar/fortify/ratelimit"
@@ -170,7 +170,8 @@ func (a *Adapter) GetCircuitBreakerState() string {
 	if a.circuitBreaker == nil {
 		return "disabled"
 	}
-	return string(a.circuitBreaker.State())
+	state := a.circuitBreaker.State()
+	return state.String()
 }
 
 // Close closes all resilience resources

@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	jira "github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/auth"
-	"github.com/felixgeelhaar/jira-connect/resilience/fortify"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/auth"
+	"github.com/felixgeelhaar/jirasdk/resilience/fortify"
 )
 
 func main() {

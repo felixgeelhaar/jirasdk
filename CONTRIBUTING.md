@@ -13,7 +13,7 @@ Thank you for considering contributing to the jira-connect library! This documen
 
 ```bash
 # Clone the repository
-git clone https://github.com/felixgeelhaar/jira-connect.git
+git clone https://github.com/felixgeelhaar/jirasdk.git
 cd jira-connect
 
 # Install dependencies

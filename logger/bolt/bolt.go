@@ -17,7 +17,7 @@ import (
 	"context"
 	"time"
 
-	jira "github.com/felixgeelhaar/jira-connect"
+	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/bolt"
 )
 

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/auth"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/auth"
 )
 
 func main() {
@@ -62,9 +62,9 @@ func main() {
 
 	// Step 3: Create Jira client with OAuth 2.0
 	fmt.Println("\n=== Creating Jira Client ===")
-	client, err := jiraconnect.NewClient(
-		jiraconnect.WithBaseURL(os.Getenv("JIRA_BASE_URL")),
-		jiraconnect.WithOAuth2(oauth),
+	client, err := jira.NewClient(
+		jira.WithBaseURL(os.Getenv("JIRA_BASE_URL")),
+		jira.WithOAuth2(oauth),
 	)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)

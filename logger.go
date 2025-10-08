@@ -1,4 +1,4 @@
-package jiraconnect
+package jirasdk
 
 import (
 	"context"

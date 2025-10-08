@@ -9,15 +9,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/core/issue"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
 )
 
 func main() {
 	// Create client with PAT authentication
-	client, err := jiraconnect.NewClient(
-		jiraconnect.WithBaseURL(os.Getenv("JIRA_BASE_URL")),
-		jiraconnect.WithPAT(os.Getenv("JIRA_PAT")),
+	client, err := jira.NewClient(
+		jira.WithBaseURL(os.Getenv("JIRA_BASE_URL")),
+		jira.WithPAT(os.Getenv("JIRA_PAT")),
 	)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)

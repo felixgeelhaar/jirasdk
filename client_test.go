@@ -1,11 +1,11 @@
-package jiraconnect
+package jirasdk
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/felixgeelhaar/jira-connect/transport"
+	"github.com/felixgeelhaar/jirasdk/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

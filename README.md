@@ -20,7 +20,7 @@ A production-grade, idiomatic Go client library for Jira Cloud and Server/Data C
 ## Installation
 
 ```bash
-go get github.com/felixgeelhaar/jira-connect
+go get github.com/felixgeelhaar/jirasdk
 ```
 
 ## Quick Start
@@ -36,7 +36,7 @@ import (
     "log"
     "time"
 
-    jira "github.com/felixgeelhaar/jira-connect"
+    jira "github.com/felixgeelhaar/jirasdk"
 )
 
 func main() {
@@ -858,8 +858,8 @@ The library integrates with [bolt](https://github.com/felixgeelhaar/bolt) for ze
 
 ```go
 import (
-    jira "github.com/felixgeelhaar/jira-connect"
-    boltadapter "github.com/felixgeelhaar/jira-connect/logger/bolt"
+    jira "github.com/felixgeelhaar/jirasdk"
+    boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
     "github.com/felixgeelhaar/bolt"
 )
 
@@ -916,8 +916,8 @@ The library integrates with [fortify](https://github.com/felixgeelhaar/fortify) 
 
 ```go
 import (
-    jira "github.com/felixgeelhaar/jira-connect"
-    "github.com/felixgeelhaar/jira-connect/resilience/fortify"
+    jira "github.com/felixgeelhaar/jirasdk"
+    "github.com/felixgeelhaar/jirasdk/resilience/fortify"
 )
 
 // Default resilience configuration (recommended)
@@ -1103,6 +1103,6 @@ Built with inspiration from:
 
 ## Support
 
-- 📖 [Documentation](https://pkg.go.dev/github.com/felixgeelhaar/jira-connect)
-- 🐛 [Issue Tracker](https://github.com/felixgeelhaar/jira-connect/issues)
-- 💬 [Discussions](https://github.com/felixgeelhaar/jira-connect/discussions)
+- 📖 [Documentation](https://pkg.go.dev/github.com/felixgeelhaar/jirasdk)
+- 🐛 [Issue Tracker](https://github.com/felixgeelhaar/jirasdk/issues)
+- 💬 [Discussions](https://github.com/felixgeelhaar/jirasdk/discussions)

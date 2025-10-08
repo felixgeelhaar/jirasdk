@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/felixgeelhaar/jira-connect/internal/pagination"
+	"github.com/felixgeelhaar/jirasdk/internal/pagination"
 )
 
 // Service provides operations for User resources.

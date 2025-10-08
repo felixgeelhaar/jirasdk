@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/felixgeelhaar/jira-connect/auth"
+	"github.com/felixgeelhaar/jirasdk/auth"
 )
 
 // authMiddleware adds authentication to requests.

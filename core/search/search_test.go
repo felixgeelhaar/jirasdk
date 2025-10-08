@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/felixgeelhaar/jira-connect/core/issue"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

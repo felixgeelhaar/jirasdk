@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	jira "github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/transport"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/transport"
 )
 
 // loggingMiddleware logs all requests and responses.

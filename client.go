@@ -1,4 +1,4 @@
-// Package jiraconnect provides an idiomatic Go client for Jira Cloud and Server/Data Center REST APIs.
+// Package jirasdk provides an idiomatic Go client for Jira Cloud and Server/Data Center REST APIs.
 //
 // This library follows enterprise-grade patterns including:
 //   - Functional options for flexible configuration
@@ -9,10 +9,10 @@
 //
 // Example usage:
 //
-//	client, err := jiraconnect.NewClient(
-//		jiraconnect.WithBaseURL("https://your-domain.atlassian.net"),
-//		jiraconnect.WithAPIToken("your-email@example.com", "your-api-token"),
-//		jiraconnect.WithTimeout(30*time.Second),
+//	client, err := jirasdk.NewClient(
+//		jirasdk.WithBaseURL("https://your-domain.atlassian.net"),
+//		jirasdk.WithAPIToken("your-email@example.com", "your-api-token"),
+//		jirasdk.WithTimeout(30*time.Second),
 //	)
 //	if err != nil {
 //		log.Fatal(err)
@@ -22,7 +22,7 @@
 //	if err != nil {
 //		log.Fatal(err)
 //	}
-package jiraconnect
+package jirasdk
 
 import (
 	"context"
@@ -31,16 +31,16 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/felixgeelhaar/jira-connect/auth"
-	"github.com/felixgeelhaar/jira-connect/core/agile"
-	"github.com/felixgeelhaar/jira-connect/core/bulk"
-	"github.com/felixgeelhaar/jira-connect/core/issue"
-	"github.com/felixgeelhaar/jira-connect/core/permission"
-	"github.com/felixgeelhaar/jira-connect/core/project"
-	"github.com/felixgeelhaar/jira-connect/core/search"
-	"github.com/felixgeelhaar/jira-connect/core/user"
-	"github.com/felixgeelhaar/jira-connect/core/workflow"
-	"github.com/felixgeelhaar/jira-connect/transport"
+	"github.com/felixgeelhaar/jirasdk/auth"
+	"github.com/felixgeelhaar/jirasdk/core/agile"
+	"github.com/felixgeelhaar/jirasdk/core/bulk"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
+	"github.com/felixgeelhaar/jirasdk/core/permission"
+	"github.com/felixgeelhaar/jirasdk/core/project"
+	"github.com/felixgeelhaar/jirasdk/core/search"
+	"github.com/felixgeelhaar/jirasdk/core/user"
+	"github.com/felixgeelhaar/jirasdk/core/workflow"
+	"github.com/felixgeelhaar/jirasdk/transport"
 )
 
 const (
@@ -366,7 +366,7 @@ func WithUserAgent(userAgent string) Option {
 //
 // Example:
 //
-//	import "github.com/felixgeelhaar/jira-connect/logger/bolt"
+//	import "github.com/felixgeelhaar/jirasdk/logger/bolt"
 //	import "github.com/felixgeelhaar/bolt"
 //
 //	logger := bolt.New(bolt.NewJSONHandler(os.Stdout))
@@ -389,7 +389,7 @@ func WithLogger(logger Logger) Option {
 //
 // Example:
 //
-//	import "github.com/felixgeelhaar/jira-connect/resilience/fortify"
+//	import "github.com/felixgeelhaar/jirasdk/resilience/fortify"
 //
 //	resilience := fortify.NewAdapter(jira.DefaultResilienceConfig())
 //	WithResilience(resilience)

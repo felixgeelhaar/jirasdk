@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/felixgeelhaar/jira-connect/auth"
+	"github.com/felixgeelhaar/jirasdk/auth"
 )
 
 // Logger is the interface for structured logging in the transport layer.

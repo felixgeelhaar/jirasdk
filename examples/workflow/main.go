@@ -8,10 +8,10 @@ import (
 	"os"
 	"time"
 
-	jira "github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/core/issue"
-	"github.com/felixgeelhaar/jira-connect/core/search"
-	"github.com/felixgeelhaar/jira-connect/core/workflow"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
+	"github.com/felixgeelhaar/jirasdk/core/search"
+	"github.com/felixgeelhaar/jirasdk/core/workflow"
 )
 
 func main() {

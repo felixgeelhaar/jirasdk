@@ -25,7 +25,20 @@
       "Bash(awk:*)",
       "Bash(go tool cover:*)",
       "mcp__github__get_file_contents",
-      "Bash(go list:*)"
+      "Bash(go list:*)",
+      "mcp__github__search_repositories",
+      "Bash(while read file)",
+      "Bash(do sed -i '' 's|github\\.com/felixgeelhaar/jira-connect|github.com/felixgeelhaar/jirasdk|g' \"$file\")",
+      "Bash(done)",
+      "Bash(while read dir)",
+      "Bash(do for file in \"$dir\"/*.go)",
+      "Bash(do [ -f \"$file\" ])",
+      "Bash(for:*)",
+      "Bash(do)",
+      "Bash(if ! grep -q 'jira \"\"github.com/felixgeelhaar/jirasdk\"\"' \"$file\")",
+      "Bash(then)",
+      "Bash(echo \"$file\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

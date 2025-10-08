@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	jira "github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/auth"
-	"github.com/felixgeelhaar/jira-connect/core/bulk"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/auth"
+	"github.com/felixgeelhaar/jirasdk/core/bulk"
 )
 
 func main() {

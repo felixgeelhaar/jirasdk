@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/auth"
-	"github.com/felixgeelhaar/jira-connect/core/agile"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/auth"
+	"github.com/felixgeelhaar/jirasdk/core/agile"
 )
 
 func main() {

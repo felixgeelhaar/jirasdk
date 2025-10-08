@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	jira "github.com/felixgeelhaar/jira-connect"
-	"github.com/felixgeelhaar/jira-connect/auth"
-	boltadapter "github.com/felixgeelhaar/jira-connect/logger/bolt"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/auth"
+	boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
 	"github.com/felixgeelhaar/bolt"
 )
 

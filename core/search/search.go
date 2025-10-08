@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/felixgeelhaar/jira-connect/core/issue"
-	"github.com/felixgeelhaar/jira-connect/internal/pagination"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
+	"github.com/felixgeelhaar/jirasdk/internal/pagination"
 )
 
 // Service provides JQL search operations.
