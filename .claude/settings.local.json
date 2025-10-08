@@ -23,7 +23,9 @@
       "Bash(go doc:*)",
       "Bash(go vet:*)",
       "Bash(awk:*)",
-      "Bash(go tool cover:*)"
+      "Bash(go tool cover:*)",
+      "mcp__github__get_file_contents",
+      "Bash(go list:*)"
     ],
     "deny": [],
     "ask": []

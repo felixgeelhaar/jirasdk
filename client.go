@@ -90,6 +90,7 @@ type Config struct {
 	middlewares       []transport.Middleware
 	userAgent         string
 	enableCompression bool
+	logger            Logger
 }
 
 // Option is a functional option for configuring the Client.
@@ -114,6 +115,7 @@ func NewClient(opts ...Option) (*Client, error) {
 		userAgent:         "jira-connect-go/1.0.0",
 		enableCompression: true,
 		middlewares:       []transport.Middleware{},
+		logger:            NewNoopLogger(),
 	}
 
 	// Apply all options
@@ -147,6 +149,7 @@ func NewClient(opts ...Option) (*Client, error) {
 		transport.WithMaxRetries(cfg.maxRetries),
 		transport.WithRateLimitBuffer(cfg.rateLimitBuffer),
 		transport.WithUserAgent(cfg.userAgent),
+		transport.WithLogger(cfg.logger),
 		transport.WithMiddlewares(cfg.middlewares...),
 	)
 
@@ -350,6 +353,28 @@ func WithUserAgent(userAgent string) Option {
 			return fmt.Errorf("user agent cannot be empty")
 		}
 		cfg.userAgent = userAgent
+		return nil
+	}
+}
+
+// WithLogger sets a custom logger for structured logging.
+//
+// By default, a no-op logger is used. Use the bolt adapter for
+// zero-allocation structured logging with OpenTelemetry integration.
+//
+// Example:
+//
+//	import "github.com/felixgeelhaar/jira-connect/logger/bolt"
+//	import "github.com/felixgeelhaar/bolt/log"
+//
+//	logger := log.New(log.WithJSONHandler(os.Stdout))
+//	WithLogger(bolt.NewAdapter(logger))
+func WithLogger(logger Logger) Option {
+	return func(cfg *Config) error {
+		if logger == nil {
+			return fmt.Errorf("logger cannot be nil")
+		}
+		cfg.logger = logger
 		return nil
 	}
 }

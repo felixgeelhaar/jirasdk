@@ -847,6 +847,67 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/agile](examples/agile/main.go)** - Agile boards, sprints, epics, and backlog management
 - **[examples/permissions](examples/permissions/main.go)** - Permission checking, schemes, and project role management
 - **[examples/bulk](examples/bulk/main.go)** - Bulk operations for creating and deleting multiple issues efficiently
+- **[examples/observability](examples/observability/main.go)** - Structured logging with bolt for zero-allocation observability
+
+## Observability
+
+### Structured Logging with Bolt
+
+The library integrates with [bolt](https://github.com/felixgeelhaar/bolt) for zero-allocation structured logging:
+
+```go
+import (
+    jira "github.com/felixgeelhaar/jira-connect"
+    boltadapter "github.com/felixgeelhaar/jira-connect/logger/bolt"
+    "github.com/felixgeelhaar/bolt"
+)
+
+// Production: JSON logging
+logger := bolt.New(bolt.NewJSONHandler(os.Stdout))
+client, err := jira.NewClient(
+    jira.WithBaseURL("https://your-domain.atlassian.net"),
+    jira.WithAPIToken("email", "token"),
+    jira.WithLogger(boltadapter.NewAdapter(logger)),
+)
+
+// Development: Console logging
+consoleLogger := bolt.New(bolt.NewConsoleHandler(os.Stdout))
+devClient, err := jira.NewClient(
+    jira.WithBaseURL(baseURL),
+    jira.WithAPIToken(email, token),
+    jira.WithLogger(boltadapter.NewAdapter(consoleLogger)),
+)
+
+// With service context
+contextLogger := logger.With().
+    Str("service", "my-app").
+    Str("version", "1.0.0").
+    Logger()
+```
+
+**Logging Features:**
+- 🔥 Zero allocations (63ns/op)
+- 📊 Structured JSON output for production
+- 🎨 Colorized console output for development
+- 🔍 OpenTelemetry integration (automatic trace/span IDs)
+- 📈 Request/response logging with duration and status codes
+- ⚡ Minimal overhead (<0.01% CPU impact)
+
+**Example Log Output:**
+```json
+{
+  "level": "info",
+  "method": "GET",
+  "path": "/rest/api/3/issue/PROJ-123",
+  "status": 200,
+  "duration": 234,
+  "rate_limit": "1000",
+  "rate_limit_remaining": "999",
+  "message": "jira_request_completed"
+}
+```
+
+See [examples/observability](examples/observability/main.go) for complete examples.
 
 ## Roadmap
 
@@ -879,8 +940,18 @@ See the [examples](examples/) directory for complete, runnable examples:
 - [x] Agile/Scrum features (boards, sprints, epics, backlog)
 - [x] Permissions API (schemes, project roles, permission checking)
 - [x] Bulk operations (create, delete, progress tracking)
+
+### Phase 5: Observability & Resilience 🚧 **In Progress**
+- [x] Structured logging with bolt integration (zero-allocation)
+- [x] Request/response logging with duration and status codes
+- [x] OpenTelemetry trace/span ID support
+- [ ] Resilience patterns with fortify integration
+- [ ] Circuit breakers for fault tolerance
+- [ ] Enhanced retry logic with jitter
+- [ ] Rate limiting with token bucket algorithm
+- [ ] Bulkheads for concurrency control
+- [ ] Prometheus metrics
 - [ ] Webhook support
-- [ ] Observability (metrics, tracing)
 - [ ] Connection pooling optimization
 
 ## Contributing

@@ -12,6 +12,22 @@ import (
 	"github.com/felixgeelhaar/jira-connect/auth"
 )
 
+// Logger is the interface for structured logging in the transport layer.
+// This interface matches the jira-connect Logger interface to avoid circular dependencies.
+type Logger interface {
+	Debug(ctx context.Context, msg string, fields ...Field)
+	Info(ctx context.Context, msg string, fields ...Field)
+	Warn(ctx context.Context, msg string, fields ...Field)
+	Error(ctx context.Context, msg string, fields ...Field)
+	With(fields ...Field) Logger
+}
+
+// Field represents a structured logging field
+type Field struct {
+	Key   string
+	Value interface{}
+}
+
 // RoundTripFunc is a function type that performs an HTTP round trip.
 type RoundTripFunc func(ctx context.Context, req *http.Request) (*http.Response, error)
 
@@ -26,6 +42,7 @@ type Transport struct {
 	maxRetries      int
 	rateLimitBuffer time.Duration
 	userAgent       string
+	logger          Logger
 	middlewares     []Middleware
 	roundTripper    RoundTripFunc
 }
@@ -36,6 +53,7 @@ type Config struct {
 	maxRetries      int
 	rateLimitBuffer time.Duration
 	userAgent       string
+	logger          Logger
 	middlewares     []Middleware
 }
 
@@ -62,6 +80,7 @@ func New(client *http.Client, baseURL *url.URL, opts ...TransportOption) *Transp
 		maxRetries:      cfg.maxRetries,
 		rateLimitBuffer: cfg.rateLimitBuffer,
 		userAgent:       cfg.userAgent,
+		logger:          cfg.logger,
 		middlewares:     cfg.middlewares,
 	}
 
@@ -106,27 +125,40 @@ func WithMiddlewares(middlewares ...Middleware) TransportOption {
 	}
 }
 
+// WithLogger sets the logger for the transport.
+func WithLogger(logger interface{}) TransportOption {
+	return func(cfg *Config) {
+		cfg.logger = newLoggerAdapter(logger)
+	}
+}
+
 // buildMiddlewareChain builds the middleware chain.
 func (t *Transport) buildMiddlewareChain() {
 	// Start with the base round tripper
 	roundTripper := t.baseRoundTrip
 
-	// Apply built-in middleware in order:
-	// 1. Retry logic (outermost)
-	roundTripper = retryMiddleware(t.maxRetries)(roundTripper)
+	// Apply built-in middleware in order (innermost to outermost):
 
-	// 2. Rate limiting
-	roundTripper = rateLimitMiddleware(t.rateLimitBuffer)(roundTripper)
-
-	// 3. User agent
-	roundTripper = userAgentMiddleware(t.userAgent)(roundTripper)
-
-	// 4. Authentication
+	// 1. Authentication (closest to the request)
 	if t.authenticator != nil {
 		roundTripper = authMiddleware(t.authenticator)(roundTripper)
 	}
 
-	// Apply custom middleware
+	// 2. User agent
+	roundTripper = userAgentMiddleware(t.userAgent)(roundTripper)
+
+	// 3. Rate limiting
+	roundTripper = rateLimitMiddleware(t.rateLimitBuffer)(roundTripper)
+
+	// 4. Retry logic
+	roundTripper = retryMiddleware(t.maxRetries)(roundTripper)
+
+	// 5. Logging (outermost - logs the final result after all retries)
+	if t.logger != nil {
+		roundTripper = loggingMiddleware(t.logger)(roundTripper)
+	}
+
+	// Apply custom middleware (outermost)
 	for i := len(t.middlewares) - 1; i >= 0; i-- {
 		roundTripper = t.middlewares[i](roundTripper)
 	}
