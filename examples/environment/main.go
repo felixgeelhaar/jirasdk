@@ -52,7 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
-	fmt.Printf("✓ Client created with custom overrides\n")
+	fmt.Printf("✓ Client created with custom overrides (timeout: %v)\n", client3.HTTPClient.Timeout)
 	fmt.Println()
 
 	// Example 3: Make an actual API request

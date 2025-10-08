@@ -1,0 +1,134 @@
+# golangci-lint configuration
+# See https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - examples  # Skip example programs (may have old/demo code)
+  skip-files: []
+  modules-download-mode: readonly
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  govet:
+    enable-all: true
+    disable:
+      - shadow  # Too noisy
+
+  gocyclo:
+    min-complexity: 15
+
+  gofmt:
+    simplify: true
+
+  goimports:
+    local-prefixes: github.com/felixgeelhaar/jirasdk
+
+  golint:
+    min-confidence: 0.8
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+  misspell:
+    locale: US
+
+  lll:
+    line-length: 120
+    tab-width: 4
+
+  unused:
+    check-exported: false
+
+  unparam:
+    check-exported: false
+
+  nakedret:
+    max-func-lines: 30
+
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+
+  nolintlint:
+    allow-unused: false
+    require-explanation: true
+    require-specific: true
+
+linters:
+  disable-all: true
+  enable:
+    # Enabled by default
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Vet examines Go source code
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Advanced Go linter
+    - typecheck     # Type checks
+    - unused        # Check for unused code
+
+    # Additional recommended linters
+    - gofmt         # Check formatting
+    - goimports     # Check imports
+    - misspell      # Fix spelling errors
+    - unconvert     # Remove unnecessary type conversions
+    - unparam       # Find unused function parameters
+    - goconst       # Find repeated strings that could be constants
+    - gocyclo       # Check cyclomatic complexity
+    - gosec         # Security checks
+    - bodyclose     # Check HTTP response body is closed
+    - noctx         # Check for HTTP requests without context
+    - rowserrcheck  # Check SQL rows.Err is checked
+    - sqlclosecheck # Check SQL database/rows/statements are closed
+    - exportloopref # Check for loop variable capture issues
+    - nolintlint    # Ensure nolint directives are used correctly
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - gosec
+        - goconst
+
+    # Exclude known issues in legacy code
+    - path: internal/legacy
+      linters:
+        - staticcheck
+        - gosec
+
+  # Maximum issues count per one linter
+  max-issues-per-linter: 50
+
+  # Maximum count of issues with the same text
+  max-same-issues: 3
+
+  # Show only new issues
+  new: false
+
+  # Fix found issues (if supported by linter)
+  fix: false
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - misspell
+      severity: warning
