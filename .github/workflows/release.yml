@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # Run tests before releasing
+  test:
+    name: Test Before Release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache: true
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Run tests
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+    - name: Run go vet
+      run: go vet ./...
+
+  # Create GitHub Release
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        cache: true
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Extract changelog for this version
+      id: changelog
+      run: |
+        VERSION=${{ steps.get_version.outputs.VERSION }}
+        # Extract changelog section for this version
+        if [ -f CHANGELOG.md ]; then
+          CHANGELOG=$(awk "/^## \[${VERSION}\]/{flag=1;next}/^## \[/{flag=0}flag" CHANGELOG.md)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+          fi
+        else
+          CHANGELOG="Release $VERSION"
+        fi
+        # Write to file to handle multiline
+        echo "$CHANGELOG" > /tmp/changelog.txt
+
+    - name: Build release artifacts
+      run: |
+        mkdir -p dist
+
+        # Build for multiple platforms
+        GOOS=linux GOARCH=amd64 go build -v -o dist/jirasdk-linux-amd64 ./...
+        GOOS=linux GOARCH=arm64 go build -v -o dist/jirasdk-linux-arm64 ./...
+        GOOS=darwin GOARCH=amd64 go build -v -o dist/jirasdk-darwin-amd64 ./...
+        GOOS=darwin GOARCH=arm64 go build -v -o dist/jirasdk-darwin-arm64 ./...
+        GOOS=windows GOARCH=amd64 go build -v -o dist/jirasdk-windows-amd64.exe ./...
+
+    - name: Create release archives
+      run: |
+        cd dist
+        for file in jirasdk-*; do
+          if [[ "$file" == *.exe ]]; then
+            zip "${file%.exe}.zip" "$file"
+          else
+            tar -czf "${file}.tar.gz" "$file"
+          fi
+        done
+
+    - name: Generate checksum
+      run: |
+        cd dist
+        sha256sum *.tar.gz *.zip > checksums.txt
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: /tmp/changelog.txt
+        files: |
+          dist/*.tar.gz
+          dist/*.zip
+          dist/checksums.txt
+        draft: false
+        prerelease: ${{ contains(steps.get_version.outputs.VERSION, '-rc') || contains(steps.get_version.outputs.VERSION, '-beta') || contains(steps.get_version.outputs.VERSION, '-alpha') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Announce release
+      run: |
+        echo "🎉 Release ${{ steps.get_version.outputs.VERSION }} has been published!"
+        echo "📦 Artifacts are available at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}"
+        echo "📚 Documentation: https://pkg.go.dev/github.com/${{ github.repository }}@${{ steps.get_version.outputs.VERSION }}"
+
+  # Trigger pkg.go.dev documentation update
+  pkgsite:
+    name: Update pkg.go.dev
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+    - name: Trigger pkg.go.dev update
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        curl -f "https://proxy.golang.org/github.com/${{ github.repository }}/@v/${VERSION}.info" || true
+        echo "📚 pkg.go.dev should update within a few minutes at:"
+        echo "https://pkg.go.dev/github.com/${{ github.repository }}@${VERSION}"
+
+  # Optional: Post release announcement
+  announce:
+    name: Post Release Announcement
+    runs-on: ubuntu-latest
+    needs: release
+    if: ${{ !contains(github.ref, '-rc') && !contains(github.ref, '-beta') && !contains(github.ref, '-alpha') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create announcement
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        cat << EOF > announcement.md
+        ## 🎉 jirasdk ${VERSION} Released!
+
+        We're excited to announce the release of jirasdk ${VERSION}!
+
+        ### Installation
+        \`\`\`bash
+        go get github.com/${{ github.repository }}@${VERSION}
+        \`\`\`
+
+        ### Documentation
+        📚 [pkg.go.dev](https://pkg.go.dev/github.com/${{ github.repository }}@${VERSION})
+
+        ### Release Notes
+        See the [full release notes](https://github.com/${{ github.repository }}/releases/tag/${VERSION})
+
+        ### What's New
+        Check out [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
+        EOF
+
+        cat announcement.md
+        echo "✅ Announcement prepared for version ${VERSION}"
+
+    # Uncomment to create a GitHub Discussion announcement
+    # - name: Create Discussion
+    #   uses: abirismyname/create-discussion@v1
+    #   with:
+    #     title: "Release ${{ steps.get_version.outputs.VERSION }}"
+    #     body-path: announcement.md
+    #     repository-id: ${{ secrets.REPOSITORY_ID }}
+    #     category-id: ${{ secrets.ANNOUNCEMENTS_CATEGORY_ID }}
+    #   env:
+    #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

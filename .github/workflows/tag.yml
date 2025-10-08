@@ -1,0 +1,136 @@
+name: Tag Release
+
+# This workflow helps create release tags
+# Trigger manually with workflow_dispatch when ready to release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0, v1.0.1-rc.1)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        cache: true
+
+    - name: Validate version format
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+          echo "❌ Invalid version format: $VERSION"
+          echo "Version must follow semantic versioning (e.g., v1.0.0, v1.0.0-rc.1)"
+          exit 1
+        fi
+        echo "✅ Version format is valid: $VERSION"
+
+    - name: Check if tag already exists
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "❌ Tag $VERSION already exists!"
+          exit 1
+        fi
+        echo "✅ Tag $VERSION is available"
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Run tests
+      run: go test -v -race $(go list ./... | grep -v examples)
+
+    - name: Run go vet
+      run: go vet $(go list ./... | grep -v examples)
+
+    - name: Build
+      run: go build -v $(go list ./... | grep -v examples)
+
+  create-tag:
+    name: Create Tag
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Get latest commits
+      id: commits
+      run: |
+        # Get commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -z "$LAST_TAG" ]; then
+          COMMITS=$(git log --pretty=format:"- %s (%h)" | head -10)
+        else
+          COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)")
+        fi
+        # Save to file for multiline
+        echo "$COMMITS" > /tmp/commits.txt
+
+    - name: Create tag message
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        PRERELEASE="${{ github.event.inputs.prerelease }}"
+
+        cat << EOF > /tmp/tag_message.txt
+        Release $VERSION
+
+        Recent changes:
+        EOF
+
+        cat /tmp/commits.txt >> /tmp/tag_message.txt
+
+        if [ "$PRERELEASE" = "true" ]; then
+          echo "" >> /tmp/tag_message.txt
+          echo "⚠️  This is a prerelease version." >> /tmp/tag_message.txt
+        fi
+
+    - name: Create and push tag
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        git tag -a "$VERSION" -F /tmp/tag_message.txt
+        git push origin "$VERSION"
+        echo "✅ Tag $VERSION created and pushed"
+
+    - name: Output next steps
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        echo "🎉 Tag $VERSION has been created!"
+        echo ""
+        echo "Next steps:"
+        echo "1. The release workflow will automatically trigger"
+        echo "2. Release artifacts will be built for multiple platforms"
+        echo "3. GitHub Release will be created with changelog"
+        echo "4. pkg.go.dev will be updated automatically"
+        echo ""
+        echo "📦 View release at: https://github.com/${{ github.repository }}/releases/tag/$VERSION"
+        echo "📚 Documentation will be at: https://pkg.go.dev/github.com/${{ github.repository }}@$VERSION"
