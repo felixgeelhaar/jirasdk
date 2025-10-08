@@ -601,6 +601,67 @@ backlog, err := client.Agile.GetBacklog(ctx, 123, &agile.BoardsOptions{
 })
 ```
 
+### Permissions
+
+```go
+// Get all available permissions
+allPermissions, err := client.Permission.GetAllPermissions(ctx)
+
+// Check current user's permissions
+myPerms, err := client.Permission.GetMyPermissions(ctx, nil)
+
+// Check permissions for a specific project
+projectPerms, err := client.Permission.GetMyPermissions(ctx, &permission.MyPermissionsOptions{
+    ProjectKey:  "PROJ",
+    Permissions: "BROWSE_PROJECTS,CREATE_ISSUES,EDIT_ISSUES",
+})
+
+// Permission Schemes
+// List all permission schemes
+schemes, err := client.Permission.ListPermissionSchemes(ctx, nil)
+
+// Get detailed scheme with expanded information
+scheme, err := client.Permission.GetPermissionScheme(ctx, 10000, &permission.GetPermissionSchemeOptions{
+    Expand: []string{"permissions", "user", "group", "projectRole"},
+})
+
+// Create new permission scheme
+newScheme, err := client.Permission.CreatePermissionScheme(ctx, &permission.CreatePermissionSchemeInput{
+    Name:        "Custom Scheme",
+    Description: "Custom permission scheme for development teams",
+})
+
+// Update permission scheme
+updatedScheme, err := client.Permission.UpdatePermissionScheme(ctx, 10000, &permission.UpdatePermissionSchemeInput{
+    Name:        "Updated Scheme Name",
+    Description: "Updated description",
+})
+
+// Delete permission scheme
+err = client.Permission.DeletePermissionScheme(ctx, 10000)
+
+// Project Roles
+// Get all roles for a project
+roles, err := client.Permission.GetProjectRoles(ctx, "PROJ")
+
+// Get specific role details
+roleDetails, err := client.Permission.GetProjectRole(ctx, "PROJ", 10002)
+
+// Add users to a project role
+updatedRole, err := client.Permission.AddActorsToProjectRole(ctx, "PROJ", 10002, &permission.AddActorInput{
+    User: []string{"accountId1", "accountId2"},
+})
+
+// Add groups to a project role
+updatedRole, err = client.Permission.AddActorsToProjectRole(ctx, "PROJ", 10002, &permission.AddActorInput{
+    Group: []string{"developers", "testers"},
+})
+
+// Remove actor from project role
+err = client.Permission.RemoveActorFromProjectRole(ctx, "PROJ", 10002, "user", "accountId123")
+err = client.Permission.RemoveActorFromProjectRole(ctx, "PROJ", 10002, "group", "developers")
+```
+
 ### Workflows
 
 ```go
@@ -737,6 +798,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/workflows](examples/workflows/main.go)** - Workflow configuration, transitions, statuses, and schemes
 - **[examples/projects](examples/projects/main.go)** - Project CRUD, component management, and version management
 - **[examples/agile](examples/agile/main.go)** - Agile boards, sprints, epics, and backlog management
+- **[examples/permissions](examples/permissions/main.go)** - Permission checking, schemes, and project role management
 
 ## Roadmap
 
@@ -767,7 +829,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - [x] Enhanced workflow operations (transitions, statuses, schemes)
 - [x] Enhanced project configuration (component and version management)
 - [x] Agile/Scrum features (boards, sprints, epics, backlog)
-- [ ] Permissions API
+- [x] Permissions API (schemes, project roles, permission checking)
 - [ ] Bulk operations optimization
 - [ ] Webhook support
 - [ ] Observability (metrics, tracing)

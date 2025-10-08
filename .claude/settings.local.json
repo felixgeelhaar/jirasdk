@@ -22,7 +22,8 @@
       "Bash(find:*)",
       "Bash(go doc:*)",
       "Bash(go vet:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(go tool cover:*)"
     ],
     "deny": [],
     "ask": []

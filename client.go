@@ -34,6 +34,7 @@ import (
 	"github.com/felixgeelhaar/jira-connect/auth"
 	"github.com/felixgeelhaar/jira-connect/core/agile"
 	"github.com/felixgeelhaar/jira-connect/core/issue"
+	"github.com/felixgeelhaar/jira-connect/core/permission"
 	"github.com/felixgeelhaar/jira-connect/core/project"
 	"github.com/felixgeelhaar/jira-connect/core/search"
 	"github.com/felixgeelhaar/jira-connect/core/user"
@@ -67,12 +68,13 @@ type Client struct {
 	Transport *transport.Transport
 
 	// Domain service clients
-	Issue    *issue.Service
-	Project  *project.Service
-	User     *user.Service
-	Workflow *workflow.Service
-	Search   *search.Service
-	Agile    *agile.Service
+	Issue      *issue.Service
+	Project    *project.Service
+	User       *user.Service
+	Workflow   *workflow.Service
+	Search     *search.Service
+	Agile      *agile.Service
+	Permission *permission.Service
 }
 
 // Config holds the client configuration.
@@ -160,6 +162,7 @@ func NewClient(opts ...Option) (*Client, error) {
 	client.Workflow = workflow.NewService(tr)
 	client.Search = search.NewService(tr)
 	client.Agile = agile.NewService(tr)
+	client.Permission = permission.NewService(tr)
 
 	return client, nil
 }
