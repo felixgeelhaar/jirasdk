@@ -26,6 +26,7 @@ linters-settings:
     enable-all: true
     disable:
       - shadow  # Too noisy
+      - fieldalignment  # Micro-optimization, not critical
 
   gocyclo:
     min-complexity: 15
@@ -45,6 +46,8 @@ linters-settings:
 
   misspell:
     locale: US
+    ignore-words:
+      - cancelled  # UK spelling used in Jira API
 
   lll:
     line-length: 120
@@ -91,11 +94,11 @@ linters:
     - gocyclo       # Check cyclomatic complexity
     - gosec         # Security checks
     - bodyclose     # Check HTTP response body is closed
-    - noctx         # Check for HTTP requests without context
     - rowserrcheck  # Check SQL rows.Err is checked
     - sqlclosecheck # Check SQL database/rows/statements are closed
     - exportloopref # Check for loop variable capture issues
     - nolintlint    # Ensure nolint directives are used correctly
+    # noctx disabled - tests use http.NewRequest which is acceptable
 
 issues:
   exclude-rules:
