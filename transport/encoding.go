@@ -51,10 +51,10 @@ func DecodeJSONResponse(resp *http.Response, target interface{}) error {
 
 // ErrorResponse represents a Jira API error response.
 type ErrorResponse struct {
-	StatusCode int                    `json:"-"`
-	ErrorMessages []string            `json:"errorMessages,omitempty"`
-	Errors        map[string]string   `json:"errors,omitempty"`
-	Message       string              `json:"message,omitempty"`
+	StatusCode    int               `json:"-"`
+	ErrorMessages []string          `json:"errorMessages,omitempty"`
+	Errors        map[string]string `json:"errors,omitempty"`
+	Message       string            `json:"message,omitempty"`
 }
 
 // Error implements the error interface.

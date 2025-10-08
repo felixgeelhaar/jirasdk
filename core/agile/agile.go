@@ -28,13 +28,13 @@ func NewService(transport RoundTripper) *Service {
 
 // Board represents a Jira Software board (Scrum or Kanban).
 type Board struct {
-	ID       int64       `json:"id"`
-	Self     string      `json:"self,omitempty"`
-	Name     string      `json:"name"`
-	Type     string      `json:"type"` // "scrum" or "kanban"
-	Location *Location   `json:"location,omitempty"`
-	Filter   *Filter     `json:"filter,omitempty"`
-	CanEdit  bool        `json:"canEdit,omitempty"`
+	ID       int64     `json:"id"`
+	Self     string    `json:"self,omitempty"`
+	Name     string    `json:"name"`
+	Type     string    `json:"type"` // "scrum" or "kanban"
+	Location *Location `json:"location,omitempty"`
+	Filter   *Filter   `json:"filter,omitempty"`
+	CanEdit  bool      `json:"canEdit,omitempty"`
 }
 
 // Location represents the board's project location.
@@ -59,9 +59,9 @@ type Sprint struct {
 	Self          string `json:"self,omitempty"`
 	State         string `json:"state"` // "future", "active", "closed"
 	Name          string `json:"name"`
-	StartDate     string `json:"startDate,omitempty"`     // ISO 8601 format
-	EndDate       string `json:"endDate,omitempty"`       // ISO 8601 format
-	CompleteDate  string `json:"completeDate,omitempty"`  // ISO 8601 format
+	StartDate     string `json:"startDate,omitempty"`    // ISO 8601 format
+	EndDate       string `json:"endDate,omitempty"`      // ISO 8601 format
+	CompleteDate  string `json:"completeDate,omitempty"` // ISO 8601 format
 	OriginBoardID int64  `json:"originBoardId,omitempty"`
 	Goal          string `json:"goal,omitempty"`
 }
@@ -391,8 +391,8 @@ func (s *Service) GetSprint(ctx context.Context, sprintID int64) (*Sprint, error
 // CreateSprintInput contains the data for creating a sprint.
 type CreateSprintInput struct {
 	Name          string `json:"name"`
-	StartDate     string `json:"startDate,omitempty"`    // ISO 8601 format
-	EndDate       string `json:"endDate,omitempty"`      // ISO 8601 format
+	StartDate     string `json:"startDate,omitempty"` // ISO 8601 format
+	EndDate       string `json:"endDate,omitempty"`   // ISO 8601 format
 	OriginBoardID int64  `json:"originBoardId"`
 	Goal          string `json:"goal,omitempty"`
 }

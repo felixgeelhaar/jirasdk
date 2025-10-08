@@ -28,15 +28,15 @@ func NewService(transport RoundTripper) *Service {
 
 // Transition represents a workflow transition.
 type Transition struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	To          *Status                `json:"to,omitempty"`
-	HasScreen   bool                   `json:"hasScreen,omitempty"`
-	IsGlobal    bool                   `json:"isGlobal,omitempty"`
-	IsInitial   bool                   `json:"isInitial,omitempty"`
-	IsAvailable bool                   `json:"isAvailable,omitempty"`
+	ID            string               `json:"id"`
+	Name          string               `json:"name"`
+	To            *Status              `json:"to,omitempty"`
+	HasScreen     bool                 `json:"hasScreen,omitempty"`
+	IsGlobal      bool                 `json:"isGlobal,omitempty"`
+	IsInitial     bool                 `json:"isInitial,omitempty"`
+	IsAvailable   bool                 `json:"isAvailable,omitempty"`
 	IsConditional bool                 `json:"isConditional,omitempty"`
-	Fields      map[string]FieldInfo   `json:"fields,omitempty"`
+	Fields        map[string]FieldInfo `json:"fields,omitempty"`
 }
 
 // Status represents an issue status.
@@ -58,13 +58,13 @@ type StatusCategory struct {
 
 // FieldInfo contains information about a field in a transition.
 type FieldInfo struct {
-	Required     bool     `json:"required"`
-	Schema       Schema   `json:"schema,omitempty"`
-	Name         string   `json:"name,omitempty"`
-	Key          string   `json:"key,omitempty"`
-	HasDefaultValue bool  `json:"hasDefaultValue,omitempty"`
-	Operations   []string `json:"operations,omitempty"`
-	AllowedValues []interface{} `json:"allowedValues,omitempty"`
+	Required        bool          `json:"required"`
+	Schema          Schema        `json:"schema,omitempty"`
+	Name            string        `json:"name,omitempty"`
+	Key             string        `json:"key,omitempty"`
+	HasDefaultValue bool          `json:"hasDefaultValue,omitempty"`
+	Operations      []string      `json:"operations,omitempty"`
+	AllowedValues   []interface{} `json:"allowedValues,omitempty"`
 }
 
 // Schema represents a field schema.
@@ -150,12 +150,12 @@ func (s *Service) GetTransitions(ctx context.Context, issueKeyOrID string, opts 
 
 // Workflow represents a Jira workflow.
 type Workflow struct {
-	ID          string               `json:"id"`
-	Name        string               `json:"name"`
-	Description string               `json:"description,omitempty"`
-	Statuses    []*Status            `json:"statuses,omitempty"`
-	IsDefault   bool                 `json:"isDefault,omitempty"`
-	Transitions []*Transition        `json:"transitions,omitempty"`
+	ID          string        `json:"id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description,omitempty"`
+	Statuses    []*Status     `json:"statuses,omitempty"`
+	IsDefault   bool          `json:"isDefault,omitempty"`
+	Transitions []*Transition `json:"transitions,omitempty"`
 }
 
 // ListOptions configures the List operation.

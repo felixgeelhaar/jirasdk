@@ -54,10 +54,10 @@ type SearchOptions struct {
 
 // SearchResult contains the search results and pagination info.
 type SearchResult struct {
-	Issues     []*issue.Issue     `json:"issues"`
-	StartAt    int                `json:"startAt"`
-	MaxResults int                `json:"maxResults"`
-	Total      int                `json:"total"`
+	Issues     []*issue.Issue      `json:"issues"`
+	StartAt    int                 `json:"startAt"`
+	MaxResults int                 `json:"maxResults"`
+	Total      int                 `json:"total"`
 	PageInfo   pagination.PageInfo `json:"-"`
 }
 

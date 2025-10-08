@@ -31,11 +31,11 @@ func NewService(transport RoundTripper) *Service {
 
 // Issue represents a Jira issue.
 type Issue struct {
-	ID     string        `json:"id"`
-	Key    string        `json:"key"`
-	Self   string        `json:"self"`
-	Fields *IssueFields  `json:"fields,omitempty"`
-	Expand string        `json:"expand,omitempty"`
+	ID     string       `json:"id"`
+	Key    string       `json:"key"`
+	Self   string       `json:"self"`
+	Fields *IssueFields `json:"fields,omitempty"`
+	Expand string       `json:"expand,omitempty"`
 }
 
 // IssueFields contains the fields of an issue.
@@ -157,9 +157,9 @@ type Project struct {
 
 // Status represents an issue status.
 type Status struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Description string         `json:"description,omitempty"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description,omitempty"`
 	Category    *StatusCategory `json:"statusCategory,omitempty"`
 }
 

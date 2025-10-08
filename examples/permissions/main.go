@@ -197,45 +197,45 @@ func main() {
 
 		// Demonstrate adding/removing actors (commented out to avoid modifying real data)
 		/*
-		// Add a user to a role
-		fmt.Println("\n=== Adding User to Role ===")
-		updatedRole, err := client.Permission.AddActorsToProjectRole(ctx, projectKey, roleID, &permission.AddActorInput{
-			User: []string{"accountId123"},
-		})
-		if err != nil {
-			log.Printf("Failed to add user to role: %v", err)
-		} else {
-			fmt.Printf("Added user to role: %s\n", updatedRole.Name)
-		}
+			// Add a user to a role
+			fmt.Println("\n=== Adding User to Role ===")
+			updatedRole, err := client.Permission.AddActorsToProjectRole(ctx, projectKey, roleID, &permission.AddActorInput{
+				User: []string{"accountId123"},
+			})
+			if err != nil {
+				log.Printf("Failed to add user to role: %v", err)
+			} else {
+				fmt.Printf("Added user to role: %s\n", updatedRole.Name)
+			}
 
-		// Add a group to a role
-		fmt.Println("\n=== Adding Group to Role ===")
-		updatedRole, err = client.Permission.AddActorsToProjectRole(ctx, projectKey, roleID, &permission.AddActorInput{
-			Group: []string{"developers"},
-		})
-		if err != nil {
-			log.Printf("Failed to add group to role: %v", err)
-		} else {
-			fmt.Printf("Added group to role: %s\n", updatedRole.Name)
-		}
+			// Add a group to a role
+			fmt.Println("\n=== Adding Group to Role ===")
+			updatedRole, err = client.Permission.AddActorsToProjectRole(ctx, projectKey, roleID, &permission.AddActorInput{
+				Group: []string{"developers"},
+			})
+			if err != nil {
+				log.Printf("Failed to add group to role: %v", err)
+			} else {
+				fmt.Printf("Added group to role: %s\n", updatedRole.Name)
+			}
 
-		// Remove a user from a role
-		fmt.Println("\n=== Removing User from Role ===")
-		err = client.Permission.RemoveActorFromProjectRole(ctx, projectKey, roleID, "user", "accountId123")
-		if err != nil {
-			log.Printf("Failed to remove user from role: %v", err)
-		} else {
-			fmt.Println("Successfully removed user from role")
-		}
+			// Remove a user from a role
+			fmt.Println("\n=== Removing User from Role ===")
+			err = client.Permission.RemoveActorFromProjectRole(ctx, projectKey, roleID, "user", "accountId123")
+			if err != nil {
+				log.Printf("Failed to remove user from role: %v", err)
+			} else {
+				fmt.Println("Successfully removed user from role")
+			}
 
-		// Remove a group from a role
-		fmt.Println("\n=== Removing Group from Role ===")
-		err = client.Permission.RemoveActorFromProjectRole(ctx, projectKey, roleID, "group", "developers")
-		if err != nil {
-			log.Printf("Failed to remove group from role: %v", err)
-		} else {
-			fmt.Println("Successfully removed group from role")
-		}
+			// Remove a group from a role
+			fmt.Println("\n=== Removing Group from Role ===")
+			err = client.Permission.RemoveActorFromProjectRole(ctx, projectKey, roleID, "group", "developers")
+			if err != nil {
+				log.Printf("Failed to remove group from role: %v", err)
+			} else {
+				fmt.Println("Successfully removed group from role")
+			}
 		*/
 	}
 

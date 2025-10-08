@@ -197,8 +197,8 @@ type BulkOperationResult struct {
 
 // User represents a minimal user reference.
 type User struct {
-	AccountID   string `json:"accountId,omitempty"`
-	DisplayName string `json:"displayName,omitempty"`
+	AccountID    string `json:"accountId,omitempty"`
+	DisplayName  string `json:"displayName,omitempty"`
 	EmailAddress string `json:"emailAddress,omitempty"`
 }
 

@@ -9,18 +9,18 @@ import (
 
 // Worklog represents time logged against an issue.
 type Worklog struct {
-	ID               string                `json:"id"`
-	Self             string                `json:"self,omitempty"`
-	Author           *User                 `json:"author,omitempty"`
-	UpdateAuthor     *User                 `json:"updateAuthor,omitempty"`
-	Comment          string                `json:"comment,omitempty"`
-	Created          *time.Time            `json:"created,omitempty"`
-	Updated          *time.Time            `json:"updated,omitempty"`
-	Started          *time.Time            `json:"started,omitempty"`
-	TimeSpent        string                `json:"timeSpent,omitempty"`        // e.g., "3h 20m"
-	TimeSpentSeconds int64                 `json:"timeSpentSeconds,omitempty"` // Duration in seconds
-	IssueID          string                `json:"issueId,omitempty"`
-	Visibility       *WorklogVisibility    `json:"visibility,omitempty"`
+	ID               string             `json:"id"`
+	Self             string             `json:"self,omitempty"`
+	Author           *User              `json:"author,omitempty"`
+	UpdateAuthor     *User              `json:"updateAuthor,omitempty"`
+	Comment          string             `json:"comment,omitempty"`
+	Created          *time.Time         `json:"created,omitempty"`
+	Updated          *time.Time         `json:"updated,omitempty"`
+	Started          *time.Time         `json:"started,omitempty"`
+	TimeSpent        string             `json:"timeSpent,omitempty"`        // e.g., "3h 20m"
+	TimeSpentSeconds int64              `json:"timeSpentSeconds,omitempty"` // Duration in seconds
+	IssueID          string             `json:"issueId,omitempty"`
+	Visibility       *WorklogVisibility `json:"visibility,omitempty"`
 }
 
 // WorklogVisibility controls who can see the worklog.

@@ -9,10 +9,10 @@ import (
 
 func TestCalculateBackoff(t *testing.T) {
 	tests := []struct {
-		name           string
-		attempt        int
-		minExpected    time.Duration
-		maxExpected    time.Duration
+		name        string
+		attempt     int
+		minExpected time.Duration
+		maxExpected time.Duration
 	}{
 		{
 			name:        "first attempt",

@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/felixgeelhaar/bolt"
 	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/jirasdk/core/issue"
 	"github.com/felixgeelhaar/jirasdk/core/search"
 	boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
-	"github.com/felixgeelhaar/bolt"
 )
 
 func main() {

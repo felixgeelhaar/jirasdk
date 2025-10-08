@@ -29,9 +29,9 @@ func main() {
 
 	customFields := issue.NewCustomFields().
 		SetString("customfield_10001", "Sprint 23").
-		SetNumber("customfield_10002", 8.5). // Story points
-		SetDate("customfield_10003", time.Now().AddDate(0, 0, 14)). // Due date
-		SetSelect("customfield_10004", "High"). // Priority
+		SetNumber("customfield_10002", 8.5).                             // Story points
+		SetDate("customfield_10003", time.Now().AddDate(0, 0, 14)).      // Due date
+		SetSelect("customfield_10004", "High").                          // Priority
 		SetMultiSelect("customfield_10005", []string{"Backend", "API"}). // Components
 		SetLabels("customfield_10006", []string{"feature", "customer-request"})
 
@@ -94,7 +94,7 @@ func main() {
 
 	updatedFields := issue.NewCustomFields().
 		SetString("customfield_10001", "Sprint 24"). // Move to next sprint
-		SetNumber("customfield_10002", 13) // Update story points
+		SetNumber("customfield_10002", 13)           // Update story points
 
 	err = client.Issue.Update(ctx, created.Key, &issue.UpdateInput{
 		Fields: updatedFields.ToMap(),

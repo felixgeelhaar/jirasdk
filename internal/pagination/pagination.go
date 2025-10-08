@@ -167,12 +167,12 @@ func (it *Iterator[T]) Err() error {
 
 // PagedResponse is a generic paginated response.
 type PagedResponse[T any] struct {
-	Items    []T      `json:"values,omitempty"` // Jira uses "values" for most endpoints
-	PageInfo PageInfo `json:"-"`                // Embedded pagination info
-	StartAt  int      `json:"startAt"`
-	MaxResults int    `json:"maxResults"`
-	Total    int      `json:"total"`
-	IsLast   bool     `json:"isLast,omitempty"`
+	Items      []T      `json:"values,omitempty"` // Jira uses "values" for most endpoints
+	PageInfo   PageInfo `json:"-"`                // Embedded pagination info
+	StartAt    int      `json:"startAt"`
+	MaxResults int      `json:"maxResults"`
+	Total      int      `json:"total"`
+	IsLast     bool     `json:"isLast,omitempty"`
 }
 
 // UnmarshalPageInfo extracts PageInfo from a PagedResponse.

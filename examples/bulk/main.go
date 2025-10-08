@@ -46,7 +46,7 @@ func main() {
 					"project": map[string]string{
 						"key": projectKey,
 					},
-					"summary": "Bulk Created Issue 1",
+					"summary":     "Bulk Created Issue 1",
 					"description": "This issue was created via bulk API",
 					"issuetype": map[string]string{
 						"name": "Task",
@@ -61,7 +61,7 @@ func main() {
 					"project": map[string]string{
 						"key": projectKey,
 					},
-					"summary": "Bulk Created Issue 2",
+					"summary":     "Bulk Created Issue 2",
 					"description": "This is the second bulk created issue",
 					"issuetype": map[string]string{
 						"name": "Task",
@@ -77,7 +77,7 @@ func main() {
 					"project": map[string]string{
 						"key": projectKey,
 					},
-					"summary": "Bulk Created Issue 3",
+					"summary":     "Bulk Created Issue 3",
 					"description": "Third issue created in bulk",
 					"issuetype": map[string]string{
 						"name": "Bug",
@@ -117,21 +117,21 @@ func main() {
 		// Example 2: Bulk delete the created issues
 		// Note: Uncomment to actually delete the demo issues
 		/*
-		if len(createdKeys) > 0 {
-			fmt.Println("\n=== Bulk Deleting Issues ===")
-			fmt.Printf("Deleting %d issues: %v\n", len(createdKeys), createdKeys)
+			if len(createdKeys) > 0 {
+				fmt.Println("\n=== Bulk Deleting Issues ===")
+				fmt.Printf("Deleting %d issues: %v\n", len(createdKeys), createdKeys)
 
-			deleteInput := &bulk.DeleteIssuesInput{
-				IssueIDs: createdKeys,
-			}
+				deleteInput := &bulk.DeleteIssuesInput{
+					IssueIDs: createdKeys,
+				}
 
-			err = client.Bulk.DeleteIssues(ctx, deleteInput)
-			if err != nil {
-				log.Printf("Failed to delete issues: %v", err)
-			} else {
-				fmt.Printf("Successfully deleted %d issues\n", len(createdKeys))
+				err = client.Bulk.DeleteIssues(ctx, deleteInput)
+				if err != nil {
+					log.Printf("Failed to delete issues: %v", err)
+				} else {
+					fmt.Printf("Successfully deleted %d issues\n", len(createdKeys))
+				}
 			}
-		}
 		*/
 	}
 
@@ -193,8 +193,8 @@ func main() {
 	for i := range largeBatch {
 		largeBatch[i] = bulk.IssueUpdate{
 			Fields: map[string]interface{}{
-				"project": map[string]string{"key": projectKey},
-				"summary": fmt.Sprintf("Issue %d", i+1),
+				"project":   map[string]string{"key": projectKey},
+				"summary":   fmt.Sprintf("Issue %d", i+1),
 				"issuetype": map[string]string{"name": "Task"},
 			},
 		}
@@ -214,20 +214,20 @@ func main() {
 
 		// Note: Uncomment to actually create these issues
 		/*
-		batchInput := &bulk.CreateIssuesInput{
-			IssueUpdates: batch,
-		}
+			batchInput := &bulk.CreateIssuesInput{
+				IssueUpdates: batch,
+			}
 
-		result, err := client.Bulk.CreateIssues(ctx, batchInput)
-		if err != nil {
-			log.Printf("Batch %d failed: %v", i+1, err)
-			continue
-		}
+			result, err := client.Bulk.CreateIssues(ctx, batchInput)
+			if err != nil {
+				log.Printf("Batch %d failed: %v", i+1, err)
+				continue
+			}
 
-		fmt.Printf("  Batch %d: Created %d issues\n", i+1, len(result.Issues))
+			fmt.Printf("  Batch %d: Created %d issues\n", i+1, len(result.Issues))
 
-		// Small delay between batches to avoid rate limiting
-		time.Sleep(time.Second)
+			// Small delay between batches to avoid rate limiting
+			time.Sleep(time.Second)
 		*/
 	}
 

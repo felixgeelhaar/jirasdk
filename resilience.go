@@ -36,11 +36,11 @@ type ResilienceConfig struct {
 	RateLimitWindow  time.Duration // Time window for rate limiting
 
 	// Timeout settings
-	TimeoutEnabled bool
+	TimeoutEnabled  bool
 	TimeoutDuration time.Duration
 
 	// Bulkhead settings
-	BulkheadEnabled      bool
+	BulkheadEnabled       bool
 	BulkheadMaxConcurrent int           // Maximum concurrent requests
 	BulkheadMaxQueue      int           // Maximum queued requests
 	BulkheadQueueTimeout  time.Duration // Max time to wait in queue
@@ -74,7 +74,7 @@ func DefaultResilienceConfig() ResilienceConfig {
 		TimeoutDuration: 30 * time.Second,
 
 		// Bulkhead
-		BulkheadEnabled:      true,
+		BulkheadEnabled:       true,
 		BulkheadMaxConcurrent: 10,
 		BulkheadMaxQueue:      20,
 		BulkheadQueueTimeout:  5 * time.Second,

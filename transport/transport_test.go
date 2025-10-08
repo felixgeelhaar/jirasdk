@@ -32,8 +32,8 @@ func TestNew(t *testing.T) {
 	client := &http.Client{}
 
 	tests := []struct {
-		name string
-		opts []TransportOption
+		name  string
+		opts  []TransportOption
 		check func(*testing.T, *Transport)
 	}{
 		{

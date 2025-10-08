@@ -74,8 +74,8 @@ func main() {
 		// Aggressive circuit breaker for critical operations
 		CircuitBreakerEnabled:   true,
 		CircuitBreakerThreshold: 3,  // Open after 3 consecutive failures
-		CircuitBreakerInterval:  30,  // seconds
-		CircuitBreakerTimeout:   60,  // seconds
+		CircuitBreakerInterval:  30, // seconds
+		CircuitBreakerTimeout:   60, // seconds
 
 		// More retries with exponential backoff
 		RetryEnabled:      true,
@@ -87,7 +87,7 @@ func main() {
 
 		// Conservative rate limiting
 		RateLimitEnabled: true,
-		RateLimitRate:    50,  // 50 req/min
+		RateLimitRate:    50, // 50 req/min
 		RateLimitBurst:   5,
 		RateLimitWindow:  60, // seconds
 
@@ -96,7 +96,7 @@ func main() {
 		TimeoutDuration: 10, // seconds
 
 		// Smaller bulkhead for resource protection
-		BulkheadEnabled:      true,
+		BulkheadEnabled:       true,
 		BulkheadMaxConcurrent: 5,
 		BulkheadMaxQueue:      10,
 		BulkheadQueueTimeout:  3, // seconds

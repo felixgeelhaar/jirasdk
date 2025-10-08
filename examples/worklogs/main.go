@@ -154,13 +154,13 @@ func main() {
 	// Example 8: Format duration examples
 	fmt.Println("\n=== Duration Formatting Examples ===")
 	durations := []int64{
-		60,      // 1 minute
-		3600,    // 1 hour
-		7200,    // 2 hours
-		12000,   // 3 hours 20 minutes
-		86400,   // 1 day
-		604800,  // 1 week
-		694800,  // 1 week 1 day 1 hour
+		60,     // 1 minute
+		3600,   // 1 hour
+		7200,   // 2 hours
+		12000,  // 3 hours 20 minutes
+		86400,  // 1 day
+		604800, // 1 week
+		694800, // 1 week 1 day 1 hour
 	}
 
 	for _, seconds := range durations {

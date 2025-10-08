@@ -53,8 +53,8 @@ type AvatarURLs struct {
 
 // Groups represents user group membership.
 type Groups struct {
-	Size  int           `json:"size,omitempty"`
-	Items []*GroupItem  `json:"items,omitempty"`
+	Size  int          `json:"size,omitempty"`
+	Items []*GroupItem `json:"items,omitempty"`
 }
 
 // GroupItem represents a single group.

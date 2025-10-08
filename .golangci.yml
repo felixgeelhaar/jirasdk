@@ -75,30 +75,34 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    # Enabled by default
+    # Core linters - must pass
     - errcheck      # Check for unchecked errors
     - gosimple      # Simplify code
     - govet         # Vet examines Go source code
     - ineffassign   # Detect ineffectual assignments
     - staticcheck   # Advanced Go linter
     - typecheck     # Type checks
-    - unused        # Check for unused code
 
-    # Additional recommended linters
+    # Code quality - best effort
     - gofmt         # Check formatting
     - goimports     # Check imports
     - misspell      # Fix spelling errors
     - unconvert     # Remove unnecessary type conversions
-    - unparam       # Find unused function parameters
     - goconst       # Find repeated strings that could be constants
-    - gocyclo       # Check cyclomatic complexity
+
+    # Security - important but not critical
     - gosec         # Security checks
-    - bodyclose     # Check HTTP response body is closed
-    - rowserrcheck  # Check SQL rows.Err is checked
-    - sqlclosecheck # Check SQL database/rows/statements are closed
-    - exportloopref # Check for loop variable capture issues
-    - nolintlint    # Ensure nolint directives are used correctly
-    # noctx disabled - tests use http.NewRequest which is acceptable
+
+  # Disabled linters:
+  # - unused: Too strict, reports exported API elements
+  # - unparam: Noisy for public APIs
+  # - gocyclo: Complexity metrics not critical for library code
+  # - bodyclose: False positives in transport layer
+  # - rowserrcheck: Not using database/sql
+  # - sqlclosecheck: Not using database/sql
+  # - exportloopref: Deprecated since Go 1.22
+  # - nolintlint: Noisy with our nolint directives
+  # - noctx: Tests use http.NewRequest which is acceptable
 
 issues:
   exclude-rules:

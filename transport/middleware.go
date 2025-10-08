@@ -135,11 +135,11 @@ func rateLimitMiddleware(buffer time.Duration) Middleware {
 // isRetryableStatus returns true if the HTTP status code is retry-able.
 func isRetryableStatus(statusCode int) bool {
 	switch statusCode {
-	case http.StatusTooManyRequests,      // 429
-		http.StatusInternalServerError,   // 500
-		http.StatusBadGateway,            // 502
-		http.StatusServiceUnavailable,    // 503
-		http.StatusGatewayTimeout:        // 504
+	case http.StatusTooManyRequests, // 429
+		http.StatusInternalServerError, // 500
+		http.StatusBadGateway,          // 502
+		http.StatusServiceUnavailable,  // 503
+		http.StatusGatewayTimeout:      // 504
 		return true
 	default:
 		return false

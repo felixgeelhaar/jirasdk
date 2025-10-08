@@ -46,7 +46,7 @@ func main() {
 	client3, err := jira.NewClient(
 		jira.WithEnv(), // Load from environment
 		// Override specific settings
-		jira.WithTimeout(60), // Override timeout to 60 seconds
+		jira.WithTimeout(60),   // Override timeout to 60 seconds
 		jira.WithMaxRetries(5), // Override max retries
 	)
 	if err != nil {

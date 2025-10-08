@@ -9,10 +9,10 @@ import (
 
 // Comment represents an issue comment.
 type Comment struct {
-	ID      string    `json:"id"`
-	Self    string    `json:"self,omitempty"`
-	Author  *User     `json:"author,omitempty"`
-	Body    string    `json:"body"`
+	ID      string     `json:"id"`
+	Self    string     `json:"self,omitempty"`
+	Author  *User      `json:"author,omitempty"`
+	Body    string     `json:"body"`
 	Created *time.Time `json:"created,omitempty"`
 	Updated *time.Time `json:"updated,omitempty"`
 }

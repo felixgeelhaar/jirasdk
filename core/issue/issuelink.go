@@ -8,8 +8,8 @@ import (
 
 // IssueLink represents a link between two issues.
 type IssueLink struct {
-	ID           string        `json:"id"`
-	Self         string        `json:"self,omitempty"`
+	ID           string         `json:"id"`
+	Self         string         `json:"self,omitempty"`
 	Type         *IssueLinkType `json:"type"`
 	InwardIssue  *LinkedIssue   `json:"inwardIssue,omitempty"`
 	OutwardIssue *LinkedIssue   `json:"outwardIssue,omitempty"`
@@ -26,18 +26,18 @@ type IssueLinkType struct {
 
 // LinkedIssue represents a simplified issue in a link.
 type LinkedIssue struct {
-	ID     string              `json:"id"`
-	Key    string              `json:"key"`
-	Self   string              `json:"self"`
-	Fields *LinkedIssueFields  `json:"fields,omitempty"`
+	ID     string             `json:"id"`
+	Key    string             `json:"key"`
+	Self   string             `json:"self"`
+	Fields *LinkedIssueFields `json:"fields,omitempty"`
 }
 
 // LinkedIssueFields contains basic fields of a linked issue.
 type LinkedIssueFields struct {
-	Summary   string      `json:"summary,omitempty"`
-	Status    *Status     `json:"status,omitempty"`
-	Priority  *Priority   `json:"priority,omitempty"`
-	IssueType *IssueType  `json:"issuetype,omitempty"`
+	Summary   string     `json:"summary,omitempty"`
+	Status    *Status    `json:"status,omitempty"`
+	Priority  *Priority  `json:"priority,omitempty"`
+	IssueType *IssueType `json:"issuetype,omitempty"`
 }
 
 // CreateIssueLinkInput contains the data for creating an issue link.
@@ -56,8 +56,8 @@ type IssueRef struct {
 
 // LinkComment represents a comment added when creating a link.
 type LinkComment struct {
-	Body       string                 `json:"body"`
-	Visibility *CommentVisibility     `json:"visibility,omitempty"`
+	Body       string             `json:"body"`
+	Visibility *CommentVisibility `json:"visibility,omitempty"`
 }
 
 // CommentVisibility controls who can see the comment.

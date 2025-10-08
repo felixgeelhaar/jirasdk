@@ -12,15 +12,15 @@ import (
 
 // Attachment represents a file attached to an issue.
 type Attachment struct {
-	ID          string     `json:"id"`
-	Self        string     `json:"self,omitempty"`
-	Filename    string     `json:"filename"`
-	Author      *User      `json:"author,omitempty"`
-	Created     *time.Time `json:"created,omitempty"`
-	Size        int64      `json:"size"`
-	MimeType    string     `json:"mimeType"`
-	Content     string     `json:"content,omitempty"`
-	Thumbnail   string     `json:"thumbnail,omitempty"`
+	ID        string     `json:"id"`
+	Self      string     `json:"self,omitempty"`
+	Filename  string     `json:"filename"`
+	Author    *User      `json:"author,omitempty"`
+	Created   *time.Time `json:"created,omitempty"`
+	Size      int64      `json:"size"`
+	MimeType  string     `json:"mimeType"`
+	Content   string     `json:"content,omitempty"`
+	Thumbnail string     `json:"thumbnail,omitempty"`
 }
 
 // AttachmentMetadata contains metadata for uploading an attachment.

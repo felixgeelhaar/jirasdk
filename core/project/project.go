@@ -31,22 +31,22 @@ func NewService(transport RoundTripper) *Service {
 
 // Project represents a Jira project.
 type Project struct {
-	ID              string           `json:"id"`
-	Key             string           `json:"key"`
-	Name            string           `json:"name"`
-	Description     string           `json:"description,omitempty"`
-	Self            string           `json:"self,omitempty"`
-	ProjectTypeKey  string           `json:"projectTypeKey,omitempty"`
-	Lead            *User            `json:"lead,omitempty"`
-	AvatarURLs      *AvatarURLs      `json:"avatarUrls,omitempty"`
-	IssueTypes      []*IssueType     `json:"issueTypes,omitempty"`
-	Components      []*Component     `json:"components,omitempty"`
-	Versions        []*Version       `json:"versions,omitempty"`
-	Archived        bool             `json:"archived,omitempty"`
-	Deleted         bool             `json:"deleted,omitempty"`
-	Simplified      bool             `json:"simplified,omitempty"`
-	Style           string           `json:"style,omitempty"`
-	Insight         *ProjectInsight  `json:"insight,omitempty"`
+	ID             string          `json:"id"`
+	Key            string          `json:"key"`
+	Name           string          `json:"name"`
+	Description    string          `json:"description,omitempty"`
+	Self           string          `json:"self,omitempty"`
+	ProjectTypeKey string          `json:"projectTypeKey,omitempty"`
+	Lead           *User           `json:"lead,omitempty"`
+	AvatarURLs     *AvatarURLs     `json:"avatarUrls,omitempty"`
+	IssueTypes     []*IssueType    `json:"issueTypes,omitempty"`
+	Components     []*Component    `json:"components,omitempty"`
+	Versions       []*Version      `json:"versions,omitempty"`
+	Archived       bool            `json:"archived,omitempty"`
+	Deleted        bool            `json:"deleted,omitempty"`
+	Simplified     bool            `json:"simplified,omitempty"`
+	Style          string          `json:"style,omitempty"`
+	Insight        *ProjectInsight `json:"insight,omitempty"`
 }
 
 // User represents a Jira user.
@@ -88,13 +88,13 @@ type Component struct {
 
 // Version represents a project version.
 type Version struct {
-	ID          string     `json:"id"`
-	Name        string     `json:"name"`
-	Description string     `json:"description,omitempty"`
-	Archived    bool       `json:"archived,omitempty"`
-	Released    bool       `json:"released,omitempty"`
-	StartDate   string     `json:"startDate,omitempty"`
-	ReleaseDate string     `json:"releaseDate,omitempty"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Archived    bool   `json:"archived,omitempty"`
+	Released    bool   `json:"released,omitempty"`
+	StartDate   string `json:"startDate,omitempty"`
+	ReleaseDate string `json:"releaseDate,omitempty"`
 }
 
 // ProjectInsight contains project insights.
@@ -215,11 +215,11 @@ func (s *Service) List(ctx context.Context, opts *ListOptions) ([]*Project, erro
 
 	// Decode response
 	var result struct {
-		Values     []*Project          `json:"values"`
-		StartAt    int                 `json:"startAt"`
-		MaxResults int                 `json:"maxResults"`
-		Total      int                 `json:"total"`
-		IsLast     bool                `json:"isLast"`
+		Values     []*Project `json:"values"`
+		StartAt    int        `json:"startAt"`
+		MaxResults int        `json:"maxResults"`
+		Total      int        `json:"total"`
+		IsLast     bool       `json:"isLast"`
 	}
 
 	if err := s.transport.DecodeResponse(resp, &result); err != nil {
@@ -449,11 +449,11 @@ func (s *Service) Restore(ctx context.Context, projectKeyOrID string) error {
 
 // CreateComponentInput contains the data for creating a component.
 type CreateComponentInput struct {
-	Name            string `json:"name"`
-	Description     string `json:"description,omitempty"`
-	LeadAccountID   string `json:"leadAccountId,omitempty"`
-	AssigneeType    string `json:"assigneeType,omitempty"` // "PROJECT_DEFAULT", "COMPONENT_LEAD", "PROJECT_LEAD", "UNASSIGNED"
-	Project         string `json:"project"`                // Project ID or key
+	Name          string `json:"name"`
+	Description   string `json:"description,omitempty"`
+	LeadAccountID string `json:"leadAccountId,omitempty"`
+	AssigneeType  string `json:"assigneeType,omitempty"` // "PROJECT_DEFAULT", "COMPONENT_LEAD", "PROJECT_LEAD", "UNASSIGNED"
+	Project       string `json:"project"`                // Project ID or key
 }
 
 // CreateComponent creates a new component in a project.
@@ -623,7 +623,7 @@ func (s *Service) DeleteComponent(ctx context.Context, componentID string) error
 type CreateVersionInput struct {
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
-	Project     string `json:"project"`            // Project ID or key (required for creation, becomes projectId in response)
+	Project     string `json:"project"`             // Project ID or key (required for creation, becomes projectId in response)
 	ProjectID   int64  `json:"projectId,omitempty"` // Returned by API, don't set on creation
 	Archived    bool   `json:"archived,omitempty"`
 	Released    bool   `json:"released,omitempty"`
