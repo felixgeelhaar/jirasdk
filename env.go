@@ -16,25 +16,25 @@ const (
 
 	// Authentication - API Token (Jira Cloud)
 	EnvEmail    = "JIRA_EMAIL"     // Required for API token auth
-	EnvAPIToken = "JIRA_API_TOKEN" // Required for API token auth
+	EnvAPIToken = "JIRA_API_TOKEN" //nolint:gosec // G101: Not a hardcoded credential
 
 	// Authentication - Personal Access Token (Jira Server/Data Center)
-	EnvPAT = "JIRA_PAT" // Alternative to API token
+	EnvPAT = "JIRA_PAT" //nolint:gosec // G101: Not a hardcoded credential
 
 	// Authentication - Basic Auth (Legacy, not recommended)
 	EnvUsername = "JIRA_USERNAME" // Legacy basic auth username
-	EnvPassword = "JIRA_PASSWORD" // Legacy basic auth password
+	EnvPassword = "JIRA_PASSWORD" //nolint:gosec // G101: Not a hardcoded credential
 
 	// OAuth 2.0 configuration
 	EnvOAuthClientID     = "JIRA_OAUTH_CLIENT_ID"
-	EnvOAuthClientSecret = "JIRA_OAUTH_CLIENT_SECRET"
+	EnvOAuthClientSecret = "JIRA_OAUTH_CLIENT_SECRET" //nolint:gosec // G101: Not a hardcoded credential
 	EnvOAuthRedirectURL  = "JIRA_OAUTH_REDIRECT_URL"
 
 	// Client configuration
-	EnvTimeout      = "JIRA_TIMEOUT"       // HTTP timeout in seconds (default: 30)
-	EnvMaxRetries   = "JIRA_MAX_RETRIES"   // Max retry attempts (default: 3)
+	EnvTimeout      = "JIRA_TIMEOUT"           // HTTP timeout in seconds (default: 30)
+	EnvMaxRetries   = "JIRA_MAX_RETRIES"       // Max retry attempts (default: 3)
 	EnvRateLimitBuf = "JIRA_RATE_LIMIT_BUFFER" // Rate limit buffer in seconds (default: 5)
-	EnvUserAgent    = "JIRA_USER_AGENT"    // Custom user agent string
+	EnvUserAgent    = "JIRA_USER_AGENT"        // Custom user agent string
 )
 
 // WithEnv configures the client from environment variables.
@@ -136,7 +136,7 @@ func configureAuthFromEnv(cfg *Config) error {
 	}
 
 	// No valid authentication found
-	return fmt.Errorf("no valid authentication credentials found in environment variables; " +
+	return fmt.Errorf("no valid authentication credentials found in environment variables; "+
 		"set either (%s + %s) for API token, %s for PAT, or (%s + %s) for basic auth",
 		EnvEmail, EnvAPIToken, EnvPAT, EnvUsername, EnvPassword)
 }

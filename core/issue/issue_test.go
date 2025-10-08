@@ -31,7 +31,7 @@ func (m *mockTransport) NewRequest(ctx context.Context, method, path string, bod
 		if err != nil {
 			return nil, err
 		}
-		bodyReader = io.NopCloser(io.Reader(newBytesReader(data)))
+		bodyReader = io.NopCloser(newBytesReader(data))
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, m.server.URL+path, bodyReader)

@@ -112,7 +112,7 @@ func (s *Service) AddWorklog(ctx context.Context, issueKeyOrID string, input *Ad
 
 	// Add query parameters for estimate adjustment
 	if input.AdjustEstimate != nil {
-		// This would add query parameters based on AdjustEstimate type
+		// TODO: Add query parameters based on AdjustEstimate type
 		// For example: ?adjustEstimate=new&newEstimate=2d
 	}
 

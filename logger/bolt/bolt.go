@@ -17,8 +17,8 @@ import (
 	"context"
 	"time"
 
-	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/bolt"
+	jira "github.com/felixgeelhaar/jirasdk"
 )
 
 // Adapter adapts a bolt logger to the jira-connect Logger interface

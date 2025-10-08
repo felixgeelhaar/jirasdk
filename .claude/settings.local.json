@@ -47,7 +47,8 @@
       "Bash(gh repo edit:*)",
       "Bash(gh repo view:*)",
       "Bash(gh run list:*)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(gofmt:*)"
     ],
     "deny": [],
     "ask": []

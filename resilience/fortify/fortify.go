@@ -17,12 +17,12 @@ import (
 	"context"
 	"net/http"
 
-	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/fortify/bulkhead"
 	"github.com/felixgeelhaar/fortify/circuitbreaker"
 	"github.com/felixgeelhaar/fortify/ratelimit"
 	"github.com/felixgeelhaar/fortify/retry"
 	"github.com/felixgeelhaar/fortify/timeout"
+	jira "github.com/felixgeelhaar/jirasdk"
 )
 
 // Adapter adapts fortify resilience patterns to the jira-connect Resilience interface
@@ -48,6 +48,7 @@ func NewAdapter(config jira.ResilienceConfig) *Adapter {
 			Interval:    config.CircuitBreakerInterval,
 			Timeout:     config.CircuitBreakerTimeout,
 			ReadyToTrip: func(counts circuitbreaker.Counts) bool {
+				//nolint:gosec // G115: Safe conversion - config value is validated
 				return counts.ConsecutiveFailures >= uint32(config.CircuitBreakerThreshold)
 			},
 		})

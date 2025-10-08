@@ -58,9 +58,9 @@ type IssueFields struct {
 	// Use the type-safe CustomFields methods for setting/getting values
 	Custom CustomFields `json:"-"`
 
-	// unknownFields stores any additional fields from the API response
+	// UnknownFields stores any additional fields from the API response
 	// This includes both custom fields and any future fields added by Jira
-	unknownFields map[string]interface{}
+	UnknownFields map[string]interface{} `json:"-"`
 }
 
 // MarshalJSON implements custom JSON marshaling for IssueFields.
