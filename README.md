@@ -346,6 +346,42 @@ updates := issue.NewCustomFields().
 err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
     Fields: updates.ToMap(),
 })
+
+// Workflows
+// List all workflows
+workflows, err := client.Workflow.List(ctx, &workflow.ListOptions{
+    MaxResults: 50,
+})
+
+// Get specific workflow
+workflow, err := client.Workflow.Get(ctx, "classic-default-workflow")
+
+// Get available transitions for an issue
+transitions, err := client.Workflow.GetTransitions(ctx, "PROJ-123", &workflow.GetTransitionsOptions{
+    Expand: []string{"transitions.fields"},
+})
+
+// Get all statuses
+statuses, err := client.Workflow.GetAllStatuses(ctx)
+
+// Get specific status
+status, err := client.Workflow.GetStatus(ctx, "10000")
+
+// Workflow Schemes
+// List all workflow schemes
+schemes, err := client.Workflow.ListWorkflowSchemes(ctx, nil)
+
+// Get specific workflow scheme
+scheme, err := client.Workflow.GetWorkflowScheme(ctx, 10000)
+
+// Check required fields for transition
+for _, transition := range transitions {
+    for fieldKey, field := range transition.Fields {
+        if field.Required {
+            fmt.Printf("Field %s is required\n", field.Name)
+        }
+    }
+}
 ```
 
 ### Search
@@ -573,6 +609,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/oauth2](examples/oauth2/main.go)** - OAuth 2.0 authentication flow
 - **[examples/issuelinks](examples/issuelinks/main.go)** - Create and manage issue relationships
 - **[examples/worklogs](examples/worklogs/main.go)** - Time tracking and worklog management
+- **[examples/workflows](examples/workflows/main.go)** - Workflow configuration, transitions, statuses, and schemes
 
 ## Roadmap
 
@@ -600,7 +637,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - [x] OAuth 2.0 authentication
 
 ### Phase 4: Enterprise Features (In Progress)
-- [ ] Enhanced workflow operations
+- [x] Enhanced workflow operations (transitions, statuses, schemes)
 - [ ] Enhanced project configuration
 - [ ] Agile/Scrum features (boards, sprints, epics)
 - [ ] Permissions API

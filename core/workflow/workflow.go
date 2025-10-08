@@ -321,3 +321,109 @@ func (s *Service) GetStatus(ctx context.Context, statusID string) (*Status, erro
 
 	return &status, nil
 }
+
+// WorkflowScheme represents a workflow scheme that maps issue types to workflows.
+type WorkflowScheme struct {
+	ID                int64             `json:"id"`
+	Name              string            `json:"name"`
+	Description       string            `json:"description,omitempty"`
+	DefaultWorkflow   string            `json:"defaultWorkflow,omitempty"`
+	IssueTypeMappings map[string]string `json:"issueTypeMappings,omitempty"`
+	Draft             bool              `json:"draft"`
+	LastModifiedUser  *User             `json:"lastModifiedUser,omitempty"`
+	LastModified      string            `json:"lastModified,omitempty"`
+	Self              string            `json:"self,omitempty"`
+}
+
+// User represents a minimal user reference.
+type User struct {
+	AccountID    string `json:"accountId,omitempty"`
+	EmailAddress string `json:"emailAddress,omitempty"`
+	DisplayName  string `json:"displayName,omitempty"`
+	Active       bool   `json:"active"`
+}
+
+// GetWorkflowScheme retrieves a workflow scheme by ID.
+//
+// Example:
+//
+//	scheme, err := client.Workflow.GetWorkflowScheme(ctx, 10000)
+func (s *Service) GetWorkflowScheme(ctx context.Context, schemeID int64) (*WorkflowScheme, error) {
+	if schemeID <= 0 {
+		return nil, fmt.Errorf("workflow scheme ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/workflowscheme/%d", schemeID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var scheme WorkflowScheme
+	if err := s.transport.DecodeResponse(resp, &scheme); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &scheme, nil
+}
+
+// ListWorkflowSchemesOptions configures the ListWorkflowSchemes operation.
+type ListWorkflowSchemesOptions struct {
+	// StartAt is the starting index for pagination
+	StartAt int
+
+	// MaxResults limits the number of results
+	MaxResults int
+}
+
+// ListWorkflowSchemes retrieves all workflow schemes.
+//
+// Example:
+//
+//	schemes, err := client.Workflow.ListWorkflowSchemes(ctx, nil)
+func (s *Service) ListWorkflowSchemes(ctx context.Context, opts *ListWorkflowSchemesOptions) ([]*WorkflowScheme, error) {
+	path := "/rest/api/3/workflowscheme"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	if opts != nil {
+		q := req.URL.Query()
+		if opts.StartAt > 0 {
+			q.Set("startAt", fmt.Sprintf("%d", opts.StartAt))
+		}
+		if opts.MaxResults > 0 {
+			q.Set("maxResults", fmt.Sprintf("%d", opts.MaxResults))
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var result struct {
+		Values []*WorkflowScheme `json:"values"`
+	}
+	if err := s.transport.DecodeResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return result.Values, nil
+}
