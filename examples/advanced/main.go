@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	jira "github.com/felixgeelhaar/jirasdk"
@@ -18,8 +19,9 @@ func loggingMiddleware(next transport.RoundTripFunc) transport.RoundTripFunc {
 	return func(ctx context.Context, req *http.Request) (*http.Response, error) {
 		start := time.Now()
 
-		// Log request
-		log.Printf("[Request] %s %s", req.Method, req.URL.Path)
+		// Log request - sanitize URL path to prevent log injection
+		sanitizedPath := sanitizeForLog(req.URL.Path)
+		log.Printf("[Request] %s %s", req.Method, sanitizedPath)
 
 		// Execute request
 		resp, err := next(ctx, req)
@@ -107,4 +109,9 @@ func main() {
 			fmt.Printf("  Assignee: %s\n", issue.Fields.Assignee.DisplayName)
 		}
 	}
+}
+
+// sanitizeForLog removes newline characters from strings to prevent log injection attacks.
+func sanitizeForLog(s string) string {
+	return strings.NewReplacer("\n", "", "\r", "").Replace(s)
 }

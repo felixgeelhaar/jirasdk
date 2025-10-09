@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/jirasdk/auth"
@@ -157,7 +158,9 @@ func startCallbackServer() {
 		// }
 
 		fmt.Fprintf(w, "Authorization successful! Code: %s, State: %s", code, state)
-		fmt.Printf("Received code: %s\n", code)
+		// Sanitize user input before logging to prevent log injection
+		sanitizedCode := sanitizeForLog(code)
+		fmt.Printf("Received code: %s\n", sanitizedCode)
 
 		// Here you would exchange the code for a token
 		// and store it for future use
@@ -165,4 +168,9 @@ func startCallbackServer() {
 
 	fmt.Println("Starting callback server on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// sanitizeForLog removes newline characters from strings to prevent log injection attacks.
+func sanitizeForLog(s string) string {
+	return strings.NewReplacer("\n", "", "\r", "").Replace(s)
 }
