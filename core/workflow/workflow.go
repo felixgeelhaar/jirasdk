@@ -427,3 +427,319 @@ func (s *Service) ListWorkflowSchemes(ctx context.Context, opts *ListWorkflowSch
 
 	return result.Values, nil
 }
+
+// CreateWorkflowSchemeInput represents input for creating a workflow scheme.
+type CreateWorkflowSchemeInput struct {
+	Name              string            `json:"name"`
+	Description       string            `json:"description,omitempty"`
+	DefaultWorkflow   string            `json:"defaultWorkflow,omitempty"`
+	IssueTypeMappings map[string]string `json:"issueTypeMappings,omitempty"`
+}
+
+// CreateWorkflowScheme creates a new workflow scheme.
+//
+// Example:
+//
+//	scheme, err := client.Workflow.CreateWorkflowScheme(ctx, &workflow.CreateWorkflowSchemeInput{
+//		Name:            "My Workflow Scheme",
+//		Description:     "Custom workflow scheme",
+//		DefaultWorkflow: "classic-default-workflow",
+//		IssueTypeMappings: map[string]string{
+//			"10001": "software-simplified-workflow",
+//		},
+//	})
+func (s *Service) CreateWorkflowScheme(ctx context.Context, input *CreateWorkflowSchemeInput) (*WorkflowScheme, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is required")
+	}
+
+	if input.Name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+
+	path := "/rest/api/3/workflowscheme"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var scheme WorkflowScheme
+	if err := s.transport.DecodeResponse(resp, &scheme); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &scheme, nil
+}
+
+// UpdateWorkflowSchemeInput represents input for updating a workflow scheme.
+type UpdateWorkflowSchemeInput struct {
+	Name              string            `json:"name,omitempty"`
+	Description       string            `json:"description,omitempty"`
+	DefaultWorkflow   string            `json:"defaultWorkflow,omitempty"`
+	IssueTypeMappings map[string]string `json:"issueTypeMappings,omitempty"`
+}
+
+// UpdateWorkflowScheme updates a workflow scheme.
+//
+// Example:
+//
+//	scheme, err := client.Workflow.UpdateWorkflowScheme(ctx, 10000, &workflow.UpdateWorkflowSchemeInput{
+//		Description: "Updated description",
+//	})
+func (s *Service) UpdateWorkflowScheme(ctx context.Context, schemeID int64, input *UpdateWorkflowSchemeInput) (*WorkflowScheme, error) {
+	if schemeID <= 0 {
+		return nil, fmt.Errorf("workflow scheme ID is required")
+	}
+
+	if input == nil {
+		return nil, fmt.Errorf("input is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/workflowscheme/%d", schemeID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var scheme WorkflowScheme
+	if err := s.transport.DecodeResponse(resp, &scheme); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &scheme, nil
+}
+
+// DeleteWorkflowScheme deletes a workflow scheme.
+//
+// Example:
+//
+//	err := client.Workflow.DeleteWorkflowScheme(ctx, 10000)
+func (s *Service) DeleteWorkflowScheme(ctx context.Context, schemeID int64) error {
+	if schemeID <= 0 {
+		return fmt.Errorf("workflow scheme ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/workflowscheme/%d", schemeID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// GetStatusCategories retrieves all status categories.
+//
+// Example:
+//
+//	categories, err := client.Workflow.GetStatusCategories(ctx)
+func (s *Service) GetStatusCategories(ctx context.Context) ([]*StatusCategory, error) {
+	path := "/rest/api/3/statuscategory"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var categories []*StatusCategory
+	if err := s.transport.DecodeResponse(resp, &categories); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return categories, nil
+}
+
+// GetStatusCategory retrieves a status category by ID or key.
+//
+// Example:
+//
+//	category, err := client.Workflow.GetStatusCategory(ctx, "2")
+func (s *Service) GetStatusCategory(ctx context.Context, idOrKey string) (*StatusCategory, error) {
+	if idOrKey == "" {
+		return nil, fmt.Errorf("status category ID or key is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/statuscategory/%s", idOrKey)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var category StatusCategory
+	if err := s.transport.DecodeResponse(resp, &category); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &category, nil
+}
+
+// DoTransitionInput represents input for performing a transition.
+type DoTransitionInput struct {
+	Transition *TransitionInput       `json:"transition"`
+	Fields     map[string]interface{} `json:"fields,omitempty"`
+	Update     map[string]interface{} `json:"update,omitempty"`
+}
+
+// TransitionInput contains transition details.
+type TransitionInput struct {
+	ID string `json:"id"`
+}
+
+// DoTransition performs a workflow transition on an issue.
+//
+// Example:
+//
+//	err := client.Workflow.DoTransition(ctx, "PROJ-123", &workflow.DoTransitionInput{
+//		Transition: &workflow.TransitionInput{
+//			ID: "31",
+//		},
+//		Fields: map[string]interface{}{
+//			"resolution": map[string]string{
+//				"name": "Fixed",
+//			},
+//		},
+//	})
+func (s *Service) DoTransition(ctx context.Context, issueKeyOrID string, input *DoTransitionInput) error {
+	if issueKeyOrID == "" {
+		return fmt.Errorf("issue key or ID is required")
+	}
+
+	if input == nil || input.Transition == nil {
+		return fmt.Errorf("transition input is required")
+	}
+
+	if input.Transition.ID == "" {
+		return fmt.Errorf("transition ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/issue/%s/transitions", issueKeyOrID)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// WorkflowSchemeIssueType represents the issue type workflow mapping.
+type WorkflowSchemeIssueType struct {
+	IssueType    string `json:"issueType"`
+	Workflow     string `json:"workflow,omitempty"`
+	UpdateDraft  bool   `json:"updateDraftIfNeeded,omitempty"`
+}
+
+// SetWorkflowSchemeIssueType sets the workflow for an issue type in a workflow scheme.
+//
+// Example:
+//
+//	err := client.Workflow.SetWorkflowSchemeIssueType(ctx, 10000, &workflow.WorkflowSchemeIssueType{
+//		IssueType: "10001",
+//		Workflow:  "software-simplified-workflow",
+//	})
+func (s *Service) SetWorkflowSchemeIssueType(ctx context.Context, schemeID int64, input *WorkflowSchemeIssueType) error {
+	if schemeID <= 0 {
+		return fmt.Errorf("workflow scheme ID is required")
+	}
+
+	if input == nil || input.IssueType == "" {
+		return fmt.Errorf("issue type is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/workflowscheme/%d/issuetype/%s", schemeID, input.IssueType)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, input)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// DeleteWorkflowSchemeIssueType removes the workflow for an issue type in a workflow scheme.
+//
+// Example:
+//
+//	err := client.Workflow.DeleteWorkflowSchemeIssueType(ctx, 10000, "10001")
+func (s *Service) DeleteWorkflowSchemeIssueType(ctx context.Context, schemeID int64, issueType string) error {
+	if schemeID <= 0 {
+		return fmt.Errorf("workflow scheme ID is required")
+	}
+
+	if issueType == "" {
+		return fmt.Errorf("issue type is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/workflowscheme/%d/issuetype/%s", schemeID, issueType)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}

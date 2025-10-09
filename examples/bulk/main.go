@@ -145,7 +145,7 @@ func main() {
 	fmt.Println("3. Or use WaitForCompletion() to block until done")
 	fmt.Println()
 	fmt.Println("Example code:")
-	fmt.Println(`
+	exampleCode := `
     // Option 1: Poll manually
     taskID := "returned-task-id"
     progress, err := client.Bulk.GetProgress(ctx, taskID)
@@ -163,7 +163,8 @@ func main() {
     if progress.Status == bulk.BulkOperationStatusComplete {
         fmt.Printf("Success! Processed %d items\n", progress.Result.SuccessCount)
     }
-	`)
+	`
+	fmt.Print(exampleCode)
 
 	// Example 4: Demonstrating best practices
 	fmt.Println("\n=== Best Practices for Bulk Operations ===")

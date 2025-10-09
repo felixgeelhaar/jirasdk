@@ -784,6 +784,280 @@ statuses, err := client.Workflow.GetAllStatuses(ctx)
 
 // Get specific status
 status, err := client.Workflow.GetStatus(ctx, "10000")
+
+// Do transition on an issue
+err = client.Workflow.DoTransition(ctx, "PROJ-123", &workflow.DoTransitionInput{
+    Transition: &workflow.Transition{ID: "21"},
+    Fields: map[string]interface{}{
+        "resolution": map[string]string{"name": "Fixed"},
+    },
+})
+
+// Status Categories
+categories, err := client.Workflow.GetStatusCategories(ctx)
+category, err := client.Workflow.GetStatusCategory(ctx, "2")
+
+// Workflow Schemes
+schemes, err := client.Workflow.ListWorkflowSchemes(ctx, nil)
+scheme, err := client.Workflow.GetWorkflowScheme(ctx, 10000)
+
+// Create workflow scheme
+newScheme, err := client.Workflow.CreateWorkflowScheme(ctx, &workflow.CreateWorkflowSchemeInput{
+    Name:        "Development Workflow",
+    Description: "Custom workflow for dev team",
+})
+
+// Update workflow scheme
+updated, err := client.Workflow.UpdateWorkflowScheme(ctx, 10000, &workflow.UpdateWorkflowSchemeInput{
+    Name: "Updated Workflow",
+})
+
+// Delete workflow scheme
+err = client.Workflow.DeleteWorkflowScheme(ctx, 10000)
+```
+
+### Dashboards
+
+```go
+// List all dashboards
+dashboards, err := client.Dashboard.List(ctx, &dashboard.ListOptions{
+    MaxResults: 50,
+})
+
+// Get specific dashboard
+dash, err := client.Dashboard.Get(ctx, "10000")
+
+// Create dashboard
+newDash, err := client.Dashboard.Create(ctx, &dashboard.CreateDashboardInput{
+    Name:        "Team Dashboard",
+    Description: "Dashboard for team metrics",
+    SharePermissions: []*dashboard.SharePermission{
+        {Type: "global"},
+    },
+})
+
+// Update dashboard
+updated, err := client.Dashboard.Update(ctx, "10000", &dashboard.UpdateDashboardInput{
+    Name:        "Updated Dashboard",
+    Description: "New description",
+})
+
+// Delete dashboard
+err = client.Dashboard.Delete(ctx, "10000")
+
+// Copy dashboard
+copy, err := client.Dashboard.Copy(ctx, "10000", &dashboard.CreateDashboardInput{
+    Name: "Copied Dashboard",
+})
+
+// Dashboard Gadgets
+// List gadgets on a dashboard
+gadgets, err := client.Dashboard.GetGadgets(ctx, "10000")
+
+// Add gadget to dashboard
+newGadget, err := client.Dashboard.AddGadget(ctx, "10000", &dashboard.DashboardGadget{
+    ModuleKey: "com.atlassian.jira.gadgets:filter-results-gadget",
+    Position: &dashboard.GadgetPosition{
+        Row:    0,
+        Column: 0,
+    },
+    Properties: map[string]interface{}{
+        "filterId": "10001",
+    },
+})
+
+// Update gadget
+updated, err = client.Dashboard.UpdateGadget(ctx, "10000", 12345, &dashboard.DashboardGadget{
+    Position: &dashboard.GadgetPosition{
+        Row:    1,
+        Column: 1,
+    },
+})
+
+// Remove gadget
+err = client.Dashboard.RemoveGadget(ctx, "10000", 12345)
+```
+
+### Groups
+
+```go
+// Find groups
+groups, err := client.Group.Find(ctx, &group.FindOptions{
+    Query:      "developers",
+    MaxResults: 50,
+})
+
+// Get group details
+grp, err := client.Group.Get(ctx, &group.GetOptions{
+    GroupName: "jira-developers",
+    Expand:    []string{"users"},
+})
+
+// Create group
+newGroup, err := client.Group.Create(ctx, &group.CreateGroupInput{
+    Name: "new-team",
+})
+
+// Delete group
+err = client.Group.Delete(ctx, &group.DeleteOptions{
+    GroupName: "old-team",
+})
+
+// Group Membership
+// Get group members
+members, err := client.Group.GetMembers(ctx, &group.GetMembersOptions{
+    GroupName:  "jira-developers",
+    MaxResults: 50,
+})
+
+// Add user to group
+updated, err := client.Group.AddUser(ctx, &group.AddUserOptions{
+    GroupName: "jira-developers",
+    AccountID: "accountId123",
+})
+
+// Remove user from group
+err = client.Group.RemoveUser(ctx, &group.RemoveUserOptions{
+    GroupName: "jira-developers",
+    AccountID: "accountId123",
+})
+
+// Bulk get groups
+groups, err = client.Group.BulkGet(ctx, &group.BulkOptions{
+    GroupNames: []string{"team-1", "team-2", "team-3"},
+})
+```
+
+### Application Properties
+
+```go
+// Get advanced settings
+settings, err := client.AppProperties.GetAdvancedSettings(ctx)
+for _, setting := range settings {
+    fmt.Printf("%s = %s\n", setting.Key, setting.Value)
+}
+
+// Get specific application property
+prop, err := client.AppProperties.GetApplicationProperty(ctx, "jira.title")
+fmt.Printf("Jira Title: %s\n", prop.Value)
+
+// Set application property
+err = client.AppProperties.SetApplicationProperty(ctx, &appproperties.SetApplicationPropertyInput{
+    Key:   "custom.setting",
+    Value: "custom-value",
+})
+```
+
+### Server Info
+
+```go
+// Get server information
+info, err := client.ServerInfo.Get(ctx)
+fmt.Printf("Jira Version: %s\n", info.Version)
+fmt.Printf("Build: %d\n", info.BuildNumber)
+fmt.Printf("Deployment Type: %s\n", info.DeploymentType)
+
+// Get server configuration
+config, err := client.ServerInfo.GetConfiguration(ctx)
+fmt.Printf("Voting enabled: %v\n", config.VotingEnabled)
+fmt.Printf("Time tracking enabled: %v\n", config.TimeTrackingEnabled)
+fmt.Printf("Working hours per day: %.1f\n", config.TimeTrackingConfiguration.WorkingHoursPerDay)
+```
+
+### Myself (Current User)
+
+```go
+// Get current user
+user, err := client.Myself.Get(ctx)
+fmt.Printf("Display Name: %s\n", user.DisplayName)
+fmt.Printf("Email: %s\n", user.EmailAddress)
+fmt.Printf("Locale: %s\n", user.Locale)
+
+// Get user preferences
+prefs, err := client.Myself.GetPreferences(ctx)
+fmt.Printf("Timezone: %s\n", prefs.TimeZone)
+
+// Set user preferences
+err = client.Myself.SetPreferences(ctx, &myself.Preferences{
+    Locale:   "en_US",
+    TimeZone: "America/New_York",
+})
+
+// Get specific preference
+locale, err := client.Myself.GetPreference(ctx, "locale")
+
+// Set specific preference
+err = client.Myself.SetPreference(ctx, "locale", "de_DE")
+
+// Delete preference
+err = client.Myself.DeletePreference(ctx, "customSetting")
+```
+
+### Jira Expressions
+
+```go
+// Evaluate a Jira expression
+result, err := client.Expression.Evaluate(ctx, &expression.EvaluationInput{
+    Expression: "issue.summary",
+    Context: map[string]interface{}{
+        "issue": map[string]interface{}{
+            "key": "PROJ-123",
+        },
+    },
+})
+fmt.Printf("Result: %v\n", result.Value)
+
+// Check for evaluation errors
+if len(result.Errors) > 0 {
+    for _, evalErr := range result.Errors {
+        fmt.Printf("Error: %s at line %d\n", evalErr.Message, evalErr.Line)
+    }
+}
+
+// Analyze expressions for syntax and complexity
+analysis, err := client.Expression.Analyze(ctx, &expression.AnalysisInput{
+    Expressions: []string{
+        "issue.summary",
+        "user.displayName",
+        "project.key + '-' + issue.id",
+    },
+})
+
+for _, result := range analysis.Results {
+    fmt.Printf("Expression: %s\n", result.Expression)
+    fmt.Printf("Valid: %v\n", result.Valid)
+    if result.Complexity != nil {
+        fmt.Printf("Steps: %d\n", result.Complexity.Steps)
+    }
+}
+```
+
+### Issue Link Types
+
+```go
+// List all issue link types
+linkTypes, err := client.IssueLinkType.List(ctx)
+for _, lt := range linkTypes {
+    fmt.Printf("%s: %s / %s\n", lt.Name, lt.Inward, lt.Outward)
+}
+
+// Get specific issue link type
+linkType, err := client.IssueLinkType.Get(ctx, "10000")
+
+// Create custom issue link type
+newType, err := client.IssueLinkType.Create(ctx, &issuelinktype.CreateInput{
+    Name:    "Dependency",
+    Inward:  "depends on",
+    Outward: "is depended on by",
+})
+
+// Update issue link type
+updated, err := client.IssueLinkType.Update(ctx, "10000", &issuelinktype.UpdateInput{
+    Name: "Updated Dependency",
+})
+
+// Delete issue link type
+err = client.IssueLinkType.Delete(ctx, "10000")
 ```
 
 ## Architecture
@@ -901,6 +1175,11 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/agile](examples/agile/main.go)** - Agile boards, sprints, epics, and backlog management
 - **[examples/permissions](examples/permissions/main.go)** - Permission checking, schemes, and project role management
 - **[examples/bulk](examples/bulk/main.go)** - Bulk operations for creating and deleting multiple issues efficiently
+- **[examples/dashboards](examples/dashboards/main.go)** - Dashboard and gadget management with CRUD operations
+- **[examples/groups](examples/groups/main.go)** - Group administration, membership control, and bulk operations
+- **[examples/serverinfo](examples/serverinfo/main.go)** - Server information, configuration, and instance metadata
+- **[examples/expressions](examples/expressions/main.go)** - Jira expression evaluation, analysis, and complexity checking
+- **[examples/issuelinktypes](examples/issuelinktypes/main.go)** - Custom issue link type management and best practices
 - **[examples/observability](examples/observability/main.go)** - Structured logging with bolt for zero-allocation observability
 - **[examples/resilience](examples/resilience/main.go)** - Production-grade resilience patterns with circuit breakers, retry, rate limiting, timeouts, and bulkheads
 - **[examples/environment](examples/environment/main.go)** - Environment variable configuration following AWS SDK and Azure SDK patterns
@@ -1134,7 +1413,18 @@ See [examples/resilience](examples/resilience/main.go) for complete examples inc
 - [x] Timeout enforcement with context propagation
 - [x] Bulkheads for concurrency control
 
-### Phase 6: Metrics & Advanced Features 📋 **Planned**
+### Phase 6: Extended API Coverage ✅ **Complete**
+- [x] Dashboard management (CRUD operations, gadget management)
+- [x] Group administration (membership, bulk operations)
+- [x] Application properties (advanced settings, configuration)
+- [x] Server information (instance metadata, health checks)
+- [x] Current user preferences (locale, timezone, custom settings)
+- [x] Jira Expressions (evaluation, analysis, complexity checking)
+- [x] Issue Link Types (custom relationship management)
+- [x] Enhanced User operations (properties, groups, permissions)
+- [x] Enhanced Workflow operations (schemes, status categories, transitions)
+
+### Phase 7: Metrics & Advanced Features 📋 **Planned**
 - [ ] Prometheus metrics integration
 - [ ] Webhook support for Jira events
 - [ ] Connection pooling optimization

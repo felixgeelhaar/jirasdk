@@ -489,3 +489,389 @@ func (s *Service) GetDefaultColumns(ctx context.Context, accountID string) ([]st
 
 	return result, nil
 }
+
+// SetDefaultColumns sets the default issue table columns for the user.
+//
+// Example:
+//
+//	err := client.User.SetDefaultColumns(ctx, []string{"issuekey", "summary", "priority", "status"})
+func (s *Service) SetDefaultColumns(ctx context.Context, columns []string) error {
+	if len(columns) == 0 {
+		return fmt.Errorf("at least one column is required")
+	}
+
+	path := "/rest/api/3/user/columns"
+
+	// Create request with column IDs
+	input := make([]string, len(columns))
+	copy(input, columns)
+
+	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, input)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// ResetDefaultColumns resets the default issue table columns to system defaults.
+//
+// Example:
+//
+//	err := client.User.ResetDefaultColumns(ctx, "5b10a2844c20165700ede21g")
+func (s *Service) ResetDefaultColumns(ctx context.Context, accountID string) error {
+	if accountID == "" {
+		return fmt.Errorf("account ID is required")
+	}
+
+	path := "/rest/api/3/user/columns"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	q := req.URL.Query()
+	q.Set("accountId", accountID)
+	req.URL.RawQuery = q.Encode()
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// UserProperty represents a user property.
+type UserProperty struct {
+	Key   string      `json:"key"`
+	Value interface{} `json:"value"`
+}
+
+// GetUserProperty retrieves a user property.
+//
+// Example:
+//
+//	property, err := client.User.GetUserProperty(ctx, "5b10a2844c20165700ede21g", "myProperty")
+func (s *Service) GetUserProperty(ctx context.Context, accountID, propertyKey string) (*UserProperty, error) {
+	if accountID == "" {
+		return nil, fmt.Errorf("account ID is required")
+	}
+
+	if propertyKey == "" {
+		return nil, fmt.Errorf("property key is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/user/properties/%s", propertyKey)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	q := req.URL.Query()
+	q.Set("accountId", accountID)
+	req.URL.RawQuery = q.Encode()
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var property UserProperty
+	if err := s.transport.DecodeResponse(resp, &property); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &property, nil
+}
+
+// SetUserProperty sets a user property.
+//
+// Example:
+//
+//	err := client.User.SetUserProperty(ctx, "5b10a2844c20165700ede21g", "myProperty", map[string]string{"theme": "dark"})
+func (s *Service) SetUserProperty(ctx context.Context, accountID, propertyKey string, value interface{}) error {
+	if accountID == "" {
+		return fmt.Errorf("account ID is required")
+	}
+
+	if propertyKey == "" {
+		return fmt.Errorf("property key is required")
+	}
+
+	if value == nil {
+		return fmt.Errorf("value is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/user/properties/%s", propertyKey)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, value)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	q := req.URL.Query()
+	q.Set("accountId", accountID)
+	req.URL.RawQuery = q.Encode()
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// DeleteUserProperty deletes a user property.
+//
+// Example:
+//
+//	err := client.User.DeleteUserProperty(ctx, "5b10a2844c20165700ede21g", "myProperty")
+func (s *Service) DeleteUserProperty(ctx context.Context, accountID, propertyKey string) error {
+	if accountID == "" {
+		return fmt.Errorf("account ID is required")
+	}
+
+	if propertyKey == "" {
+		return fmt.Errorf("property key is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/user/properties/%s", propertyKey)
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	q := req.URL.Query()
+	q.Set("accountId", accountID)
+	req.URL.RawQuery = q.Encode()
+
+	// Execute request
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// GetUserGroups retrieves groups the user belongs to.
+//
+// Example:
+//
+//	groups, err := client.User.GetUserGroups(ctx, "5b10a2844c20165700ede21g")
+func (s *Service) GetUserGroups(ctx context.Context, accountID string) ([]*GroupItem, error) {
+	if accountID == "" {
+		return nil, fmt.Errorf("account ID is required")
+	}
+
+	path := "/rest/api/3/user/groups"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	q := req.URL.Query()
+	q.Set("accountId", accountID)
+	req.URL.RawQuery = q.Encode()
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var groups []*GroupItem
+	if err := s.transport.DecodeResponse(resp, &groups); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return groups, nil
+}
+
+// FindUsersWithAllPermissionsOptions configures finding users with permissions.
+type FindUsersWithAllPermissionsOptions struct {
+	// Permissions is the list of permissions to check
+	Permissions []string
+
+	// IssueKey filters by issue key
+	IssueKey string
+
+	// ProjectKey filters by project key
+	ProjectKey string
+
+	// Query is the search query string
+	Query string
+
+	// MaxResults is the maximum number of results
+	MaxResults int
+
+	// StartAt is the index of the first result
+	StartAt int
+}
+
+// FindUsersWithAllPermissions finds users with specific permissions.
+//
+// Example:
+//
+//	users, err := client.User.FindUsersWithAllPermissions(ctx, &user.FindUsersWithAllPermissionsOptions{
+//		Permissions: []string{"EDIT_ISSUES", "DELETE_ISSUES"},
+//		ProjectKey:  "PROJ",
+//		Query:       "john",
+//	})
+func (s *Service) FindUsersWithAllPermissions(ctx context.Context, opts *FindUsersWithAllPermissionsOptions) ([]*User, error) {
+	if opts == nil || len(opts.Permissions) == 0 {
+		return nil, fmt.Errorf("at least one permission is required")
+	}
+
+	path := "/rest/api/3/user/permission/search"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	q := req.URL.Query()
+
+	q.Set("permissions", strings.Join(opts.Permissions, ","))
+
+	if opts.IssueKey != "" {
+		q.Set("issueKey", opts.IssueKey)
+	}
+
+	if opts.ProjectKey != "" {
+		q.Set("projectKey", opts.ProjectKey)
+	}
+
+	if opts.Query != "" {
+		q.Set("query", opts.Query)
+	}
+
+	if opts.MaxResults > 0 {
+		q.Set("maxResults", fmt.Sprintf("%d", opts.MaxResults))
+	}
+
+	if opts.StartAt > 0 {
+		q.Set("startAt", fmt.Sprintf("%d", opts.StartAt))
+	}
+
+	req.URL.RawQuery = q.Encode()
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var users []*User
+	if err := s.transport.DecodeResponse(resp, &users); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return users, nil
+}
+
+// FindUsersWithBrowsePermissionOptions configures finding users with browse permission.
+type FindUsersWithBrowsePermissionOptions struct {
+	// Query is the search query string
+	Query string
+
+	// IssueKey filters by issue key
+	IssueKey string
+
+	// ProjectKey filters by project key
+	ProjectKey string
+
+	// MaxResults is the maximum number of results
+	MaxResults int
+
+	// StartAt is the index of the first result
+	StartAt int
+}
+
+// FindUsersWithBrowsePermission finds users with browse permission.
+//
+// Example:
+//
+//	users, err := client.User.FindUsersWithBrowsePermission(ctx, &user.FindUsersWithBrowsePermissionOptions{
+//		ProjectKey: "PROJ",
+//		Query:      "john",
+//	})
+func (s *Service) FindUsersWithBrowsePermission(ctx context.Context, opts *FindUsersWithBrowsePermissionOptions) ([]*User, error) {
+	path := "/rest/api/3/user/viewissue/search"
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add query parameters
+	if opts != nil {
+		q := req.URL.Query()
+
+		if opts.Query != "" {
+			q.Set("query", opts.Query)
+		}
+
+		if opts.IssueKey != "" {
+			q.Set("issueKey", opts.IssueKey)
+		}
+
+		if opts.ProjectKey != "" {
+			q.Set("projectKey", opts.ProjectKey)
+		}
+
+		if opts.MaxResults > 0 {
+			q.Set("maxResults", fmt.Sprintf("%d", opts.MaxResults))
+		}
+
+		if opts.StartAt > 0 {
+			q.Set("startAt", fmt.Sprintf("%d", opts.StartAt))
+		}
+
+		req.URL.RawQuery = q.Encode()
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var users []*User
+	if err := s.transport.DecodeResponse(resp, &users); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return users, nil
+}
