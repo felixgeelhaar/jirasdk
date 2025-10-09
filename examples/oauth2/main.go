@@ -159,7 +159,7 @@ func startCallbackServer() {
 
 		fmt.Fprintf(w, "Authorization successful! Code: %s, State: %s", code, state)
 		// Sanitize user input before logging to prevent log injection
-		sanitizedCode := strings.ReplaceAll(strings.ReplaceAll(code, "\n", ""), "\r", "")
+		sanitizedCode := sanitizeForLog(code)
 		fmt.Printf("Received code: %s\n", sanitizedCode)
 
 		// Here you would exchange the code for a token
@@ -168,4 +168,9 @@ func startCallbackServer() {
 
 	fmt.Println("Starting callback server on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// sanitizeForLog removes newline characters from strings to prevent log injection attacks.
+func sanitizeForLog(s string) string {
+	return strings.NewReplacer("\n", "", "\r", "").Replace(s)
 }

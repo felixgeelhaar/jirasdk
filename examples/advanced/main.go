@@ -20,7 +20,7 @@ func loggingMiddleware(next transport.RoundTripFunc) transport.RoundTripFunc {
 		start := time.Now()
 
 		// Log request - sanitize URL path to prevent log injection
-		sanitizedPath := strings.ReplaceAll(strings.ReplaceAll(req.URL.Path, "\n", ""), "\r", "")
+		sanitizedPath := sanitizeForLog(req.URL.Path)
 		log.Printf("[Request] %s %s", req.Method, sanitizedPath)
 
 		// Execute request
@@ -109,4 +109,9 @@ func main() {
 			fmt.Printf("  Assignee: %s\n", issue.Fields.Assignee.DisplayName)
 		}
 	}
+}
+
+// sanitizeForLog removes newline characters from strings to prevent log injection attacks.
+func sanitizeForLog(s string) string {
+	return strings.NewReplacer("\n", "", "\r", "").Replace(s)
 }
