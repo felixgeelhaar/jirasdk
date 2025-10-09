@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-01-09
+
+### Security
+- **Fixed log injection vulnerabilities (CWE-117)** in example code
+  - Sanitized user input in OAuth2 callback handler (`examples/oauth2/main.go`)
+  - Sanitized URL paths in logging middleware (`examples/advanced/main.go`)
+  - Implemented `sanitizeForLog()` helper using `strings.NewReplacer` for improved readability
+
 ### Added - Phase 6: Extended API Coverage
 
 #### New Services (7 services, 38 new methods)

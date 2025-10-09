@@ -78,41 +78,13 @@ jobs:
         # Write to file to handle multiline
         echo "$CHANGELOG" > /tmp/changelog.txt
 
-    - name: Build release artifacts
-      run: |
-        mkdir -p dist
-
-        # Build for multiple platforms
-        GOOS=linux GOARCH=amd64 go build -v -o dist/jirasdk-linux-amd64 ./...
-        GOOS=linux GOARCH=arm64 go build -v -o dist/jirasdk-linux-arm64 ./...
-        GOOS=darwin GOARCH=amd64 go build -v -o dist/jirasdk-darwin-amd64 ./...
-        GOOS=darwin GOARCH=arm64 go build -v -o dist/jirasdk-darwin-arm64 ./...
-        GOOS=windows GOARCH=amd64 go build -v -o dist/jirasdk-windows-amd64.exe ./...
-
-    - name: Create release archives
-      run: |
-        cd dist
-        for file in jirasdk-*; do
-          if [[ "$file" == *.exe ]]; then
-            zip "${file%.exe}.zip" "$file"
-          else
-            tar -czf "${file}.tar.gz" "$file"
-          fi
-        done
-
-    - name: Generate checksum
-      run: |
-        cd dist
-        sha256sum *.tar.gz *.zip > checksums.txt
+    # Note: jirasdk is a library, not an application, so we don't build binaries
+    # Users will install it via: go get github.com/felixgeelhaar/jirasdk@vX.Y.Z
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         body_path: /tmp/changelog.txt
-        files: |
-          dist/*.tar.gz
-          dist/*.zip
-          dist/checksums.txt
         draft: false
         prerelease: ${{ contains(steps.get_version.outputs.VERSION, '-rc') || contains(steps.get_version.outputs.VERSION, '-beta') || contains(steps.get_version.outputs.VERSION, '-alpha') }}
       env:
