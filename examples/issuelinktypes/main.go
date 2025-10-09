@@ -100,7 +100,7 @@ func main() {
 	}
 
 	// Example 5: Common Link Type Patterns
-	fmt.Println("\n=== Common Link Type Patterns ===\n")
+	fmt.Println("\n=== Common Link Type Patterns ===")
 
 	patterns := []struct {
 		name    string
@@ -197,7 +197,7 @@ func main() {
 	}
 
 	// Example 7: Understanding Link Directionality
-	fmt.Println("\n=== Understanding Link Directionality ===\n")
+	fmt.Println("\n=== Understanding Link Directionality ===")
 
 	fmt.Println("When creating a link from Issue A to Issue B:")
 	fmt.Println()
@@ -223,7 +223,7 @@ func main() {
 	fmt.Println("  - On PROJ-456: 'is blocked by PROJ-123' (inward)")
 
 	// Example 8: Best Practices
-	fmt.Println("\n=== Best Practices for Issue Link Types ===\n")
+	fmt.Println("\n=== Best Practices for Issue Link Types ===")
 
 	fmt.Println("✅ DO:")
 	fmt.Println("  - Use clear, descriptive names")
@@ -242,7 +242,7 @@ func main() {
 	fmt.Println()
 
 	// Example 9: Design Considerations
-	fmt.Println("=== Link Type Design Considerations ===\n")
+	fmt.Println("=== Link Type Design Considerations ===")
 
 	considerations := []struct {
 		question string

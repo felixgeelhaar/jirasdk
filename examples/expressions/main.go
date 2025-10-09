@@ -156,7 +156,7 @@ func main() {
 	}
 
 	// Example 6: Common Expression Patterns
-	fmt.Println("=== Common Expression Patterns ===\n")
+	fmt.Println("=== Common Expression Patterns ===")
 
 	patterns := []struct {
 		name       string
@@ -206,7 +206,7 @@ func main() {
 	}
 
 	// Example 7: Error Handling in Expressions
-	fmt.Println("=== Error Handling Examples ===\n")
+	fmt.Println("=== Error Handling Examples ===")
 
 	errorExpressions := []string{
 		"issue.nonExistentField",
@@ -240,7 +240,7 @@ func main() {
 	}
 
 	// Example 8: Expression Performance Analysis
-	fmt.Println("=== Expression Performance Analysis ===\n")
+	fmt.Println("=== Expression Performance Analysis ===")
 
 	performanceTests := []string{
 		"1 + 1",                                // Simple
@@ -278,7 +278,7 @@ func main() {
 	}
 
 	// Example 9: Best Practices Summary
-	fmt.Println("=== Best Practices for Jira Expressions ===\n")
+	fmt.Println("=== Best Practices for Jira Expressions ===")
 
 	fmt.Println("✅ DO:")
 	fmt.Println("  - Use null-safe navigation (?.)")
