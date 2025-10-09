@@ -7,7 +7,52 @@
 //   - Rate limiting and quota management
 //   - Type-safe domain models
 //
-// Example usage:
+// # Core Services
+//
+// The client provides access to 27 domain services covering all major Jira REST API v3 endpoints:
+//
+// Issues & Projects:
+//   - Issue: Complete issue lifecycle (CRUD, transitions, comments, attachments, links, worklogs)
+//   - Project: Project management (CRUD, components, versions, archiving)
+//   - IssueType: Issue type configuration and schemes
+//   - Field: Custom and system field management
+//   - Label: Label operations
+//
+// Search & Filtering:
+//   - Search: JQL-based search with QueryBuilder
+//   - Filter: Saved filter management
+//
+// Workflows:
+//   - Workflow: Workflow management, transitions, statuses, schemes
+//   - Resolution: Resolution configuration
+//   - Priority: Priority management
+//   - Screen: Screen configuration
+//
+// Agile/Scrum:
+//   - Agile: Boards, sprints, epics, backlog management
+//
+// Users & Permissions:
+//   - User: User operations, properties, groups, permissions
+//   - Myself: Current user preferences and settings
+//   - Group: Group administration and membership
+//   - Permission: Permission schemes and project roles
+//   - SecurityLevel: Security level management
+//
+// Administration:
+//   - Dashboard: Dashboard and gadget management
+//   - Webhook: Webhook configuration
+//   - Notification: Notification schemes
+//   - TimeTracking: Time tracking configuration
+//   - Audit: Audit log access
+//   - AppProperties: Application properties and advanced settings
+//   - ServerInfo: Server information and configuration
+//
+// Advanced:
+//   - Expression: Jira expression evaluation and analysis
+//   - IssueLinkType: Custom issue relationship types
+//   - Bulk: Bulk operations for issues
+//
+// # Example Usage
 //
 //	client, err := jirasdk.NewClient(
 //		jirasdk.WithBaseURL("https://your-domain.atlassian.net"),
@@ -18,10 +63,60 @@
 //		log.Fatal(err)
 //	}
 //
-//	issue, err := client.Issue.Get(ctx, "PROJ-123")
+//	// Get an issue
+//	issue, err := client.Issue.Get(ctx, "PROJ-123", nil)
 //	if err != nil {
 //		log.Fatal(err)
 //	}
+//
+//	// Search with JQL
+//	results, err := client.Search.Search(ctx, &search.SearchOptions{
+//		JQL: "project = PROJ AND status = Open",
+//		MaxResults: 50,
+//	})
+//
+//	// Manage dashboards
+//	dashboards, err := client.Dashboard.List(ctx, nil)
+//
+//	// Evaluate Jira expressions
+//	result, err := client.Expression.Evaluate(ctx, &expression.EvaluationInput{
+//		Expression: "issue.summary",
+//	})
+//
+// # Environment Variables
+//
+// The client supports automatic configuration from environment variables:
+//
+//	export JIRA_BASE_URL="https://your-domain.atlassian.net"
+//	export JIRA_EMAIL="user@example.com"
+//	export JIRA_API_TOKEN="your-api-token"
+//
+//	client, err := jirasdk.LoadConfigFromEnv()
+//
+// # Observability & Resilience
+//
+// Integrated with bolt for zero-allocation structured logging and fortify for
+// production-grade resilience patterns (circuit breakers, retry, rate limiting,
+// timeouts, bulkheads).
+//
+//	import (
+//		jira "github.com/felixgeelhaar/jirasdk"
+//		boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
+//		"github.com/felixgeelhaar/jirasdk/resilience/fortify"
+//		"github.com/felixgeelhaar/bolt"
+//	)
+//
+//	logger := bolt.New(bolt.NewJSONHandler(os.Stdout))
+//	resilience := fortify.NewAdapter(jira.DefaultResilienceConfig())
+//
+//	client, err := jira.NewClient(
+//		jira.WithBaseURL(baseURL),
+//		jira.WithAPIToken(email, token),
+//		jira.WithLogger(boltadapter.NewAdapter(logger)),
+//		jira.WithResilience(resilience),
+//	)
+//
+// For more examples, see https://github.com/felixgeelhaar/jirasdk/tree/main/examples
 package jirasdk
 
 import (
@@ -33,12 +128,31 @@ import (
 
 	"github.com/felixgeelhaar/jirasdk/auth"
 	"github.com/felixgeelhaar/jirasdk/core/agile"
+	"github.com/felixgeelhaar/jirasdk/core/appproperties"
+	"github.com/felixgeelhaar/jirasdk/core/audit"
 	"github.com/felixgeelhaar/jirasdk/core/bulk"
+	"github.com/felixgeelhaar/jirasdk/core/dashboard"
+	"github.com/felixgeelhaar/jirasdk/core/expression"
+	"github.com/felixgeelhaar/jirasdk/core/field"
+	"github.com/felixgeelhaar/jirasdk/core/filter"
+	"github.com/felixgeelhaar/jirasdk/core/group"
 	"github.com/felixgeelhaar/jirasdk/core/issue"
+	"github.com/felixgeelhaar/jirasdk/core/issuelinktype"
+	"github.com/felixgeelhaar/jirasdk/core/issuetype"
+	"github.com/felixgeelhaar/jirasdk/core/label"
+	"github.com/felixgeelhaar/jirasdk/core/myself"
+	"github.com/felixgeelhaar/jirasdk/core/notification"
 	"github.com/felixgeelhaar/jirasdk/core/permission"
+	"github.com/felixgeelhaar/jirasdk/core/priority"
 	"github.com/felixgeelhaar/jirasdk/core/project"
+	"github.com/felixgeelhaar/jirasdk/core/resolution"
+	"github.com/felixgeelhaar/jirasdk/core/screen"
 	"github.com/felixgeelhaar/jirasdk/core/search"
+	"github.com/felixgeelhaar/jirasdk/core/securitylevel"
+	"github.com/felixgeelhaar/jirasdk/core/serverinfo"
+	"github.com/felixgeelhaar/jirasdk/core/timetracking"
 	"github.com/felixgeelhaar/jirasdk/core/user"
+	"github.com/felixgeelhaar/jirasdk/core/webhook"
 	"github.com/felixgeelhaar/jirasdk/core/workflow"
 	"github.com/felixgeelhaar/jirasdk/transport"
 )
@@ -69,14 +183,33 @@ type Client struct {
 	Transport *transport.Transport
 
 	// Domain service clients
-	Issue      *issue.Service
-	Project    *project.Service
-	User       *user.Service
-	Workflow   *workflow.Service
-	Search     *search.Service
-	Agile      *agile.Service
-	Permission *permission.Service
-	Bulk       *bulk.Service
+	Issue         *issue.Service
+	Project       *project.Service
+	User          *user.Service
+	Workflow      *workflow.Service
+	Search        *search.Service
+	Agile         *agile.Service
+	Permission    *permission.Service
+	Bulk          *bulk.Service
+	Filter        *filter.Service
+	Field         *field.Service
+	Label         *label.Service
+	IssueType     *issuetype.Service
+	Screen        *screen.Service
+	Priority      *priority.Service
+	Resolution    *resolution.Service
+	SecurityLevel *securitylevel.Service
+	Notification  *notification.Service
+	Webhook       *webhook.Service
+	TimeTracking  *timetracking.Service
+	Audit         *audit.Service
+	Dashboard     *dashboard.Service
+	Group         *group.Service
+	AppProperties *appproperties.Service
+	ServerInfo    *serverinfo.Service
+	Myself        *myself.Service
+	Expression    *expression.Service
+	IssueLinkType *issuelinktype.Service
 }
 
 // Config holds the client configuration.
@@ -171,6 +304,25 @@ func NewClient(opts ...Option) (*Client, error) {
 	client.Agile = agile.NewService(tr)
 	client.Permission = permission.NewService(tr)
 	client.Bulk = bulk.NewService(tr)
+	client.Filter = filter.NewService(tr)
+	client.Field = field.NewService(tr)
+	client.Label = label.NewService(tr)
+	client.IssueType = issuetype.NewService(tr)
+	client.Screen = screen.NewService(tr)
+	client.Priority = priority.NewService(tr)
+	client.Resolution = resolution.NewService(tr)
+	client.SecurityLevel = securitylevel.NewService(tr)
+	client.Notification = notification.NewService(tr)
+	client.Webhook = webhook.NewService(tr)
+	client.TimeTracking = timetracking.NewService(tr)
+	client.Audit = audit.NewService(tr)
+	client.Dashboard = dashboard.NewService(tr)
+	client.Group = group.NewService(tr)
+	client.AppProperties = appproperties.NewService(tr)
+	client.ServerInfo = serverinfo.NewService(tr)
+	client.Myself = myself.NewService(tr)
+	client.Expression = expression.NewService(tr)
+	client.IssueLinkType = issuelinktype.NewService(tr)
 
 	return client, nil
 }
