@@ -5,6 +5,111 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added - Phase 6: Extended API Coverage
+
+#### New Services (7 services, 38 new methods)
+
+- **Dashboard Service** (11 methods) - Complete dashboard management
+  - `List()` - List all accessible dashboards
+  - `Get()` - Get specific dashboard details
+  - `Create()` - Create new dashboard with permissions
+  - `Update()` - Update dashboard properties
+  - `Delete()` - Delete dashboard
+  - `Copy()` - Copy existing dashboard
+  - `GetGadgets()` - List gadgets on dashboard
+  - `AddGadget()` - Add gadget to dashboard
+  - `UpdateGadget()` - Update gadget position/properties
+  - `RemoveGadget()` - Remove gadget from dashboard
+  - `SetItemProperty()` - Set dashboard item property
+
+- **Group Service** (9 methods) - Comprehensive group administration
+  - `Find()` - Search for groups
+  - `Get()` - Get group details with expansion
+  - `Create()` - Create new group
+  - `Delete()` - Delete group
+  - `GetMembers()` - List group members with pagination
+  - `AddUser()` - Add user to group
+  - `RemoveUser()` - Remove user from group
+  - `BulkGet()` - Get multiple groups in bulk
+  - `GetUsersFromGroup()` - Get users from specific group
+
+- **Application Properties Service** (3 methods) - System-wide configuration
+  - `GetAdvancedSettings()` - Get all advanced settings
+  - `GetApplicationProperty()` - Get specific property
+  - `SetApplicationProperty()` - Set property value
+
+- **Server Info Service** (2 methods) - Instance metadata and health
+  - `Get()` - Get server information (version, build, deployment type)
+  - `GetConfiguration()` - Get Jira configuration (voting, time tracking, etc.)
+
+- **Myself Service** (6 methods) - Current user preferences
+  - `Get()` - Get current user details
+  - `GetPreferences()` - Get all user preferences
+  - `SetPreferences()` - Set multiple preferences
+  - `GetPreference()` - Get specific preference
+  - `SetPreference()` - Set individual preference
+  - `DeletePreference()` - Delete preference
+
+- **Jira Expressions Service** (2 methods) - Dynamic expression evaluation
+  - `Evaluate()` - Evaluate Jira expression with context
+  - `Analyze()` - Analyze expressions for syntax and complexity
+
+- **Issue Link Type Service** (5 methods) - Custom relationship management
+  - `List()` - List all issue link types
+  - `Get()` - Get specific link type
+  - `Create()` - Create custom link type
+  - `Update()` - Update link type properties
+  - `Delete()` - Delete link type
+
+#### Enhanced Existing Services (18 new methods)
+
+- **User Service Extensions** (9 new methods)
+  - `SetDefaultColumns()` - Set default columns for user
+  - `ResetDefaultColumns()` - Reset columns to system defaults
+  - `GetUserProperty()` - Get user property value
+  - `SetUserProperty()` - Set user property
+  - `DeleteUserProperty()` - Delete user property
+  - `GetUserGroups()` - Get groups user belongs to
+  - `GetUserPermissions()` - Get user's permission details
+  - `FindUsersWithAllPermissions()` - Find users with all specified permissions
+  - `FindUsersWithBrowsePermission()` - Find users with browse permission
+
+- **Workflow Service Extensions** (9 new methods)
+  - `CreateWorkflowScheme()` - Create new workflow scheme
+  - `UpdateWorkflowScheme()` - Update workflow scheme
+  - `DeleteWorkflowScheme()` - Delete workflow scheme
+  - `GetStatusCategories()` - Get all status categories
+  - `GetStatusCategory()` - Get specific status category
+  - `DoTransition()` - Execute issue transition
+  - `GetTransitionProperties()` - Get transition properties
+  - `SetWorkflowSchemeIssueType()` - Set issue type mapping
+  - `DeleteWorkflowSchemeIssueType()` - Delete issue type mapping
+
+### Summary
+
+**Total API Coverage:**
+- 27 services (7 new + 20 existing)
+- 250+ methods (56 added in Phase 6)
+- Comprehensive Jira REST API v3 coverage
+
+**New Capabilities:**
+- Dashboard visualization and gadget management
+- Group administration and membership control
+- System configuration and advanced settings
+- Server health monitoring and metadata
+- User preference customization
+- Dynamic expression evaluation for automation
+- Custom issue relationship type management
+- Enhanced user and workflow operations
+
+**Documentation:**
+- Updated README.md with all new service examples
+- Added Phase 6 completion to roadmap
+- Comprehensive usage examples for each service
+- Updated architecture documentation
+
 ## [v1.0.0] - 2025-01-08
 
 ### Added
