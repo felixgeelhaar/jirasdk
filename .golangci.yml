@@ -50,6 +50,8 @@ linters-settings:
     locale: US
     ignore-words:
       - cancelled  # UK spelling used in Jira API
+      - favourite  # UK spelling used in Jira API
+      - analyse    # UK spelling used in Jira API
 
   lll:
     line-length: 120
