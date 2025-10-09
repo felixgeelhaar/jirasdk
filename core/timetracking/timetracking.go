@@ -55,18 +55,18 @@ type UpdateTimeTrackingConfigurationInput struct {
 
 // Worklog represents a work log entry on an issue.
 type Worklog struct {
-	Self             string                 `json:"self,omitempty"`
-	Author           *User                  `json:"author,omitempty"`
-	UpdateAuthor     *User                  `json:"updateAuthor,omitempty"`
-	Comment          string                 `json:"comment,omitempty"`
-	Created          string                 `json:"created,omitempty"`
-	Updated          string                 `json:"updated,omitempty"`
-	Started          string                 `json:"started,omitempty"`
-	TimeSpent        string                 `json:"timeSpent,omitempty"`
-	TimeSpentSeconds int64                  `json:"timeSpentSeconds,omitempty"`
-	ID               string                 `json:"id,omitempty"`
-	IssueID          string                 `json:"issueId,omitempty"`
-	Properties       []WorklogProperty      `json:"properties,omitempty"`
+	Self             string            `json:"self,omitempty"`
+	Author           *User             `json:"author,omitempty"`
+	UpdateAuthor     *User             `json:"updateAuthor,omitempty"`
+	Comment          string            `json:"comment,omitempty"`
+	Created          string            `json:"created,omitempty"`
+	Updated          string            `json:"updated,omitempty"`
+	Started          string            `json:"started,omitempty"`
+	TimeSpent        string            `json:"timeSpent,omitempty"`
+	TimeSpentSeconds int64             `json:"timeSpentSeconds,omitempty"`
+	ID               string            `json:"id,omitempty"`
+	IssueID          string            `json:"issueId,omitempty"`
+	Properties       []WorklogProperty `json:"properties,omitempty"`
 }
 
 // User represents a Jira user.
@@ -105,11 +105,11 @@ type UpdateWorklogInput struct {
 
 // WorklogListOptions represents options for listing worklogs.
 type WorklogListOptions struct {
-	StartAt    int    `json:"startAt,omitempty"`
-	MaxResults int    `json:"maxResults,omitempty"`
+	StartAt       int    `json:"startAt,omitempty"`
+	MaxResults    int    `json:"maxResults,omitempty"`
 	StartedAfter  int64  `json:"startedAfter,omitempty"`
 	StartedBefore int64  `json:"startedBefore,omitempty"`
-	Expand     string `json:"expand,omitempty"`
+	Expand        string `json:"expand,omitempty"`
 }
 
 // GetAvailableProviders retrieves available time tracking providers.

@@ -31,15 +31,15 @@ func NewService(transport RoundTripper) *Service {
 
 // ServerInfo represents Jira server information.
 type ServerInfo struct {
-	BaseURL        string `json:"baseUrl"`
-	Version        string `json:"version"`
-	VersionNumbers []int  `json:"versionNumbers"`
-	DeploymentType string `json:"deploymentType"`
-	BuildNumber    int    `json:"buildNumber"`
-	BuildDate      string `json:"buildDate"`
-	ServerTime     string `json:"serverTime"`
-	ScmInfo        string `json:"scmInfo"`
-	ServerTitle    string `json:"serverTitle"`
+	BaseURL        string         `json:"baseUrl"`
+	Version        string         `json:"version"`
+	VersionNumbers []int          `json:"versionNumbers"`
+	DeploymentType string         `json:"deploymentType"`
+	BuildNumber    int            `json:"buildNumber"`
+	BuildDate      string         `json:"buildDate"`
+	ServerTime     string         `json:"serverTime"`
+	ScmInfo        string         `json:"scmInfo"`
+	ServerTitle    string         `json:"serverTitle"`
 	HealthChecks   []*HealthCheck `json:"healthChecks,omitempty"`
 }
 
@@ -78,13 +78,13 @@ func (s *Service) Get(ctx context.Context) (*ServerInfo, error) {
 
 // Configuration represents Jira configuration.
 type Configuration struct {
-	VotingEnabled           bool   `json:"votingEnabled"`
-	WatchingEnabled         bool   `json:"watchingEnabled"`
-	UnassignedIssuesAllowed bool   `json:"unassignedIssuesAllowed"`
-	SubTasksEnabled         bool   `json:"subTasksEnabled"`
-	IssueLinkingEnabled     bool   `json:"issueLinkingEnabled"`
-	TimeTrackingEnabled     bool   `json:"timeTrackingEnabled"`
-	AttachmentsEnabled      bool   `json:"attachmentsEnabled"`
+	VotingEnabled             bool                       `json:"votingEnabled"`
+	WatchingEnabled           bool                       `json:"watchingEnabled"`
+	UnassignedIssuesAllowed   bool                       `json:"unassignedIssuesAllowed"`
+	SubTasksEnabled           bool                       `json:"subTasksEnabled"`
+	IssueLinkingEnabled       bool                       `json:"issueLinkingEnabled"`
+	TimeTrackingEnabled       bool                       `json:"timeTrackingEnabled"`
+	AttachmentsEnabled        bool                       `json:"attachmentsEnabled"`
 	TimeTrackingConfiguration *TimeTrackingConfiguration `json:"timeTrackingConfiguration,omitempty"`
 }
 

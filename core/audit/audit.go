@@ -33,17 +33,17 @@ func NewService(transport RoundTripper) *Service {
 
 // AuditRecord represents an audit log record.
 type AuditRecord struct {
-	ID               int64                  `json:"id"`
-	Summary          string                 `json:"summary"`
-	RemoteAddress    string                 `json:"remoteAddress,omitempty"`
-	AuthorKey        string                 `json:"authorKey,omitempty"`
-	Created          string                 `json:"created"`
-	Category         string                 `json:"category,omitempty"`
-	EventSource      string                 `json:"eventSource,omitempty"`
-	Description      string                 `json:"description,omitempty"`
-	ObjectItem       *AuditObjectItem       `json:"objectItem,omitempty"`
-	ChangedValues    []*AuditChangedValue   `json:"changedValues,omitempty"`
-	AssociatedItems  []*AuditAssociatedItem `json:"associatedItems,omitempty"`
+	ID              int64                  `json:"id"`
+	Summary         string                 `json:"summary"`
+	RemoteAddress   string                 `json:"remoteAddress,omitempty"`
+	AuthorKey       string                 `json:"authorKey,omitempty"`
+	Created         string                 `json:"created"`
+	Category        string                 `json:"category,omitempty"`
+	EventSource     string                 `json:"eventSource,omitempty"`
+	Description     string                 `json:"description,omitempty"`
+	ObjectItem      *AuditObjectItem       `json:"objectItem,omitempty"`
+	ChangedValues   []*AuditChangedValue   `json:"changedValues,omitempty"`
+	AssociatedItems []*AuditAssociatedItem `json:"associatedItems,omitempty"`
 }
 
 // AuditObjectItem represents an object affected by an audit event.
@@ -73,11 +73,11 @@ type AuditAssociatedItem struct {
 
 // ListOptions represents options for listing audit records.
 type ListOptions struct {
-	Offset     int       `json:"offset,omitempty"`
-	Limit      int       `json:"limit,omitempty"`
-	Filter     string    `json:"filter,omitempty"`
-	From       time.Time `json:"from,omitempty"`
-	To         time.Time `json:"to,omitempty"`
+	Offset int       `json:"offset,omitempty"`
+	Limit  int       `json:"limit,omitempty"`
+	Filter string    `json:"filter,omitempty"`
+	From   time.Time `json:"from,omitempty"`
+	To     time.Time `json:"to,omitempty"`
 }
 
 // List retrieves audit records with optional filtering.

@@ -30,15 +30,15 @@ func NewService(transport RoundTripper) *Service {
 
 // ApplicationProperty represents an application property.
 type ApplicationProperty struct {
-	ID                string   `json:"id"`
-	Key               string   `json:"key"`
-	Value             string   `json:"value"`
-	Name              string   `json:"name,omitempty"`
-	Desc              string   `json:"desc,omitempty"`
-	Type              string   `json:"type,omitempty"`
-	DefaultValue      string   `json:"defaultValue,omitempty"`
-	AllowedValues     []string `json:"allowedValues,omitempty"`
-	Example           string   `json:"example,omitempty"`
+	ID            string   `json:"id"`
+	Key           string   `json:"key"`
+	Value         string   `json:"value"`
+	Name          string   `json:"name,omitempty"`
+	Desc          string   `json:"desc,omitempty"`
+	Type          string   `json:"type,omitempty"`
+	DefaultValue  string   `json:"defaultValue,omitempty"`
+	AllowedValues []string `json:"allowedValues,omitempty"`
+	Example       string   `json:"example,omitempty"`
 }
 
 // AdvancedSettings represents Jira advanced settings.

@@ -30,13 +30,17 @@ func NewService(transport RoundTripper) *Service {
 	}
 }
 
+const (
+	pathGroup = "/rest/api/3/group"
+)
+
 // Group represents a Jira group.
 type Group struct {
-	Name    string         `json:"name"`
-	Self    string         `json:"self,omitempty"`
-	GroupID string         `json:"groupId,omitempty"`
-	Expand  string         `json:"expand,omitempty"`
-	Users   *GroupUsers    `json:"users,omitempty"`
+	Name    string      `json:"name"`
+	Self    string      `json:"self,omitempty"`
+	GroupID string      `json:"groupId,omitempty"`
+	Expand  string      `json:"expand,omitempty"`
+	Users   *GroupUsers `json:"users,omitempty"`
 }
 
 // GroupUsers represents users in a group.
@@ -117,9 +121,9 @@ func (s *Service) Find(ctx context.Context, opts *FindOptions) ([]*Group, error)
 
 // GetOptions represents options for getting a group.
 type GetOptions struct {
-	GroupName  string   `json:"groupname,omitempty"`
-	GroupID    string   `json:"groupId,omitempty"`
-	Expand     []string `json:"expand,omitempty"`
+	GroupName string   `json:"groupname,omitempty"`
+	GroupID   string   `json:"groupId,omitempty"`
+	Expand    []string `json:"expand,omitempty"`
 }
 
 // Get retrieves a group.
@@ -135,7 +139,7 @@ func (s *Service) Get(ctx context.Context, opts *GetOptions) (*Group, error) {
 		return nil, fmt.Errorf("group name or ID is required")
 	}
 
-	path := "/rest/api/3/group"
+	path := pathGroup
 
 	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -187,7 +191,7 @@ func (s *Service) Create(ctx context.Context, input *CreateGroupInput) (*Group, 
 		return nil, fmt.Errorf("group name is required")
 	}
 
-	path := "/rest/api/3/group"
+	path := pathGroup
 
 	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
 	if err != nil {
@@ -225,7 +229,7 @@ func (s *Service) Delete(ctx context.Context, opts *DeleteOptions) error {
 		return fmt.Errorf("group name or ID is required")
 	}
 
-	path := "/rest/api/3/group"
+	path := pathGroup
 
 	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {

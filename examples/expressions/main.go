@@ -65,7 +65,7 @@ func main() {
 			},
 		},
 		"user": map[string]interface{}{
-			"displayName": "John Doe",
+			"displayName":  "John Doe",
 			"emailAddress": "john@example.com",
 		},
 	}
@@ -243,9 +243,9 @@ func main() {
 	fmt.Println("=== Expression Performance Analysis ===")
 
 	performanceTests := []string{
-		"1 + 1",                                // Simple
-		"issue.key + ' - ' + issue.summary",    // String concatenation
-		"issue.labels.map(l => l.toUpperCase())", // Array operation
+		"1 + 1",                                      // Simple
+		"issue.key + ' - ' + issue.summary",          // String concatenation
+		"issue.labels.map(l => l.toUpperCase())",     // Array operation
 		"[1, 2, 3, 4, 5].reduce((a, b) => a + b, 0)", // Complex operation
 	}
 

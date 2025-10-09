@@ -231,7 +231,7 @@ func (s *Service) SetDefault(ctx context.Context, priorityID string) error {
 		return fmt.Errorf("priority ID is required")
 	}
 
-	path := fmt.Sprintf("/rest/api/3/priority/default")
+	path := "/rest/api/3/priority/default"
 
 	input := struct {
 		ID string `json:"id"`

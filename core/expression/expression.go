@@ -36,8 +36,8 @@ type EvaluationInput struct {
 
 // EvaluationResult represents the result of expression evaluation.
 type EvaluationResult struct {
-	Value interface{}        `json:"value"`
-	Meta  *EvaluationMeta    `json:"meta,omitempty"`
+	Value  interface{}        `json:"value"`
+	Meta   *EvaluationMeta    `json:"meta,omitempty"`
 	Errors []*EvaluationError `json:"errors,omitempty"`
 }
 
@@ -49,10 +49,10 @@ type EvaluationMeta struct {
 
 // Complexity represents expression complexity.
 type Complexity struct {
-	Steps       int    `json:"steps"`
+	Steps               int `json:"steps"`
 	ExpensiveOperations int `json:"expensiveOperations"`
-	Beans       int    `json:"beans"`
-	PrimitiveValues int `json:"primitiveValues"`
+	Beans               int `json:"beans"`
+	PrimitiveValues     int `json:"primitiveValues"`
 }
 
 // EvaluationError represents an error during evaluation.
@@ -113,11 +113,11 @@ type AnalysisResult struct {
 
 // ExpressionAnalysis represents analysis of a single expression.
 type ExpressionAnalysis struct {
-	Expression string              `json:"expression"`
-	Valid      bool                `json:"valid"`
-	Errors     []*EvaluationError  `json:"errors,omitempty"`
-	Type       string              `json:"type,omitempty"`
-	Complexity *Complexity         `json:"complexity,omitempty"`
+	Expression string             `json:"expression"`
+	Valid      bool               `json:"valid"`
+	Errors     []*EvaluationError `json:"errors,omitempty"`
+	Type       string             `json:"type,omitempty"`
+	Complexity *Complexity        `json:"complexity,omitempty"`
 }
 
 // Analyze analyzes Jira expressions for syntax and complexity.

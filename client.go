@@ -183,33 +183,33 @@ type Client struct {
 	Transport *transport.Transport
 
 	// Domain service clients
-	Issue          *issue.Service
-	Project        *project.Service
-	User           *user.Service
-	Workflow       *workflow.Service
-	Search         *search.Service
-	Agile          *agile.Service
-	Permission     *permission.Service
-	Bulk           *bulk.Service
-	Filter         *filter.Service
-	Field          *field.Service
-	Label          *label.Service
-	IssueType      *issuetype.Service
-	Screen         *screen.Service
-	Priority       *priority.Service
-	Resolution     *resolution.Service
-	SecurityLevel  *securitylevel.Service
-	Notification   *notification.Service
-	Webhook        *webhook.Service
-	TimeTracking   *timetracking.Service
-	Audit          *audit.Service
-	Dashboard      *dashboard.Service
-	Group          *group.Service
-	AppProperties  *appproperties.Service
-	ServerInfo     *serverinfo.Service
-	Myself         *myself.Service
-	Expression     *expression.Service
-	IssueLinkType  *issuelinktype.Service
+	Issue         *issue.Service
+	Project       *project.Service
+	User          *user.Service
+	Workflow      *workflow.Service
+	Search        *search.Service
+	Agile         *agile.Service
+	Permission    *permission.Service
+	Bulk          *bulk.Service
+	Filter        *filter.Service
+	Field         *field.Service
+	Label         *label.Service
+	IssueType     *issuetype.Service
+	Screen        *screen.Service
+	Priority      *priority.Service
+	Resolution    *resolution.Service
+	SecurityLevel *securitylevel.Service
+	Notification  *notification.Service
+	Webhook       *webhook.Service
+	TimeTracking  *timetracking.Service
+	Audit         *audit.Service
+	Dashboard     *dashboard.Service
+	Group         *group.Service
+	AppProperties *appproperties.Service
+	ServerInfo    *serverinfo.Service
+	Myself        *myself.Service
+	Expression    *expression.Service
+	IssueLinkType *issuelinktype.Service
 }
 
 // Config holds the client configuration.

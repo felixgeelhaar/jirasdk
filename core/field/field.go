@@ -32,24 +32,24 @@ func NewService(transport RoundTripper) *Service {
 
 // Field represents a Jira field (system or custom).
 type Field struct {
-	ID                  string              `json:"id"`
-	Key                 string              `json:"key,omitempty"`
-	Name                string              `json:"name"`
-	Custom              bool                `json:"custom"`
-	Orderable           bool                `json:"orderable,omitempty"`
-	Navigable           bool                `json:"navigable,omitempty"`
-	Searchable          bool                `json:"searchable,omitempty"`
-	ClauseNames         []string            `json:"clauseNames,omitempty"`
-	Schema              *FieldSchema        `json:"schema,omitempty"`
-	Scope               *FieldScope         `json:"scope,omitempty"`
-	Description         string              `json:"description,omitempty"`
-	IsLocked            bool                `json:"isLocked,omitempty"`
-	SearcherKey         string              `json:"searcherKey,omitempty"`
-	ScreensCount        int                 `json:"screensCount,omitempty"`
-	ContextsCount       int                 `json:"contextsCount,omitempty"`
-	ProjectsCount       int                 `json:"projectsCount,omitempty"`
-	LastUsed            *FieldUsage         `json:"lastUsed,omitempty"`
-	FieldConfigScheme   *FieldConfigScheme  `json:"fieldConfigScheme,omitempty"`
+	ID                string             `json:"id"`
+	Key               string             `json:"key,omitempty"`
+	Name              string             `json:"name"`
+	Custom            bool               `json:"custom"`
+	Orderable         bool               `json:"orderable,omitempty"`
+	Navigable         bool               `json:"navigable,omitempty"`
+	Searchable        bool               `json:"searchable,omitempty"`
+	ClauseNames       []string           `json:"clauseNames,omitempty"`
+	Schema            *FieldSchema       `json:"schema,omitempty"`
+	Scope             *FieldScope        `json:"scope,omitempty"`
+	Description       string             `json:"description,omitempty"`
+	IsLocked          bool               `json:"isLocked,omitempty"`
+	SearcherKey       string             `json:"searcherKey,omitempty"`
+	ScreensCount      int                `json:"screensCount,omitempty"`
+	ContextsCount     int                `json:"contextsCount,omitempty"`
+	ProjectsCount     int                `json:"projectsCount,omitempty"`
+	LastUsed          *FieldUsage        `json:"lastUsed,omitempty"`
+	FieldConfigScheme *FieldConfigScheme `json:"fieldConfigScheme,omitempty"`
 }
 
 // FieldSchema represents the schema of a field.
@@ -63,8 +63,8 @@ type FieldSchema struct {
 
 // FieldScope represents the scope of a custom field.
 type FieldScope struct {
-	Type    string    `json:"type"`
-	Project *Project  `json:"project,omitempty"`
+	Type    string   `json:"type"`
+	Project *Project `json:"project,omitempty"`
 }
 
 // Project represents a simplified Jira project.
@@ -90,10 +90,10 @@ type FieldConfigScheme struct {
 
 // CreateFieldInput represents input for creating a custom field.
 type CreateFieldInput struct {
-	Name         string       `json:"name"`
-	Description  string       `json:"description,omitempty"`
-	Type         string       `json:"type"`
-	SearcherKey  string       `json:"searcherKey"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Type        string `json:"type"`
+	SearcherKey string `json:"searcherKey"`
 }
 
 // UpdateFieldInput represents input for updating a custom field.
@@ -105,19 +105,19 @@ type UpdateFieldInput struct {
 
 // FieldContext represents a custom field context.
 type FieldContext struct {
-	ID              string   `json:"id"`
-	Name            string   `json:"name"`
-	Description     string   `json:"description,omitempty"`
-	IsGlobalContext bool     `json:"isGlobalContext"`
-	IsAnyIssueType  bool     `json:"isAnyIssueType"`
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Description     string `json:"description,omitempty"`
+	IsGlobalContext bool   `json:"isGlobalContext"`
+	IsAnyIssueType  bool   `json:"isAnyIssueType"`
 }
 
 // CreateContextInput represents input for creating a field context.
 type CreateContextInput struct {
-	Name           string   `json:"name"`
-	Description    string   `json:"description,omitempty"`
-	ProjectIDs     []string `json:"projectIds,omitempty"`
-	IssueTypeIDs   []string `json:"issueTypeIds,omitempty"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description,omitempty"`
+	ProjectIDs   []string `json:"projectIds,omitempty"`
+	IssueTypeIDs []string `json:"issueTypeIds,omitempty"`
 }
 
 // UpdateContextInput represents input for updating a field context.

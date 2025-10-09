@@ -224,7 +224,7 @@ func (s *Service) SetDefault(ctx context.Context, resolutionID string) error {
 		return fmt.Errorf("resolution ID is required")
 	}
 
-	path := fmt.Sprintf("/rest/api/3/resolution/default")
+	path := "/rest/api/3/resolution/default"
 
 	input := struct {
 		ID string `json:"id"`

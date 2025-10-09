@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/jirasdk/core/dashboard"
@@ -242,7 +243,7 @@ func main() {
 	searchTerm := "Demo"
 	fmt.Printf("Searching for dashboards containing '%s':\n", searchTerm)
 	for _, dash := range dashboards {
-		if contains(dash.Name, searchTerm) {
+		if strings.Contains(strings.ToLower(dash.Name), strings.ToLower(searchTerm)) {
 			fmt.Printf("- %s (ID: %s)\n", dash.Name, dash.ID)
 		}
 	}
@@ -258,29 +259,4 @@ func main() {
 	}
 
 	fmt.Println("\n=== Dashboard Example Complete ===")
-}
-
-// contains checks if a string contains a substring (case-insensitive)
-func contains(s, substr string) bool {
-	s = toLower(s)
-	substr = toLower(substr)
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}
-
-// toLower converts a string to lowercase
-func toLower(s string) string {
-	result := make([]byte, len(s))
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= 'A' && c <= 'Z' {
-			c += 'a' - 'A'
-		}
-		result[i] = c
-	}
-	return string(result)
 }

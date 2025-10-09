@@ -54,12 +54,12 @@ type NotificationEvent struct {
 
 // Notification represents a notification configuration.
 type Notification struct {
-	ID        int64       `json:"id,omitempty"`
-	Type      string      `json:"type"`
-	Parameter string      `json:"parameter,omitempty"`
-	Group     *Group      `json:"group,omitempty"`
-	Field     *Field      `json:"field,omitempty"`
-	User      *User       `json:"user,omitempty"`
+	ID          int64        `json:"id,omitempty"`
+	Type        string       `json:"type"`
+	Parameter   string       `json:"parameter,omitempty"`
+	Group       *Group       `json:"group,omitempty"`
+	Field       *Field       `json:"field,omitempty"`
+	User        *User        `json:"user,omitempty"`
 	ProjectRole *ProjectRole `json:"projectRole,omitempty"`
 }
 
@@ -130,8 +130,8 @@ type AddNotificationInput struct {
 
 // ListOptions represents options for listing notification schemes.
 type ListOptions struct {
-	StartAt    int `json:"startAt,omitempty"`
-	MaxResults int `json:"maxResults,omitempty"`
+	StartAt    int    `json:"startAt,omitempty"`
+	MaxResults int    `json:"maxResults,omitempty"`
 	Expand     string `json:"expand,omitempty"`
 }
 

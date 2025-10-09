@@ -32,26 +32,26 @@ func NewService(transport RoundTripper) *Service {
 
 // Dashboard represents a Jira dashboard.
 type Dashboard struct {
-	ID              string            `json:"id,omitempty"`
-	Name            string            `json:"name"`
-	Description     string            `json:"description,omitempty"`
-	Owner           *User             `json:"owner,omitempty"`
+	ID               string             `json:"id,omitempty"`
+	Name             string             `json:"name"`
+	Description      string             `json:"description,omitempty"`
+	Owner            *User              `json:"owner,omitempty"`
 	SharePermissions []*SharePermission `json:"sharePermissions,omitempty"`
 	EditPermissions  []*SharePermission `json:"editPermissions,omitempty"`
-	Self            string            `json:"self,omitempty"`
-	IsFavourite     bool              `json:"isFavourite,omitempty"`
-	Rank            int               `json:"rank,omitempty"`
-	View            string            `json:"view,omitempty"`
-	IsWritable      bool              `json:"isWritable,omitempty"`
-	SystemDashboard bool              `json:"systemDashboard,omitempty"`
+	Self             string             `json:"self,omitempty"`
+	IsFavourite      bool               `json:"isFavourite,omitempty"`
+	Rank             int                `json:"rank,omitempty"`
+	View             string             `json:"view,omitempty"`
+	IsWritable       bool               `json:"isWritable,omitempty"`
+	SystemDashboard  bool               `json:"systemDashboard,omitempty"`
 }
 
 // User represents a Jira user.
 type User struct {
-	AccountID    string `json:"accountId,omitempty"`
-	DisplayName  string `json:"displayName,omitempty"`
-	Active       bool   `json:"active,omitempty"`
-	Self         string `json:"self,omitempty"`
+	AccountID   string `json:"accountId,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
+	Active      bool   `json:"active,omitempty"`
+	Self        string `json:"self,omitempty"`
 }
 
 // SharePermission represents sharing permissions for a dashboard.

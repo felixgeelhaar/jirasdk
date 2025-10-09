@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	jira "github.com/felixgeelhaar/jirasdk"
 	"github.com/felixgeelhaar/jirasdk/core/issuelinktype"
@@ -165,8 +166,8 @@ func main() {
 	for _, lt := range linkTypes {
 		if lt.Inward == lt.Outward {
 			bidirectional = append(bidirectional, lt.Name)
-		} else if contains(lt.Name, "parent") || contains(lt.Name, "child") ||
-			contains(lt.Name, "epic") || contains(lt.Name, "subtask") {
+		} else if strings.Contains(strings.ToLower(lt.Name), "parent") || strings.Contains(strings.ToLower(lt.Name), "child") ||
+			strings.Contains(strings.ToLower(lt.Name), "epic") || strings.Contains(strings.ToLower(lt.Name), "subtask") {
 			hierarchical = append(hierarchical, lt.Name)
 		} else {
 			directional = append(directional, lt.Name)
@@ -282,29 +283,4 @@ func main() {
 	}
 
 	fmt.Println("\n=== Issue Link Types Example Complete ===")
-}
-
-// contains checks if a string contains a substring (case-insensitive)
-func contains(s, substr string) bool {
-	s = toLower(s)
-	substr = toLower(substr)
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}
-
-// toLower converts a string to lowercase
-func toLower(s string) string {
-	result := make([]byte, len(s))
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= 'A' && c <= 'Z' {
-			c += 'a' - 'A'
-		}
-		result[i] = c
-	}
-	return string(result)
 }

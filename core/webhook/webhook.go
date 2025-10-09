@@ -32,16 +32,16 @@ func NewService(transport RoundTripper) *Service {
 
 // Webhook represents a Jira webhook.
 type Webhook struct {
-	ID                 int64    `json:"id,omitempty"`
-	Name               string   `json:"name"`
-	URL                string   `json:"url"`
-	Events             []string `json:"events"`
-	JQLFilter          string   `json:"jqlFilter,omitempty"`
-	ExcludeBody        bool     `json:"excludeBody,omitempty"`
-	Enabled            bool     `json:"enabled,omitempty"`
-	ExpirationDate     int64    `json:"expirationDate,omitempty"`
-	LastUpdatedUser    string   `json:"lastUpdatedUser,omitempty"`
-	LastUpdatedDate    int64    `json:"lastUpdatedDate,omitempty"`
+	ID              int64    `json:"id,omitempty"`
+	Name            string   `json:"name"`
+	URL             string   `json:"url"`
+	Events          []string `json:"events"`
+	JQLFilter       string   `json:"jqlFilter,omitempty"`
+	ExcludeBody     bool     `json:"excludeBody,omitempty"`
+	Enabled         bool     `json:"enabled,omitempty"`
+	ExpirationDate  int64    `json:"expirationDate,omitempty"`
+	LastUpdatedUser string   `json:"lastUpdatedUser,omitempty"`
+	LastUpdatedDate int64    `json:"lastUpdatedDate,omitempty"`
 }
 
 // CreateWebhookInput represents input for creating a webhook.
@@ -65,8 +65,8 @@ type UpdateWebhookInput struct {
 
 // WebhookRegistrationResult represents the result of webhook registration.
 type WebhookRegistrationResult struct {
-	CreatedWebhookID int64            `json:"createdWebhookId,omitempty"`
-	Errors           []WebhookError   `json:"errors,omitempty"`
+	CreatedWebhookID int64          `json:"createdWebhookId,omitempty"`
+	Errors           []WebhookError `json:"errors,omitempty"`
 }
 
 // WebhookError represents an error in webhook operations.
@@ -82,10 +82,10 @@ type ListOptions struct {
 
 // FailedWebhook represents a failed webhook execution.
 type FailedWebhook struct {
-	ID                int64  `json:"id"`
-	Body              string `json:"body,omitempty"`
-	URL               string `json:"url"`
-	FailureTime       int64  `json:"failureTime"`
+	ID          int64  `json:"id"`
+	Body        string `json:"body,omitempty"`
+	URL         string `json:"url"`
+	FailureTime int64  `json:"failureTime"`
 }
 
 // List retrieves all webhooks with pagination.

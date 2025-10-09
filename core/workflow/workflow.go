@@ -674,9 +674,9 @@ func (s *Service) DoTransition(ctx context.Context, issueKeyOrID string, input *
 
 // WorkflowSchemeIssueType represents the issue type workflow mapping.
 type WorkflowSchemeIssueType struct {
-	IssueType    string `json:"issueType"`
-	Workflow     string `json:"workflow,omitempty"`
-	UpdateDraft  bool   `json:"updateDraftIfNeeded,omitempty"`
+	IssueType   string `json:"issueType"`
+	Workflow    string `json:"workflow,omitempty"`
+	UpdateDraft bool   `json:"updateDraftIfNeeded,omitempty"`
 }
 
 // SetWorkflowSchemeIssueType sets the workflow for an issue type in a workflow scheme.
