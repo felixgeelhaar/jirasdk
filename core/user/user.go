@@ -29,6 +29,10 @@ func NewService(transport RoundTripper) *Service {
 	}
 }
 
+const (
+	pathUserColumns = "/rest/api/3/user/columns"
+)
+
 // User represents a Jira user.
 type User struct {
 	Self         string      `json:"self,omitempty"`
@@ -454,7 +458,7 @@ func (s *Service) GetDefaultColumns(ctx context.Context, accountID string) ([]st
 		return nil, fmt.Errorf("account ID is required")
 	}
 
-	path := "/rest/api/3/user/columns"
+	path := pathUserColumns
 
 	// Create request
 	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
@@ -500,7 +504,7 @@ func (s *Service) SetDefaultColumns(ctx context.Context, columns []string) error
 		return fmt.Errorf("at least one column is required")
 	}
 
-	path := "/rest/api/3/user/columns"
+	path := pathUserColumns
 
 	// Create request with column IDs
 	input := make([]string, len(columns))
@@ -530,7 +534,7 @@ func (s *Service) ResetDefaultColumns(ctx context.Context, accountID string) err
 		return fmt.Errorf("account ID is required")
 	}
 
-	path := "/rest/api/3/user/columns"
+	path := pathUserColumns
 
 	// Create request
 	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)

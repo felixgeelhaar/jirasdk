@@ -28,6 +28,10 @@ func NewService(transport RoundTripper) *Service {
 	}
 }
 
+const (
+	pathMyPreferences = "/rest/api/3/mypreferences"
+)
+
 // User represents the current user.
 type User struct {
 	Self         string      `json:"self,omitempty"`
@@ -101,7 +105,7 @@ func (s *Service) Get(ctx context.Context) (*User, error) {
 //
 //	prefs, err := client.Myself.GetPreferences(ctx)
 func (s *Service) GetPreferences(ctx context.Context) (*Preferences, error) {
-	path := "/rest/api/3/mypreferences"
+	path := pathMyPreferences
 
 	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -134,7 +138,7 @@ func (s *Service) SetPreferences(ctx context.Context, prefs *Preferences) error 
 		return fmt.Errorf("preferences are required")
 	}
 
-	path := "/rest/api/3/mypreferences"
+	path := pathMyPreferences
 
 	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, prefs)
 	if err != nil {
@@ -159,7 +163,7 @@ func (s *Service) GetPreference(ctx context.Context, key string) (string, error)
 		return "", fmt.Errorf("preference key is required")
 	}
 
-	path := "/rest/api/3/mypreferences"
+	path := pathMyPreferences
 
 	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -199,7 +203,7 @@ func (s *Service) SetPreference(ctx context.Context, key, value string) error {
 		return fmt.Errorf("preference key is required")
 	}
 
-	path := "/rest/api/3/mypreferences"
+	path := pathMyPreferences
 
 	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, map[string]string{
 		key: value,
@@ -231,7 +235,7 @@ func (s *Service) DeletePreference(ctx context.Context, key string) error {
 		return fmt.Errorf("preference key is required")
 	}
 
-	path := "/rest/api/3/mypreferences"
+	path := pathMyPreferences
 
 	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {

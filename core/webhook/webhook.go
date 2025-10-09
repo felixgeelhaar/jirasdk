@@ -30,6 +30,10 @@ func NewService(transport RoundTripper) *Service {
 	}
 }
 
+const (
+	pathWebhook = "/rest/api/3/webhook"
+)
+
 // Webhook represents a Jira webhook.
 type Webhook struct {
 	ID              int64    `json:"id,omitempty"`
@@ -94,7 +98,7 @@ type FailedWebhook struct {
 //
 //	webhooks, err := client.Webhook.List(ctx, &webhook.ListOptions{MaxResults: 50})
 func (s *Service) List(ctx context.Context, opts *ListOptions) ([]*Webhook, error) {
-	path := "/rest/api/3/webhook"
+	path := pathWebhook
 
 	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -188,7 +192,7 @@ func (s *Service) Create(ctx context.Context, webhooks []*CreateWebhookInput) ([
 		}
 	}
 
-	path := "/rest/api/3/webhook"
+	path := pathWebhook
 
 	input := struct {
 		Webhooks []*CreateWebhookInput `json:"webhooks"`
@@ -265,7 +269,7 @@ func (s *Service) Delete(ctx context.Context, webhookIDs []int64) error {
 		return fmt.Errorf("at least one webhook ID is required")
 	}
 
-	path := "/rest/api/3/webhook"
+	path := pathWebhook
 
 	req, err := s.transport.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
