@@ -82,7 +82,7 @@ jobs:
     # Users will install it via: go get github.com/felixgeelhaar/jirasdk@vX.Y.Z
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         body_path: /tmp/changelog.txt
         draft: false
