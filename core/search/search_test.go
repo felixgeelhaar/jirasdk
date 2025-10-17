@@ -577,6 +577,395 @@ func TestSearchIterator(t *testing.T) {
 	})
 }
 
+func TestSearchJQL(t *testing.T) {
+	tests := []struct {
+		name           string
+		opts           *SearchJQLOptions
+		responseStatus int
+		responseBody   *SearchJQLResult
+		wantErr        bool
+		errMsg         string
+		checkRequest   func(*testing.T, *http.Request)
+	}{
+		{
+			name: "successful search with basic options",
+			opts: &SearchJQLOptions{
+				JQL:        "project = PROJ",
+				MaxResults: 100,
+				Fields:     []string{"summary", "status"},
+			},
+			responseStatus: http.StatusOK,
+			responseBody: &SearchJQLResult{
+				Issues: []*issue.Issue{
+					{ID: "10001", Key: "PROJ-1"},
+					{ID: "10002", Key: "PROJ-2"},
+				},
+				MaxResults:    100,
+				NextPageToken: "next-token-123",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "nil options",
+			opts:    nil,
+			wantErr: true,
+			errMsg:  "JQL query is required",
+		},
+		{
+			name: "empty JQL",
+			opts: &SearchJQLOptions{
+				JQL: "",
+			},
+			wantErr: true,
+			errMsg:  "JQL query is required",
+		},
+		{
+			name: "with pagination token",
+			opts: &SearchJQLOptions{
+				JQL:           "project = PROJ",
+				MaxResults:    100,
+				NextPageToken: "page-token-456",
+			},
+			responseStatus: http.StatusOK,
+			responseBody: &SearchJQLResult{
+				Issues:        []*issue.Issue{{ID: "10003", Key: "PROJ-3"}},
+				MaxResults:    100,
+				NextPageToken: "", // Last page
+			},
+			wantErr: false,
+			checkRequest: func(t *testing.T, r *http.Request) {
+				var body map[string]interface{}
+				json.NewDecoder(r.Body).Decode(&body)
+				assert.Equal(t, "page-token-456", body["nextPageToken"])
+			},
+		},
+		{
+			name: "with all options",
+			opts: &SearchJQLOptions{
+				JQL:           "project = PROJ",
+				MaxResults:    200,
+				Fields:        []string{"*all"},
+				Expand:        []string{"changelog"},
+				FieldsByKeys:  true,
+				Properties:    []string{"prop1", "prop2"},
+				ValidateQuery: true,
+			},
+			responseStatus: http.StatusOK,
+			responseBody: &SearchJQLResult{
+				Issues:        []*issue.Issue{{ID: "10001", Key: "PROJ-1"}},
+				MaxResults:    200,
+				NextPageToken: "",
+			},
+			wantErr: false,
+			checkRequest: func(t *testing.T, r *http.Request) {
+				var body map[string]interface{}
+				json.NewDecoder(r.Body).Decode(&body)
+				assert.Equal(t, "project = PROJ", body["jql"])
+				assert.Equal(t, float64(200), body["maxResults"])
+				assert.NotNil(t, body["fields"])
+				assert.NotNil(t, body["expand"])
+				assert.Equal(t, true, body["fieldsByKeys"])
+				assert.NotNil(t, body["properties"])
+				assert.Equal(t, "strict", body["validateQuery"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.opts == nil || tt.opts.JQL == "" {
+				service := NewService(nil)
+				_, err := service.SearchJQL(context.Background(), tt.opts)
+				require.Error(t, err)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodPost, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/search/jql")
+
+				// Verify request body
+				var body map[string]interface{}
+				err := json.NewDecoder(r.Body).Decode(&body)
+				require.NoError(t, err)
+				assert.Equal(t, tt.opts.JQL, body["jql"])
+
+				if tt.checkRequest != nil {
+					// Re-read body for custom check
+					bodyBytes, _ := json.Marshal(body)
+					r.Body = io.NopCloser(io.Reader(&bytesReader{data: bodyBytes}))
+					tt.checkRequest(t, r)
+				}
+
+				w.WriteHeader(tt.responseStatus)
+				json.NewEncoder(w).Encode(tt.responseBody)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			result, err := service.SearchJQL(context.Background(), tt.opts)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, result)
+				assert.Equal(t, len(tt.responseBody.Issues), len(result.Issues))
+				assert.Equal(t, tt.responseBody.NextPageToken, result.NextPageToken)
+			}
+		})
+	}
+}
+
+func TestSearchJQLResult_HasNextPage(t *testing.T) {
+	tests := []struct {
+		name     string
+		result   *SearchJQLResult
+		expected bool
+	}{
+		{
+			name: "has next page",
+			result: &SearchJQLResult{
+				NextPageToken: "token-123",
+			},
+			expected: true,
+		},
+		{
+			name: "no next page",
+			result: &SearchJQLResult{
+				NextPageToken: "",
+			},
+			expected: false,
+		},
+		{
+			name: "nil token",
+			result: &SearchJQLResult{
+				NextPageToken: "",
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.result.HasNextPage())
+		})
+	}
+}
+
+func TestSearchJQLIterator(t *testing.T) {
+	// Test successful iteration with pagination
+	t.Run("successful iteration with pagination", func(t *testing.T) {
+		callCount := 0
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			var result SearchJQLResult
+
+			// Check that endpoint is correct
+			assert.Contains(t, r.URL.Path, "/rest/api/3/search/jql")
+
+			if callCount == 1 {
+				result = SearchJQLResult{
+					Issues:        []*issue.Issue{{ID: "1", Key: "PROJ-1"}, {ID: "2", Key: "PROJ-2"}},
+					MaxResults:    2,
+					NextPageToken: "token-page2",
+				}
+			} else {
+				// Verify nextPageToken was sent
+				var body map[string]interface{}
+				json.NewDecoder(r.Body).Decode(&body)
+				assert.Equal(t, "token-page2", body["nextPageToken"])
+
+				result = SearchJQLResult{
+					Issues:        []*issue.Issue{{ID: "3", Key: "PROJ-3"}},
+					MaxResults:    2,
+					NextPageToken: "", // Last page
+				}
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchJQLIterator(context.Background(), &SearchJQLOptions{
+			JQL:        "project = PROJ",
+			MaxResults: 2,
+		})
+
+		count := 0
+		var issueKeys []string
+		for iter.Next() {
+			count++
+			issue := iter.Issue()
+			require.NotNil(t, issue)
+			issueKeys = append(issueKeys, issue.Key)
+		}
+
+		assert.NoError(t, iter.Err())
+		assert.Equal(t, 3, count)
+		assert.Equal(t, 2, callCount)
+		assert.Equal(t, []string{"PROJ-1", "PROJ-2", "PROJ-3"}, issueKeys)
+	})
+
+	// Test error during iteration
+	t.Run("error during iteration", func(t *testing.T) {
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchJQLIterator(context.Background(), &SearchJQLOptions{
+			JQL: "project = PROJ",
+		})
+
+		// Next returns false on error
+		assert.False(t, iter.Next())
+		assert.Error(t, iter.Err())
+	})
+
+	// Test nil issue before Next
+	t.Run("nil issue before next", func(t *testing.T) {
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			result := SearchJQLResult{
+				Issues:        []*issue.Issue{{ID: "1", Key: "PROJ-1"}},
+				MaxResults:    1,
+				NextPageToken: "",
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchJQLIterator(context.Background(), &SearchJQLOptions{
+			JQL: "project = PROJ",
+		})
+
+		// Call Issue before Next
+		assert.Nil(t, iter.Issue())
+	})
+
+	// Test empty results
+	t.Run("empty results", func(t *testing.T) {
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			result := SearchJQLResult{
+				Issues:        []*issue.Issue{},
+				MaxResults:    100,
+				NextPageToken: "",
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchJQLIterator(context.Background(), &SearchJQLOptions{
+			JQL: "project = NONEXISTENT",
+		})
+
+		count := 0
+		for iter.Next() {
+			count++
+		}
+
+		assert.NoError(t, iter.Err())
+		assert.Equal(t, 0, count)
+	})
+
+	// Test default max results
+	t.Run("default max results", func(t *testing.T) {
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			var body map[string]interface{}
+			json.NewDecoder(r.Body).Decode(&body)
+
+			// Verify maxResults is set to default
+			assert.Equal(t, float64(100), body["maxResults"])
+
+			result := SearchJQLResult{
+				Issues:        []*issue.Issue{{ID: "1", Key: "PROJ-1"}},
+				MaxResults:    100,
+				NextPageToken: "",
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+		iter := service.NewSearchJQLIterator(context.Background(), &SearchJQLOptions{
+			JQL: "project = PROJ",
+			// MaxResults not specified
+		})
+
+		assert.True(t, iter.Next())
+		assert.NoError(t, iter.Err())
+	})
+
+	// Test that iterator does not mutate caller's options
+	t.Run("does not mutate caller options", func(t *testing.T) {
+		callCount := 0
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			var result SearchJQLResult
+			if callCount == 1 {
+				result = SearchJQLResult{
+					Issues:        []*issue.Issue{{ID: "1", Key: "PROJ-1"}},
+					MaxResults:    2,
+					NextPageToken: "token-page2",
+				}
+			} else {
+				result = SearchJQLResult{
+					Issues:        []*issue.Issue{{ID: "2", Key: "PROJ-2"}},
+					MaxResults:    2,
+					NextPageToken: "",
+				}
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+
+		// Create options with initial state
+		originalOpts := &SearchJQLOptions{
+			JQL:           "project = PROJ",
+			MaxResults:    2,
+			Fields:        []string{"summary"},
+			NextPageToken: "", // Initially empty
+		}
+
+		// Store original values
+		originalToken := originalOpts.NextPageToken
+		originalMaxResults := originalOpts.MaxResults
+		originalFieldsLen := len(originalOpts.Fields)
+
+		// Create iterator (should copy options)
+		iter := service.NewSearchJQLIterator(context.Background(), originalOpts)
+
+		// Iterate through all results
+		count := 0
+		for iter.Next() {
+			count++
+		}
+
+		// Verify iteration worked
+		assert.Equal(t, 2, count)
+		assert.NoError(t, iter.Err())
+
+		// CRITICAL: Verify original options were NOT mutated
+		assert.Equal(t, originalToken, originalOpts.NextPageToken, "NextPageToken should not be mutated")
+		assert.Equal(t, originalMaxResults, originalOpts.MaxResults, "MaxResults should not be mutated")
+		assert.Equal(t, originalFieldsLen, len(originalOpts.Fields), "Fields should not be mutated")
+		assert.Equal(t, "summary", originalOpts.Fields[0], "Fields content should not be mutated")
+	})
+}
+
 func TestParseURL(t *testing.T) {
 	tests := []struct {
 		name     string

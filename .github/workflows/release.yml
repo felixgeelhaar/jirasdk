@@ -10,10 +10,42 @@ permissions:
   packages: write
 
 jobs:
+  # Verify tag is on main branch
+  verify:
+    name: Verify Tag on Main Branch
+    runs-on: ubuntu-latest
+    outputs:
+      on_main: ${{ steps.check.outputs.on_main }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Check if tag is on main branch
+      id: check
+      run: |
+        # Get the commit SHA that the tag points to
+        TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref }})
+
+        # Check if this commit is on the main branch
+        if git merge-base --is-ancestor $TAG_COMMIT origin/main; then
+          echo "✅ Tag is on main branch"
+          echo "on_main=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Tag is not on main branch"
+          echo "⚠️  Releases can only be created from main branch"
+          echo "on_main=false" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+
   # Run tests before releasing
   test:
     name: Test Before Release
     runs-on: ubuntu-latest
+    needs: verify
+    if: needs.verify.outputs.on_main == 'true'
     strategy:
       matrix:
         go-version: ['1.21', '1.22', '1.23']
@@ -44,7 +76,8 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: test
+    needs: [verify, test]
+    if: needs.verify.outputs.on_main == 'true'
 
     steps:
     - name: Checkout code
@@ -100,7 +133,8 @@ jobs:
   pkgsite:
     name: Update pkg.go.dev
     runs-on: ubuntu-latest
-    needs: release
+    needs: [verify, release]
+    if: needs.verify.outputs.on_main == 'true'
 
     steps:
     - name: Trigger pkg.go.dev update
@@ -114,8 +148,8 @@ jobs:
   announce:
     name: Post Release Announcement
     runs-on: ubuntu-latest
-    needs: release
-    if: ${{ !contains(github.ref, '-rc') && !contains(github.ref, '-beta') && !contains(github.ref, '-alpha') }}
+    needs: [verify, release]
+    if: needs.verify.outputs.on_main == 'true' && !contains(github.ref, '-rc') && !contains(github.ref, '-beta') && !contains(github.ref, '-alpha')
 
     steps:
     - name: Checkout code

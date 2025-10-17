@@ -63,7 +63,12 @@ type EvaluationError struct {
 	Column  int    `json:"column,omitempty"`
 }
 
-// Evaluate evaluates a Jira expression.
+// Evaluate evaluates a Jira expression using the legacy endpoint.
+//
+// Deprecated: Use EvaluateExpression instead. The /rest/api/3/expression/eval endpoint
+// will be removed by Atlassian on August 1, 2025. The new endpoint uses the enhanced
+// search API for better performance and scalability (eventual consistency instead of
+// strong consistency).
 //
 // Example:
 //
@@ -81,6 +86,49 @@ func (s *Service) Evaluate(ctx context.Context, input *EvaluationInput) (*Evalua
 	}
 
 	path := "/rest/api/3/expression/eval"
+
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	var result EvaluationResult
+	if err := s.transport.DecodeResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// EvaluateExpression evaluates a Jira expression using the new Enhanced Search API.
+// This method provides better performance and scalability than the legacy Evaluate method.
+//
+// Key differences from Evaluate():
+//   - Uses enhanced search API with eventual consistency (vs strong consistency)
+//   - Better performance and scalability
+//   - Same input/output structures
+//
+// Example:
+//
+//	result, err := client.Expression.EvaluateExpression(ctx, &expression.EvaluationInput{
+//		Expression: "issue.summary",
+//		Context: map[string]interface{}{
+//			"issue": map[string]interface{}{
+//				"key": "PROJ-123",
+//			},
+//		},
+//	})
+func (s *Service) EvaluateExpression(ctx context.Context, input *EvaluationInput) (*EvaluationResult, error) {
+	if input == nil || input.Expression == "" {
+		return nil, fmt.Errorf("expression is required")
+	}
+
+	path := "/rest/api/3/expression/evaluate"
 
 	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
 	if err != nil {
