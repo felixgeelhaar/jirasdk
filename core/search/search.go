@@ -71,7 +71,7 @@ type SearchJQLOptions struct {
 
 	// MaxResults is the maximum number of results per page.
 	// Can be set up to 5000 when fewer fields are requested.
-	// Defaults to 50 if not specified.
+	// Defaults to 100 when using NewSearchJQLIterator; when calling SearchJQL directly and omitted, the server default applies (typically 50).
 	MaxResults int
 
 	// NextPageToken is used for pagination. Leave empty for the first page.
