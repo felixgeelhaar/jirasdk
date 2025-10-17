@@ -60,12 +60,15 @@ func main() {
 		log.Printf("   Warning: Could not get issue %s: %v\n", issueKey, err)
 	} else {
 		fmt.Printf("   Issue: %s\n", iss.Key)
-		fmt.Printf("   Summary: %s\n", iss.Fields.Summary)
-		fmt.Printf("   Status: %s\n", iss.Fields.Status.Name)
-		if iss.Fields.Assignee != nil {
-			fmt.Printf("   Assignee: %s\n", iss.Fields.Assignee.DisplayName)
+		fmt.Printf("   Summary: %s\n", iss.GetSummary())
+		fmt.Printf("   Status: %s\n", iss.GetStatusName())
+		if assigneeName := iss.GetAssigneeName(); assigneeName != "" {
+			fmt.Printf("   Assignee: %s\n", assigneeName)
 		}
-		fmt.Printf("   Created: %s\n\n", iss.Fields.Created.Format(time.RFC3339))
+		// Safe: use GetCreatedTime() to avoid nil pointer panic
+		if created := iss.GetCreatedTime(); !created.IsZero() {
+			fmt.Printf("   Created: %s\n\n", created.Format(time.RFC3339))
+		}
 	}
 
 	// 3. Search for issues using JQL

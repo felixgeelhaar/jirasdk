@@ -205,6 +205,66 @@ func (i *Issue) GetComponents() []*Component {
 	return i.Fields.Components
 }
 
+// GetCreated safely retrieves the issue creation timestamp.
+// Returns nil if Fields or Created is nil.
+func (i *Issue) GetCreated() *time.Time {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Created
+}
+
+// GetCreatedTime safely retrieves the issue creation timestamp as a value.
+// Returns zero time (time.Time{}) if Fields or Created is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (i *Issue) GetCreatedTime() time.Time {
+	created := i.GetCreated()
+	if created == nil {
+		return time.Time{}
+	}
+	return *created
+}
+
+// GetUpdated safely retrieves the issue last update timestamp.
+// Returns nil if Fields or Updated is nil.
+func (i *Issue) GetUpdated() *time.Time {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Updated
+}
+
+// GetUpdatedTime safely retrieves the issue last update timestamp as a value.
+// Returns zero time (time.Time{}) if Fields or Updated is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (i *Issue) GetUpdatedTime() time.Time {
+	updated := i.GetUpdated()
+	if updated == nil {
+		return time.Time{}
+	}
+	return *updated
+}
+
+// GetDueDate safely retrieves the issue due date.
+// Returns nil if Fields or DueDate is nil.
+func (i *Issue) GetDueDate() *time.Time {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.DueDate
+}
+
+// GetDueDateValue safely retrieves the issue due date as a value.
+// Returns zero time (time.Time{}) if Fields or DueDate is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (i *Issue) GetDueDateValue() time.Time {
+	dueDate := i.GetDueDate()
+	if dueDate == nil {
+		return time.Time{}
+	}
+	return *dueDate
+}
+
 // IssueFields contains the fields of an issue.
 type IssueFields struct {
 	Summary     string       `json:"summary,omitempty"`
