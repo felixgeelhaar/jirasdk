@@ -905,6 +905,65 @@ func TestSearchJQLIterator(t *testing.T) {
 		assert.True(t, iter.Next())
 		assert.NoError(t, iter.Err())
 	})
+
+	// Test that iterator does not mutate caller's options
+	t.Run("does not mutate caller options", func(t *testing.T) {
+		callCount := 0
+		transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			var result SearchJQLResult
+			if callCount == 1 {
+				result = SearchJQLResult{
+					Issues:        []*issue.Issue{{ID: "1", Key: "PROJ-1"}},
+					MaxResults:    2,
+					NextPageToken: "token-page2",
+				}
+			} else {
+				result = SearchJQLResult{
+					Issues:        []*issue.Issue{{ID: "2", Key: "PROJ-2"}},
+					MaxResults:    2,
+					NextPageToken: "",
+				}
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
+		})
+		defer transport.Close()
+
+		service := NewService(transport)
+
+		// Create options with initial state
+		originalOpts := &SearchJQLOptions{
+			JQL:           "project = PROJ",
+			MaxResults:    2,
+			Fields:        []string{"summary"},
+			NextPageToken: "", // Initially empty
+		}
+
+		// Store original values
+		originalToken := originalOpts.NextPageToken
+		originalMaxResults := originalOpts.MaxResults
+		originalFieldsLen := len(originalOpts.Fields)
+
+		// Create iterator (should copy options)
+		iter := service.NewSearchJQLIterator(context.Background(), originalOpts)
+
+		// Iterate through all results
+		count := 0
+		for iter.Next() {
+			count++
+		}
+
+		// Verify iteration worked
+		assert.Equal(t, 2, count)
+		assert.NoError(t, iter.Err())
+
+		// CRITICAL: Verify original options were NOT mutated
+		assert.Equal(t, originalToken, originalOpts.NextPageToken, "NextPageToken should not be mutated")
+		assert.Equal(t, originalMaxResults, originalOpts.MaxResults, "MaxResults should not be mutated")
+		assert.Equal(t, originalFieldsLen, len(originalOpts.Fields), "Fields should not be mutated")
+		assert.Equal(t, "summary", originalOpts.Fields[0], "Fields content should not be mutated")
+	})
 }
 
 func TestParseURL(t *testing.T) {

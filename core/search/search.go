@@ -508,12 +508,13 @@ func (it *SearchIterator) Err() error {
 // SearchJQLIterator provides an iterator for paginated search results using the new JQL endpoint.
 // This iterator automatically handles token-based pagination.
 type SearchJQLIterator struct {
-	service *Service
-	opts    *SearchJQLOptions
-	current *SearchJQLResult
-	index   int
-	ctx     context.Context
-	err     error
+	service   *Service
+	opts      *SearchJQLOptions
+	nextToken string // Internal pagination state
+	current   *SearchJQLResult
+	index     int
+	ctx       context.Context
+	err       error
 }
 
 // NewSearchJQLIterator creates a new search iterator using the Enhanced JQL Search API.
@@ -538,15 +539,19 @@ func (s *Service) NewSearchJQLIterator(ctx context.Context, opts *SearchJQLOptio
 	if opts == nil {
 		opts = &SearchJQLOptions{}
 	}
-	if opts.MaxResults == 0 {
-		opts.MaxResults = 100 // Default to 100 for better performance
+
+	// Create a copy of options to avoid mutating caller's struct
+	optsCopy := *opts
+	if optsCopy.MaxResults == 0 {
+		optsCopy.MaxResults = 100 // Default to 100 for better performance
 	}
 
 	return &SearchJQLIterator{
-		service: s,
-		opts:    opts,
-		ctx:     ctx,
-		index:   -1,
+		service:   s,
+		opts:      &optsCopy,
+		nextToken: opts.NextPageToken, // Preserve initial token if provided
+		ctx:       ctx,
+		index:     -1,
 	}
 }
 
@@ -562,18 +567,20 @@ func (it *SearchJQLIterator) Next() bool {
 			return false
 		}
 
-		// Fetch next page
-		if it.current != nil {
-			it.opts.NextPageToken = it.current.NextPageToken
-		}
+		// Create options copy with current pagination token
+		// This avoids mutating the original caller-provided options
+		optsForRequest := *it.opts
+		optsForRequest.NextPageToken = it.nextToken
 
-		result, err := it.service.SearchJQL(it.ctx, it.opts)
+		result, err := it.service.SearchJQL(it.ctx, &optsForRequest)
 		if err != nil {
 			it.err = err
 			return false
 		}
 
+		// Update internal pagination state
 		it.current = result
+		it.nextToken = result.NextPageToken
 		it.index = 0
 
 		// Check if we got any results
