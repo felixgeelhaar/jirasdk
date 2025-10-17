@@ -38,6 +38,173 @@ type Issue struct {
 	Expand string       `json:"expand,omitempty"`
 }
 
+// SafeFields returns the issue fields, or an empty IssueFields struct if nil.
+// This method prevents nil pointer dereferences when accessing issue fields.
+//
+// Example:
+//
+//	// Safe - will not panic even if Fields is nil
+//	summary := issue.SafeFields().Summary
+//
+//	// Unsafe - could panic if Fields is nil
+//	summary := issue.Fields.Summary
+func (i *Issue) SafeFields() *IssueFields {
+	if i.Fields == nil {
+		return &IssueFields{}
+	}
+	return i.Fields
+}
+
+// GetSummary safely retrieves the issue summary.
+// Returns an empty string if Fields is nil.
+func (i *Issue) GetSummary() string {
+	if i.Fields == nil {
+		return ""
+	}
+	return i.Fields.Summary
+}
+
+// GetDescription safely retrieves the issue description.
+// Returns an empty string if Fields is nil.
+func (i *Issue) GetDescription() string {
+	if i.Fields == nil {
+		return ""
+	}
+	return i.Fields.Description
+}
+
+// GetStatus safely retrieves the issue status.
+// Returns nil if Fields or Status is nil.
+func (i *Issue) GetStatus() *Status {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Status
+}
+
+// GetStatusName safely retrieves the status name.
+// Returns an empty string if Fields, Status, or Status.Name is not available.
+func (i *Issue) GetStatusName() string {
+	status := i.GetStatus()
+	if status == nil {
+		return ""
+	}
+	return status.Name
+}
+
+// GetPriority safely retrieves the issue priority.
+// Returns nil if Fields or Priority is nil.
+func (i *Issue) GetPriority() *Priority {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Priority
+}
+
+// GetPriorityName safely retrieves the priority name.
+// Returns an empty string if Fields, Priority, or Priority.Name is not available.
+func (i *Issue) GetPriorityName() string {
+	priority := i.GetPriority()
+	if priority == nil {
+		return ""
+	}
+	return priority.Name
+}
+
+// GetAssignee safely retrieves the issue assignee.
+// Returns nil if Fields or Assignee is nil.
+func (i *Issue) GetAssignee() *User {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Assignee
+}
+
+// GetAssigneeName safely retrieves the assignee display name.
+// Returns an empty string if Fields, Assignee, or Assignee.DisplayName is not available.
+func (i *Issue) GetAssigneeName() string {
+	assignee := i.GetAssignee()
+	if assignee == nil {
+		return ""
+	}
+	return assignee.DisplayName
+}
+
+// GetReporter safely retrieves the issue reporter.
+// Returns nil if Fields or Reporter is nil.
+func (i *Issue) GetReporter() *User {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Reporter
+}
+
+// GetReporterName safely retrieves the reporter display name.
+// Returns an empty string if Fields, Reporter, or Reporter.DisplayName is not available.
+func (i *Issue) GetReporterName() string {
+	reporter := i.GetReporter()
+	if reporter == nil {
+		return ""
+	}
+	return reporter.DisplayName
+}
+
+// GetProject safely retrieves the issue project.
+// Returns nil if Fields or Project is nil.
+func (i *Issue) GetProject() *Project {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Project
+}
+
+// GetProjectKey safely retrieves the project key.
+// Returns an empty string if Fields, Project, or Project.Key is not available.
+func (i *Issue) GetProjectKey() string {
+	project := i.GetProject()
+	if project == nil {
+		return ""
+	}
+	return project.Key
+}
+
+// GetIssueType safely retrieves the issue type.
+// Returns nil if Fields or IssueType is nil.
+func (i *Issue) GetIssueType() *IssueType {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.IssueType
+}
+
+// GetIssueTypeName safely retrieves the issue type name.
+// Returns an empty string if Fields, IssueType, or IssueType.Name is not available.
+func (i *Issue) GetIssueTypeName() string {
+	issueType := i.GetIssueType()
+	if issueType == nil {
+		return ""
+	}
+	return issueType.Name
+}
+
+// GetLabels safely retrieves the issue labels.
+// Returns an empty slice if Fields or Labels is nil.
+func (i *Issue) GetLabels() []string {
+	if i.Fields == nil || i.Fields.Labels == nil {
+		return []string{}
+	}
+	return i.Fields.Labels
+}
+
+// GetComponents safely retrieves the issue components.
+// Returns an empty slice if Fields or Components is nil.
+func (i *Issue) GetComponents() []*Component {
+	if i.Fields == nil || i.Fields.Components == nil {
+		return []*Component{}
+	}
+	return i.Fields.Components
+}
+
 // IssueFields contains the fields of an issue.
 type IssueFields struct {
 	Summary     string       `json:"summary,omitempty"`
