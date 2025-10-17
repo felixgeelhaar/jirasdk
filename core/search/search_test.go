@@ -966,7 +966,6 @@ func TestSearchJQLIterator(t *testing.T) {
 	})
 }
 
-
 func TestParseURL(t *testing.T) {
 	tests := []struct {
 		name     string
