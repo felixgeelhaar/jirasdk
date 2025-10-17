@@ -390,10 +390,10 @@ If you encounter issues during migration:
 
 ## Timeline Overview
 
-Endpoint | Removal Date | New Endpoint
-----------|--------------|--------------
-`/rest/api/3/search` | October 31, 2025 | `/rest/api/3/search/jql`
-`/rest/api/3/expression/eval` | August 1, 2025 | `/rest/api/3/expression/evaluate`
+| Endpoint | Removal Date | New Endpoint |
+|----------|--------------|--------------|
+| `/rest/api/3/search` | October 31, 2025 | `/rest/api/3/search/jql` |
+| `/rest/api/3/expression/eval` | August 1, 2025 | `/rest/api/3/expression/evaluate` |
 
 ## Migration Priority
 
