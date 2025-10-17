@@ -31,7 +31,10 @@ func NewService(transport RoundTripper) *Service {
 	}
 }
 
-// SearchOptions configures the search operation.
+// SearchOptions configures the search operation for the legacy /rest/api/3/search endpoint.
+//
+// Deprecated: Use SearchJQLOptions with SearchJQL method instead.
+// The /rest/api/3/search endpoint will be removed by Atlassian on October 31, 2025.
 type SearchOptions struct {
 	// JQL is the JQL query string
 	JQL string
@@ -52,7 +55,42 @@ type SearchOptions struct {
 	ValidateQuery bool
 }
 
-// SearchResult contains the search results and pagination info.
+// SearchJQLOptions configures the search operation for the new /rest/api/3/search/jql endpoint.
+// This endpoint uses token-based pagination instead of offset-based pagination.
+type SearchJQLOptions struct {
+	// JQL is the JQL query string (required)
+	JQL string
+
+	// Fields specifies which fields to include in the response.
+	// If not specified, only the issue ID is returned by default.
+	// Use ["*all"] to get all fields or ["*navigable"] for navigable fields.
+	Fields []string
+
+	// Expand specifies which additional information to include
+	Expand []string
+
+	// MaxResults is the maximum number of results per page.
+	// Can be set up to 5000 when fewer fields are requested.
+	// Defaults to 50 if not specified.
+	MaxResults int
+
+	// NextPageToken is used for pagination. Leave empty for the first page.
+	// Use the token returned from the previous response to get the next page.
+	NextPageToken string
+
+	// FieldsByKeys specifies if fields should be referenced by keys instead of IDs
+	FieldsByKeys bool
+
+	// Properties specifies which issue properties to include
+	Properties []string
+
+	// ValidateQuery validates the JQL query before executing
+	ValidateQuery bool
+}
+
+// SearchResult contains the search results and pagination info for the legacy endpoint.
+//
+// Deprecated: Use SearchJQLResult with SearchJQL method instead.
 type SearchResult struct {
 	Issues     []*issue.Issue      `json:"issues"`
 	StartAt    int                 `json:"startAt"`
@@ -61,7 +99,19 @@ type SearchResult struct {
 	PageInfo   pagination.PageInfo `json:"-"`
 }
 
-// Search executes a JQL search query.
+// SearchJQLResult contains the search results and pagination info for the new JQL endpoint.
+// Note: Unlike the legacy endpoint, this does not include a total count due to performance considerations.
+type SearchJQLResult struct {
+	Issues        []*issue.Issue `json:"issues"`
+	MaxResults    int            `json:"maxResults,omitempty"`
+	NextPageToken string         `json:"nextPageToken,omitempty"`
+}
+
+// Search executes a JQL search query using the legacy endpoint.
+//
+// Deprecated: Use SearchJQL instead. The /rest/api/3/search endpoint will be removed
+// by Atlassian on October 31, 2025. Migrate to SearchJQL which uses the new
+// /rest/api/3/search/jql endpoint with token-based pagination.
 //
 // Example:
 //
@@ -122,6 +172,106 @@ func (s *Service) Search(ctx context.Context, opts *SearchOptions) (*SearchResul
 	}
 
 	return &result, nil
+}
+
+// SearchJQL executes a JQL search query using the new Enhanced JQL Search API.
+// This method uses token-based pagination and should be used instead of Search().
+//
+// Key differences from Search():
+//   - Uses token-based pagination with NextPageToken instead of StartAt
+//   - No total count returned (for performance reasons)
+//   - Default fields is ["id"] instead of ["*navigable"]
+//   - Supports up to 5000 results per page (vs 100 in legacy endpoint)
+//
+// Example:
+//
+//	results, err := client.Search.SearchJQL(ctx, &search.SearchJQLOptions{
+//		JQL: "project = PROJ AND status = Open",
+//		Fields: []string{"summary", "status", "assignee"},
+//		MaxResults: 100,
+//	})
+//
+//	// Paginate through results using NextPageToken
+//	for results.NextPageToken != "" {
+//		results, err = client.Search.SearchJQL(ctx, &search.SearchJQLOptions{
+//			JQL: "project = PROJ AND status = Open",
+//			Fields: []string{"summary", "status", "assignee"},
+//			MaxResults: 100,
+//			NextPageToken: results.NextPageToken,
+//		})
+//		// Process results...
+//	}
+func (s *Service) SearchJQL(ctx context.Context, opts *SearchJQLOptions) (*SearchJQLResult, error) {
+	if opts == nil || opts.JQL == "" {
+		return nil, fmt.Errorf("JQL query is required")
+	}
+
+	path := "/rest/api/3/search/jql"
+
+	// Build request body
+	body := map[string]interface{}{
+		"jql": opts.JQL,
+	}
+
+	// Set maxResults (defaults to 50 if not specified)
+	if opts.MaxResults > 0 {
+		body["maxResults"] = opts.MaxResults
+	}
+
+	// Add nextPageToken for pagination
+	if opts.NextPageToken != "" {
+		body["nextPageToken"] = opts.NextPageToken
+	}
+
+	// Add fields if specified
+	if len(opts.Fields) > 0 {
+		body["fields"] = opts.Fields
+	}
+
+	// Add expand if specified
+	if len(opts.Expand) > 0 {
+		body["expand"] = opts.Expand
+	}
+
+	// Add fieldsByKeys if specified
+	if opts.FieldsByKeys {
+		body["fieldsByKeys"] = true
+	}
+
+	// Add properties if specified
+	if len(opts.Properties) > 0 {
+		body["properties"] = opts.Properties
+	}
+
+	// Add validation if specified
+	if opts.ValidateQuery {
+		body["validateQuery"] = "strict"
+	}
+
+	// Create request
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Execute request
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	// Decode response
+	var result SearchJQLResult
+	if err := s.transport.DecodeResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// HasNextPage returns true if there are more results available.
+func (r *SearchJQLResult) HasNextPage() bool {
+	return r.NextPageToken != ""
 }
 
 // QueryBuilder provides a fluent API for building JQL queries.
@@ -277,7 +427,10 @@ func quote(value string) string {
 	return value
 }
 
-// SearchIterator provides an iterator for paginated search results.
+// SearchIterator provides an iterator for paginated search results using the legacy endpoint.
+//
+// Deprecated: Use SearchJQLIterator instead. The underlying /rest/api/3/search endpoint
+// will be removed by Atlassian on October 31, 2025.
 type SearchIterator struct {
 	service *Service
 	opts    *SearchOptions
@@ -286,7 +439,9 @@ type SearchIterator struct {
 	ctx     context.Context
 }
 
-// NewSearchIterator creates a new search iterator.
+// NewSearchIterator creates a new search iterator using the legacy endpoint.
+//
+// Deprecated: Use NewSearchJQLIterator instead.
 func (s *Service) NewSearchIterator(ctx context.Context, opts *SearchOptions) *SearchIterator {
 	if opts == nil {
 		opts = &SearchOptions{}
@@ -348,6 +503,100 @@ func (it *SearchIterator) Issue() *issue.Issue {
 func (it *SearchIterator) Err() error {
 	// TODO: Store and return errors
 	return nil
+}
+
+// SearchJQLIterator provides an iterator for paginated search results using the new JQL endpoint.
+// This iterator automatically handles token-based pagination.
+type SearchJQLIterator struct {
+	service *Service
+	opts    *SearchJQLOptions
+	current *SearchJQLResult
+	index   int
+	ctx     context.Context
+	err     error
+}
+
+// NewSearchJQLIterator creates a new search iterator using the Enhanced JQL Search API.
+//
+// Example:
+//
+//	iter := client.Search.NewSearchJQLIterator(ctx, &search.SearchJQLOptions{
+//		JQL: "project = PROJ AND status = Open",
+//		Fields: []string{"summary", "status", "assignee"},
+//		MaxResults: 100,
+//	})
+//
+//	for iter.Next() {
+//		issue := iter.Issue()
+//		fmt.Printf("Issue: %s - %s\n", issue.Key, issue.Fields.Summary)
+//	}
+//
+//	if err := iter.Err(); err != nil {
+//		log.Fatal(err)
+//	}
+func (s *Service) NewSearchJQLIterator(ctx context.Context, opts *SearchJQLOptions) *SearchJQLIterator {
+	if opts == nil {
+		opts = &SearchJQLOptions{}
+	}
+	if opts.MaxResults == 0 {
+		opts.MaxResults = 100 // Default to 100 for better performance
+	}
+
+	return &SearchJQLIterator{
+		service: s,
+		opts:    opts,
+		ctx:     ctx,
+		index:   -1,
+	}
+}
+
+// Next advances the iterator to the next issue.
+// Returns true if an issue is available, false if iteration is complete or an error occurred.
+func (it *SearchJQLIterator) Next() bool {
+	it.index++
+
+	// Check if we need to fetch the next page
+	if it.current == nil || it.index >= len(it.current.Issues) {
+		// Check if there are more pages
+		if it.current != nil && !it.current.HasNextPage() {
+			return false
+		}
+
+		// Fetch next page
+		if it.current != nil {
+			it.opts.NextPageToken = it.current.NextPageToken
+		}
+
+		result, err := it.service.SearchJQL(it.ctx, it.opts)
+		if err != nil {
+			it.err = err
+			return false
+		}
+
+		it.current = result
+		it.index = 0
+
+		// Check if we got any results
+		if len(result.Issues) == 0 {
+			return false
+		}
+	}
+
+	return it.index < len(it.current.Issues)
+}
+
+// Issue returns the current issue.
+// Returns nil if there is no current issue (before first Next() call or after iteration completes).
+func (it *SearchJQLIterator) Issue() *issue.Issue {
+	if it.current == nil || it.index < 0 || it.index >= len(it.current.Issues) {
+		return nil
+	}
+	return it.current.Issues[it.index]
+}
+
+// Err returns any error encountered during iteration.
+func (it *SearchJQLIterator) Err() error {
+	return it.err
 }
 
 // ParseURL parses a Jira issue URL and extracts the issue key.
