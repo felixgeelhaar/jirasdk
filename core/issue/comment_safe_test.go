@@ -8,7 +8,7 @@ import (
 
 // TestCommentSafeHelperMethods tests all safe helper methods for Comment
 func TestCommentSafeHelperMethods(t *testing.T) {
-	// Test time values
+	// Test time values (timePtr is defined in testutil_time_test.go)
 	testCreated := timePtr(2024, 1, 15, 10, 30, 0)
 	testUpdated := timePtr(2024, 2, 20, 14, 45, 0)
 	testAuthor := &User{AccountID: "user1", DisplayName: "John Doe"}
