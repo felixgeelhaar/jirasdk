@@ -529,7 +529,8 @@ type SearchJQLIterator struct {
 //
 //	for iter.Next() {
 //		issue := iter.Issue()
-//		fmt.Printf("Issue: %s - %s\n", issue.Key, issue.Fields.Summary)
+//		// Safe: use helper methods to avoid nil pointer dereferences
+//		fmt.Printf("Issue: %s - %s\n", issue.Key, issue.GetSummary())
 //	}
 //
 //	if err := iter.Err(); err != nil {
