@@ -63,8 +63,9 @@ func main() {
 			if iss.Fields.Priority != nil {
 				priority = iss.Fields.Priority.Name
 			}
+			// Safe: use GetSummary and GetStatusName to avoid nil pointer panics
 			fmt.Printf("   %d. [%s] %s - %s (Priority: %s)\n",
-				i+1, iss.Key, iss.Fields.Summary, iss.Fields.Status.Name, priority)
+				i+1, iss.Key, iss.GetSummary(), iss.GetStatusName(), priority)
 		}
 		fmt.Println()
 	}
@@ -112,7 +113,16 @@ func main() {
 	} else {
 		fmt.Printf("   Total comments on issue: %d\n", len(comments))
 		for i, c := range comments {
-			fmt.Printf("   %d. By %s at %s\n", i+1, c.Author.DisplayName, c.Created.Format(time.RFC3339))
+			// Safe: check for nil before accessing Author and Created
+			authorName := "Unknown"
+			if c.Author != nil {
+				authorName = c.Author.DisplayName
+			}
+			createdTime := "Unknown"
+			if c.Created != nil {
+				createdTime = c.Created.Format(time.RFC3339)
+			}
+			fmt.Printf("   %d. By %s at %s\n", i+1, authorName, createdTime)
 		}
 		fmt.Println()
 	}

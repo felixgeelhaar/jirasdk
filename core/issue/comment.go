@@ -17,6 +17,53 @@ type Comment struct {
 	Updated *time.Time `json:"updated,omitempty"`
 }
 
+// GetAuthor safely retrieves the comment author.
+// Returns nil if Author is nil.
+func (c *Comment) GetAuthor() *User {
+	return c.Author
+}
+
+// GetAuthorName safely retrieves the author display name.
+// Returns an empty string if Author or Author.DisplayName is not available.
+func (c *Comment) GetAuthorName() string {
+	if c.Author == nil {
+		return ""
+	}
+	return c.Author.DisplayName
+}
+
+// GetCreated safely retrieves the comment creation timestamp.
+// Returns nil if Created is nil.
+func (c *Comment) GetCreated() *time.Time {
+	return c.Created
+}
+
+// GetCreatedTime safely retrieves the comment creation timestamp as a value.
+// Returns zero time (time.Time{}) if Created is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (c *Comment) GetCreatedTime() time.Time {
+	if c.Created == nil {
+		return time.Time{}
+	}
+	return *c.Created
+}
+
+// GetUpdated safely retrieves the comment last update timestamp.
+// Returns nil if Updated is nil.
+func (c *Comment) GetUpdated() *time.Time {
+	return c.Updated
+}
+
+// GetUpdatedTime safely retrieves the comment last update timestamp as a value.
+// Returns zero time (time.Time{}) if Updated is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (c *Comment) GetUpdatedTime() time.Time {
+	if c.Updated == nil {
+		return time.Time{}
+	}
+	return *c.Updated
+}
+
 // CommentsResult contains a list of comments with pagination.
 type CommentsResult struct {
 	Comments   []*Comment `json:"comments"`

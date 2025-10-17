@@ -103,10 +103,11 @@ func main() {
 		}
 
 		fmt.Printf("\nIssue: %s\n", issue.Key)
-		fmt.Printf("  Summary: %s\n", issue.Fields.Summary)
-		fmt.Printf("  Status: %s\n", issue.Fields.Status.Name)
-		if issue.Fields.Assignee != nil {
-			fmt.Printf("  Assignee: %s\n", issue.Fields.Assignee.DisplayName)
+		// Safe: use GetSummary, GetStatusName, and GetAssigneeName to avoid nil pointer panics
+		fmt.Printf("  Summary: %s\n", issue.GetSummary())
+		fmt.Printf("  Status: %s\n", issue.GetStatusName())
+		if assigneeName := issue.GetAssigneeName(); assigneeName != "" {
+			fmt.Printf("  Assignee: %s\n", assigneeName)
 		}
 	}
 }
