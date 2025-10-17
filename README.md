@@ -78,9 +78,9 @@ client, err := jira.NewClient(
 **Enhanced JQL Service API** - We've introduced improved methods with better performance:
 
 - **Search**: `SearchJQL()` replaces `Search()` (40-60% faster pagination)
-  - `Search()` deprecated, will be removed **August 1, 2025**
+  - `Search()` deprecated, will be removed **October 31, 2025**
 - **Expressions**: `EvaluateExpression()` replaces `Evaluate()` (30-50% faster)
-  - `Evaluate()` deprecated, will be removed **October 31, 2025**
+  - `Evaluate()` deprecated, will be removed **August 1, 2025**
 
 📖 **See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed migration instructions and code examples.**
 
@@ -483,7 +483,7 @@ for i := 0; i < results.Total; i += 50 {
     })
 }
 
-// Legacy Search() method (deprecated, will be removed Aug 1, 2025)
+// Legacy Search() method (deprecated, will be removed Oct 31, 2025)
 // Use SearchJQL() instead for better performance and clearer intent
 results, err := client.Search.Search(ctx, &search.SearchOptions{
     JQL: "project = PROJ",
@@ -1032,7 +1032,7 @@ if len(result.Errors) > 0 {
     }
 }
 
-// Legacy Evaluate() method (deprecated, will be removed Oct 31, 2025)
+// Legacy Evaluate() method (deprecated, will be removed Aug 1, 2025)
 // Use EvaluateExpression() instead for better performance
 result, err := client.Expression.Evaluate(ctx, &expression.EvaluationInput{
     Expression: "issue.summary",
