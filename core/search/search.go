@@ -606,6 +606,7 @@ func (it *SearchJQLIterator) Err() error {
 	return it.err
 }
 
+
 // ParseURL parses a Jira issue URL and extracts the issue key.
 //
 // Example:
