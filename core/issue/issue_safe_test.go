@@ -2,6 +2,7 @@ package issue
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -327,4 +328,184 @@ func TestIssueSafeHelperMethods(t *testing.T) {
 		assert.Equal(t, 2, len(issue.GetLabels()))
 		assert.Equal(t, 1, len(issue.GetComponents()))
 	})
+}
+
+// TestIssueDateSafeHelperMethods tests all date-related safe helper methods
+func TestIssueDateSafeHelperMethods(t *testing.T) {
+	// Test time values for assertions
+	testCreated := timePtr(2024, 1, 15, 10, 30, 0)
+	testUpdated := timePtr(2024, 2, 20, 14, 45, 0)
+	testDueDate := timePtr(2024, 3, 31, 23, 59, 59)
+
+	t.Run("GetCreated with nil Fields", func(t *testing.T) {
+		issue := &Issue{ID: "10001", Key: "PROJ-123"}
+		assert.Nil(t, issue.GetCreated())
+	})
+
+	t.Run("GetCreated with nil Created", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Summary: "Test"},
+			// Created is nil
+		}
+		assert.Nil(t, issue.GetCreated())
+	})
+
+	t.Run("GetCreated with populated Created", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Created: testCreated},
+		}
+		created := issue.GetCreated()
+		assert.NotNil(t, created)
+		assert.Equal(t, *testCreated, *created)
+	})
+
+	t.Run("GetCreatedTime with nil Fields", func(t *testing.T) {
+		issue := &Issue{ID: "10001", Key: "PROJ-123"}
+		created := issue.GetCreatedTime()
+		assert.True(t, created.IsZero())
+	})
+
+	t.Run("GetCreatedTime with nil Created", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Summary: "Test"},
+			// Created is nil
+		}
+		created := issue.GetCreatedTime()
+		assert.True(t, created.IsZero())
+	})
+
+	t.Run("GetCreatedTime with populated Created", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Created: testCreated},
+		}
+		created := issue.GetCreatedTime()
+		assert.False(t, created.IsZero())
+		assert.Equal(t, *testCreated, created)
+	})
+
+	t.Run("GetUpdated with nil Fields", func(t *testing.T) {
+		issue := &Issue{ID: "10001", Key: "PROJ-123"}
+		assert.Nil(t, issue.GetUpdated())
+	})
+
+	t.Run("GetUpdated with nil Updated", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Summary: "Test"},
+			// Updated is nil
+		}
+		assert.Nil(t, issue.GetUpdated())
+	})
+
+	t.Run("GetUpdated with populated Updated", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Updated: testUpdated},
+		}
+		updated := issue.GetUpdated()
+		assert.NotNil(t, updated)
+		assert.Equal(t, *testUpdated, *updated)
+	})
+
+	t.Run("GetUpdatedTime with nil Fields", func(t *testing.T) {
+		issue := &Issue{ID: "10001", Key: "PROJ-123"}
+		updated := issue.GetUpdatedTime()
+		assert.True(t, updated.IsZero())
+	})
+
+	t.Run("GetUpdatedTime with nil Updated", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Summary: "Test"},
+			// Updated is nil
+		}
+		updated := issue.GetUpdatedTime()
+		assert.True(t, updated.IsZero())
+	})
+
+	t.Run("GetUpdatedTime with populated Updated", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Updated: testUpdated},
+		}
+		updated := issue.GetUpdatedTime()
+		assert.False(t, updated.IsZero())
+		assert.Equal(t, *testUpdated, updated)
+	})
+
+	t.Run("GetDueDate with nil Fields", func(t *testing.T) {
+		issue := &Issue{ID: "10001", Key: "PROJ-123"}
+		assert.Nil(t, issue.GetDueDate())
+	})
+
+	t.Run("GetDueDate with nil DueDate", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Summary: "Test"},
+			// DueDate is nil
+		}
+		assert.Nil(t, issue.GetDueDate())
+	})
+
+	t.Run("GetDueDate with populated DueDate", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{DueDate: testDueDate},
+		}
+		dueDate := issue.GetDueDate()
+		assert.NotNil(t, dueDate)
+		assert.Equal(t, *testDueDate, *dueDate)
+	})
+
+	t.Run("GetDueDateValue with nil Fields", func(t *testing.T) {
+		issue := &Issue{ID: "10001", Key: "PROJ-123"}
+		dueDate := issue.GetDueDateValue()
+		assert.True(t, dueDate.IsZero())
+	})
+
+	t.Run("GetDueDateValue with nil DueDate", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{Summary: "Test"},
+			// DueDate is nil
+		}
+		dueDate := issue.GetDueDateValue()
+		assert.True(t, dueDate.IsZero())
+	})
+
+	t.Run("GetDueDateValue with populated DueDate", func(t *testing.T) {
+		issue := &Issue{
+			Fields: &IssueFields{DueDate: testDueDate},
+		}
+		dueDate := issue.GetDueDateValue()
+		assert.False(t, dueDate.IsZero())
+		assert.Equal(t, *testDueDate, dueDate)
+	})
+
+	t.Run("All date fields with complete issue", func(t *testing.T) {
+		issue := &Issue{
+			ID:  "10001",
+			Key: "PROJ-123",
+			Fields: &IssueFields{
+				Summary: "Complete issue",
+				Created: testCreated,
+				Updated: testUpdated,
+				DueDate: testDueDate,
+			},
+		}
+
+		// Test pointer methods
+		assert.NotNil(t, issue.GetCreated())
+		assert.NotNil(t, issue.GetUpdated())
+		assert.NotNil(t, issue.GetDueDate())
+
+		// Test value methods
+		assert.False(t, issue.GetCreatedTime().IsZero())
+		assert.False(t, issue.GetUpdatedTime().IsZero())
+		assert.False(t, issue.GetDueDateValue().IsZero())
+
+		// Test values match
+		assert.Equal(t, *testCreated, issue.GetCreatedTime())
+		assert.Equal(t, *testUpdated, issue.GetUpdatedTime())
+		assert.Equal(t, *testDueDate, issue.GetDueDateValue())
+	})
+}
+
+// timePtr is a helper function to create time.Time pointers for tests
+func timePtr(year, month, day, hour, min, sec int) *time.Time {
+	t := time.Date(year, time.Month(month), day, hour, min, sec, 0, time.UTC)
+	return &t
 }
