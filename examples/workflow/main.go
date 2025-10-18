@@ -59,11 +59,11 @@ func main() {
 	} else {
 		fmt.Printf("   Found %d issues assigned to you\n", len(results.Issues))
 		for i, iss := range results.Issues {
-			priority := "None"
-			if iss.Fields.Priority != nil {
-				priority = iss.Fields.Priority.Name
+			// Safe: use GetSummary, GetStatusName, and GetPriorityName to avoid nil pointer panics
+			priority := iss.GetPriorityName()
+			if priority == "" {
+				priority = "None"
 			}
-			// Safe: use GetSummary and GetStatusName to avoid nil pointer panics
 			fmt.Printf("   %d. [%s] %s - %s (Priority: %s)\n",
 				i+1, iss.Key, iss.GetSummary(), iss.GetStatusName(), priority)
 		}
