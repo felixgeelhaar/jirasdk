@@ -23,6 +23,84 @@ type Worklog struct {
 	Visibility       *WorklogVisibility `json:"visibility,omitempty"`
 }
 
+// GetAuthor safely retrieves the worklog author.
+// Returns nil if Author is nil.
+func (w *Worklog) GetAuthor() *User {
+	return w.Author
+}
+
+// GetAuthorName safely retrieves the author display name.
+// Returns an empty string if Author or Author.DisplayName is not available.
+func (w *Worklog) GetAuthorName() string {
+	if w.Author == nil {
+		return ""
+	}
+	return w.Author.DisplayName
+}
+
+// GetUpdateAuthor safely retrieves the worklog update author.
+// Returns nil if UpdateAuthor is nil.
+func (w *Worklog) GetUpdateAuthor() *User {
+	return w.UpdateAuthor
+}
+
+// GetUpdateAuthorName safely retrieves the update author display name.
+// Returns an empty string if UpdateAuthor or UpdateAuthor.DisplayName is not available.
+func (w *Worklog) GetUpdateAuthorName() string {
+	if w.UpdateAuthor == nil {
+		return ""
+	}
+	return w.UpdateAuthor.DisplayName
+}
+
+// GetCreated safely retrieves the worklog creation timestamp.
+// Returns nil if Created is nil.
+func (w *Worklog) GetCreated() *time.Time {
+	return w.Created
+}
+
+// GetCreatedTime safely retrieves the worklog creation timestamp as a value.
+// Returns zero time (time.Time{}) if Created is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (w *Worklog) GetCreatedTime() time.Time {
+	if w.Created == nil {
+		return time.Time{}
+	}
+	return *w.Created
+}
+
+// GetUpdated safely retrieves the worklog last update timestamp.
+// Returns nil if Updated is nil.
+func (w *Worklog) GetUpdated() *time.Time {
+	return w.Updated
+}
+
+// GetUpdatedTime safely retrieves the worklog last update timestamp as a value.
+// Returns zero time (time.Time{}) if Updated is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (w *Worklog) GetUpdatedTime() time.Time {
+	if w.Updated == nil {
+		return time.Time{}
+	}
+	return *w.Updated
+}
+
+// GetStarted safely retrieves the worklog start timestamp.
+// Returns nil if Started is nil.
+func (w *Worklog) GetStarted() *time.Time {
+	return w.Started
+}
+
+// GetStartedTime safely retrieves the worklog start timestamp as a value.
+// Returns zero time (time.Time{}) if Started is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (w *Worklog) GetStartedTime() time.Time {
+	if w.Started == nil {
+		return time.Time{}
+	}
+	return *w.Started
+}
+
 // WorklogVisibility controls who can see the worklog.
 type WorklogVisibility struct {
 	Type  string `json:"type"`  // "group" or "role"

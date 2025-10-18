@@ -23,6 +23,37 @@ type Attachment struct {
 	Thumbnail string     `json:"thumbnail,omitempty"`
 }
 
+// GetAuthor safely retrieves the attachment author.
+// Returns nil if Author is nil.
+func (a *Attachment) GetAuthor() *User {
+	return a.Author
+}
+
+// GetAuthorName safely retrieves the author display name.
+// Returns an empty string if Author or Author.DisplayName is not available.
+func (a *Attachment) GetAuthorName() string {
+	if a.Author == nil {
+		return ""
+	}
+	return a.Author.DisplayName
+}
+
+// GetCreated safely retrieves the attachment creation timestamp.
+// Returns nil if Created is nil.
+func (a *Attachment) GetCreated() *time.Time {
+	return a.Created
+}
+
+// GetCreatedTime safely retrieves the attachment creation timestamp as a value.
+// Returns zero time (time.Time{}) if Created is nil.
+// Use this method when you need a time.Time value instead of a pointer.
+func (a *Attachment) GetCreatedTime() time.Time {
+	if a.Created == nil {
+		return time.Time{}
+	}
+	return *a.Created
+}
+
 // AttachmentMetadata contains metadata for uploading an attachment.
 type AttachmentMetadata struct {
 	Filename string

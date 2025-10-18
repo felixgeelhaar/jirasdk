@@ -2,7 +2,6 @@ package issue
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -502,10 +501,4 @@ func TestIssueDateSafeHelperMethods(t *testing.T) {
 		assert.Equal(t, *testUpdated, issue.GetUpdatedTime())
 		assert.Equal(t, *testDueDate, issue.GetDueDateValue())
 	})
-}
-
-// timePtr is a helper function to create time.Time pointers for tests
-func timePtr(year, month, day, hour, min, sec int) *time.Time {
-	t := time.Date(year, time.Month(month), day, hour, min, sec, 0, time.UTC)
-	return &t
 }
