@@ -495,8 +495,8 @@ func (f *IssueFields) UnmarshalJSON(data []byte) error {
 
 // IssueType represents an issue type.
 type IssueType struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 	Subtask     bool   `json:"subtask,omitempty"`
 	IconURL     string `json:"iconUrl,omitempty"`
@@ -504,32 +504,32 @@ type IssueType struct {
 
 // Project represents a Jira project.
 type Project struct {
-	ID   string `json:"id"`
-	Key  string `json:"key"`
+	ID   string `json:"id,omitempty"`
+	Key  string `json:"key,omitempty"`
 	Name string `json:"name,omitempty"`
 	Self string `json:"self,omitempty"`
 }
 
 // Status represents an issue status.
 type Status struct {
-	ID          string          `json:"id"`
-	Name        string          `json:"name"`
+	ID          string          `json:"id,omitempty"`
+	Name        string          `json:"name,omitempty"`
 	Description string          `json:"description,omitempty"`
 	Category    *StatusCategory `json:"statusCategory,omitempty"`
 }
 
 // StatusCategory represents a status category.
 type StatusCategory struct {
-	ID        int    `json:"id"`
-	Key       string `json:"key"`
-	Name      string `json:"name"`
+	ID        int    `json:"id,omitempty"`
+	Key       string `json:"key,omitempty"`
+	Name      string `json:"name,omitempty"`
 	ColorName string `json:"colorName,omitempty"`
 }
 
 // Priority represents an issue priority.
 type Priority struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
+	ID      string `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
 	IconURL string `json:"iconUrl,omitempty"`
 }
 
@@ -545,8 +545,8 @@ type User struct {
 
 // Component represents a project component.
 type Component struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 	Self        string `json:"self,omitempty"`
 }
