@@ -175,29 +175,29 @@ func TestComponentMarshaling(t *testing.T) {
 // TestIssueLinkTypeMarshaling verifies that empty fields are omitted when marshaling IssueLinkType
 func TestIssueLinkTypeMarshaling(t *testing.T) {
 	tests := []struct {
-		name         string
+		name          string
 		issueLinkType *IssueLinkType
-		expected     string
+		expected      string
 	}{
 		{
-			name:         "IssueLinkType with only Name",
+			name:          "IssueLinkType with only Name",
 			issueLinkType: &IssueLinkType{Name: "Blocks"},
-			expected:     `{"name":"Blocks"}`,
+			expected:      `{"name":"Blocks"}`,
 		},
 		{
-			name:         "IssueLinkType with only ID",
+			name:          "IssueLinkType with only ID",
 			issueLinkType: &IssueLinkType{ID: "10001"},
-			expected:     `{"id":"10001"}`,
+			expected:      `{"id":"10001"}`,
 		},
 		{
-			name:         "IssueLinkType with Name and directions",
+			name:          "IssueLinkType with Name and directions",
 			issueLinkType: &IssueLinkType{Name: "Blocks", Inward: "is blocked by", Outward: "blocks"},
-			expected:     `{"name":"Blocks","inward":"is blocked by","outward":"blocks"}`,
+			expected:      `{"name":"Blocks","inward":"is blocked by","outward":"blocks"}`,
 		},
 		{
-			name:         "Empty IssueLinkType",
+			name:          "Empty IssueLinkType",
 			issueLinkType: &IssueLinkType{},
-			expected:     `{}`,
+			expected:      `{}`,
 		},
 	}
 
@@ -218,8 +218,8 @@ func TestIssueLinkTypeMarshaling(t *testing.T) {
 // TestIssueFieldsMarshaling verifies complete IssueFields marshaling behavior
 func TestIssueFieldsMarshaling(t *testing.T) {
 	fields := &IssueFields{
-		Summary: "Test Issue",
-		Project: &Project{Key: "PROJ"}, // Only Key, no ID
+		Summary:   "Test Issue",
+		Project:   &Project{Key: "PROJ"},   // Only Key, no ID
 		IssueType: &IssueType{Name: "Bug"}, // Only Name, no ID
 	}
 
