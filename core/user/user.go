@@ -879,3 +879,38 @@ func (s *Service) FindUsersWithBrowsePermission(ctx context.Context, opts *FindU
 
 	return users, nil
 }
+
+// FindByName is a convenience method to find users by their display name or email.
+// It searches for users matching the provided name string and returns up to maxResults or an error.
+// If maxResults is 0 or negative, defaults to 50 results.
+// If name is empty, an error is returned.
+//
+// This method searches across display names, email addresses, and account IDs.
+// For more control over search parameters, use SearchJQL() instead.
+//
+// Example:
+//
+//	// Find users matching "john"
+//	users, err := client.User.FindByName(ctx, "john", 10)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	for _, user := range users {
+//		fmt.Printf("Found: %s (%s)\n", user.DisplayName, user.EmailAddress)
+//	}
+func (s *Service) FindByName(ctx context.Context, name string, maxResults int) ([]*User, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+
+	// Default to 50 results if not specified or invalid
+	if maxResults <= 0 {
+		maxResults = 50
+	}
+
+	return s.Search(ctx, &SearchOptions{
+		Query:      name,
+		MaxResults: maxResults,
+	})
+}

@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -507,6 +508,98 @@ func TestBulkGet(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, len(tt.responseBody.Values), len(users))
+			}
+		})
+	}
+}
+
+func TestFindByName(t *testing.T) {
+	tests := []struct {
+		name           string
+		userName       string
+		maxResults     int
+		responseStatus int
+		responseBody   []*User
+		wantErr        bool
+		errMsg         string
+	}{
+		{
+			name:           "successful find by name",
+			userName:       "john",
+			maxResults:     10,
+			responseStatus: http.StatusOK,
+			responseBody: []*User{
+				{AccountID: "user1", DisplayName: "John Doe", EmailAddress: "john.doe@example.com"},
+				{AccountID: "user2", DisplayName: "John Smith", EmailAddress: "john.smith@example.com"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "find by email",
+			userName:       "john.doe@example.com",
+			maxResults:     5,
+			responseStatus: http.StatusOK,
+			responseBody: []*User{
+				{AccountID: "user1", DisplayName: "John Doe", EmailAddress: "john.doe@example.com"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "default max results",
+			userName:       "alice",
+			maxResults:     0, // Should default to 50
+			responseStatus: http.StatusOK,
+			responseBody: []*User{
+				{AccountID: "user3", DisplayName: "Alice Johnson"},
+			},
+			wantErr: false,
+		},
+		{
+			name:       "empty name",
+			userName:   "",
+			maxResults: 10,
+			wantErr:    true,
+			errMsg:     "name is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.userName == "" {
+				service := NewService(nil)
+				_, err := service.FindByName(context.Background(), tt.userName, tt.maxResults)
+				require.Error(t, err)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/search")
+				assert.Equal(t, tt.userName, r.URL.Query().Get("query"))
+
+				// Check that maxResults is properly set (defaults to 50 if 0 or negative)
+				expectedMaxResults := tt.maxResults
+				if expectedMaxResults <= 0 {
+					expectedMaxResults = 50
+				}
+				assert.Equal(t, strconv.Itoa(expectedMaxResults), r.URL.Query().Get("maxResults"))
+
+				w.WriteHeader(tt.responseStatus)
+				json.NewEncoder(w).Encode(tt.responseBody)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			users, err := service.FindByName(context.Background(), tt.userName, tt.maxResults)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, len(tt.responseBody), len(users))
 			}
 		})
 	}
