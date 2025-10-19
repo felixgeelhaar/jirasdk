@@ -175,8 +175,8 @@ func TestComponentMarshaling(t *testing.T) {
 // TestIssueFieldsMarshaling verifies complete IssueFields marshaling behavior
 func TestIssueFieldsMarshaling(t *testing.T) {
 	fields := &IssueFields{
-		Summary: "Test Issue",
-		Project: &Project{Key: "PROJ"}, // Only Key, no ID
+		Summary:   "Test Issue",
+		Project:   &Project{Key: "PROJ"},   // Only Key, no ID
 		IssueType: &IssueType{Name: "Bug"}, // Only Name, no ID
 	}
 
