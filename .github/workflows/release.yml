@@ -137,32 +137,60 @@ jobs:
     if: needs.verify.outputs.on_main == 'true'
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
     - name: Trigger pkg.go.dev update
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
-        MODULE="github.com/${{ github.repository }}"
+
+        # Read module path from go.mod (handles v2+ and custom paths)
+        MODULE=$(go list -m -f '{{.Path}}' 2>/dev/null || awk '/^module /{print $2}' go.mod)
 
         echo "🔄 Triggering pkg.go.dev update for ${MODULE}@${VERSION}..."
 
         # Method 1: Request module info from Go proxy (triggers indexing)
         echo "📡 Requesting from Go proxy..."
-        curl -sSf "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info" || echo "⚠️  Proxy request failed (may already be cached)"
+        curl -sSf "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info"
+        PROXY_OK=$?
+        if [ $PROXY_OK -ne 0 ]; then
+          echo "⚠️  Proxy request failed (may already be cached)"
+        fi
 
         # Method 2: Direct fetch request to pkg.go.dev
         echo "📡 Requesting pkg.go.dev fetch..."
-        curl -sSf "https://pkg.go.dev/fetch/${MODULE}@${VERSION}" || echo "⚠️  Direct fetch request queued"
+        curl -sSf "https://pkg.go.dev/fetch/${MODULE}@${VERSION}"
+        PKGDEV_OK=$?
+        if [ $PKGDEV_OK -ne 0 ]; then
+          echo "⚠️  Direct fetch request queued"
+        fi
 
         # Method 3: Request the module list (alternative trigger)
         echo "📡 Requesting module version list..."
-        curl -sSf "https://proxy.golang.org/${MODULE}/@v/list" > /dev/null || true
+        curl -sSf "https://proxy.golang.org/${MODULE}/@v/list" > /dev/null
+        LIST_OK=$?
+        if [ $LIST_OK -ne 0 ]; then
+          echo "⚠️  Module version list request failed"
+        fi
 
         echo ""
-        echo "✅ Update requests sent to pkg.go.dev"
-        echo "📚 Documentation will be available shortly at:"
-        echo "   https://pkg.go.dev/${MODULE}@${VERSION}"
-        echo ""
-        echo "💡 Note: It may take 5-10 minutes for the documentation to appear."
-        echo "   You can check the status at: https://pkg.go.dev/${MODULE}?tab=versions"
+        if [ $PROXY_OK -eq 0 ] || [ $PKGDEV_OK -eq 0 ] || [ $LIST_OK -eq 0 ]; then
+          echo "✅ Update requests sent to pkg.go.dev"
+          echo "📚 Documentation will be available shortly at:"
+          echo "   https://pkg.go.dev/${MODULE}@${VERSION}"
+          echo ""
+          echo "💡 Note: It may take 5-10 minutes for the documentation to appear."
+          echo "   You can check the status at: https://pkg.go.dev/${MODULE}?tab=versions"
+        else
+          echo "❌ All update requests to pkg.go.dev failed."
+          echo "⚠️  Please check your network connection or try again later."
+          exit 1
+        fi
 
   # Optional: Post release announcement
   announce:
