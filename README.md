@@ -413,6 +413,84 @@ err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
     Fields: updates.ToMap(),
 })
 
+// Date and Time Handling
+// ⚠️ IMPORTANT: Always use safe accessor methods for date fields to avoid nil pointer panics
+
+// Reading standard date fields (Created, Updated, DueDate)
+// ✅ SAFE: Use GetCreatedTime(), GetUpdatedTime(), GetDueDateValue()
+if created := issue.GetCreatedTime(); !created.IsZero() {
+    fmt.Printf("Created: %s\n", created.Format(time.RFC3339))
+}
+
+if updated := issue.GetUpdatedTime(); !updated.IsZero() {
+    fmt.Printf("Updated: %s\n", updated.Format(time.RFC3339))
+}
+
+if dueDate := issue.GetDueDateValue(); !dueDate.IsZero() {
+    fmt.Printf("Due Date: %s\n", dueDate.Format("2006-01-02"))
+    // Check if overdue
+    if time.Now().After(dueDate) {
+        fmt.Println("Task is OVERDUE!")
+    }
+}
+
+// Alternative: Use pointer accessors (GetDueDate() returns *time.Time)
+if dueDatePtr := issue.GetDueDate(); dueDatePtr != nil {
+    fmt.Printf("Due Date: %s\n", dueDatePtr.Format("2006-01-02"))
+}
+
+// ❌ DANGEROUS: NEVER directly access date fields (can cause nil pointer panic!)
+// dueDate := issue.Fields.DueDate
+// fmt.Println(dueDate.Format("2006-01-02"))  // PANIC if DueDate is nil!
+
+// Setting DueDate when creating an issue
+dueDate := time.Now().AddDate(0, 0, 14) // 14 days from now
+created, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "Task with due date",
+        IssueType: &issue.IssueType{Name: "Task"},
+        DueDate:   &dueDate,
+    },
+})
+
+// Updating DueDate (Jira expects YYYY-MM-DD format)
+newDueDate := time.Now().AddDate(0, 0, 30) // 30 days from now
+err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "duedate": newDueDate.Format("2006-01-02"),
+    },
+})
+
+// Clearing a DueDate
+err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "duedate": nil,
+    },
+})
+
+// Custom date fields
+// Date field (YYYY-MM-DD format)
+customDate := time.Now().AddDate(0, 1, 0)
+customFields := issue.NewCustomFields().
+    SetDate("customfield_10001", customDate)
+
+// DateTime field (RFC3339 format with timezone)
+customDateTime := time.Now().AddDate(0, 0, 7)
+customFields = issue.NewCustomFields().
+    SetDateTime("customfield_10002", customDateTime)
+
+// Read custom date fields
+if customDate, ok := retrieved.Fields.Custom.GetDate("customfield_10001"); ok {
+    fmt.Printf("Custom Date: %s\n", customDate.Format("2006-01-02"))
+}
+
+if customDateTime, ok := retrieved.Fields.Custom.GetDateTime("customfield_10002"); ok {
+    fmt.Printf("Custom DateTime: %s\n", customDateTime.Format(time.RFC3339))
+}
+
+// See examples/dates for comprehensive date handling examples
+
 // Workflows
 // List all workflows
 workflows, err := client.Workflow.List(ctx, &workflow.ListOptions{
@@ -1190,6 +1268,7 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/advanced](examples/advanced/main.go)** - Custom middleware and advanced configuration
 - **[examples/workflow](examples/workflow/main.go)** - Workflow operations, comments, watchers, voters
 - **[examples/customfields](examples/customfields/main.go)** - Working with custom fields
+- **[examples/dates](examples/dates/main.go)** - Date and time handling, DueDate management, safe date accessors
 - **[examples/attachments](examples/attachments/main.go)** - Upload, download, and manage attachments
 - **[examples/oauth2](examples/oauth2/main.go)** - OAuth 2.0 authentication flow
 - **[examples/issuelinks](examples/issuelinks/main.go)** - Create and manage issue relationships

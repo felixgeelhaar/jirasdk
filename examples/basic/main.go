@@ -54,7 +54,7 @@ func main() {
 	issueKey := "PROJ-123" // Replace with your issue key
 	fmt.Printf("2. Getting issue %s...\n", issueKey)
 	iss, err := client.Issue.Get(ctx, issueKey, &issue.GetOptions{
-		Fields: []string{"summary", "status", "assignee", "created"},
+		Fields: []string{"summary", "status", "assignee", "created", "duedate"},
 	})
 	if err != nil {
 		log.Printf("   Warning: Could not get issue %s: %v\n", issueKey, err)
@@ -67,8 +67,13 @@ func main() {
 		}
 		// Safe: use GetCreatedTime() to avoid nil pointer panic
 		if created := iss.GetCreatedTime(); !created.IsZero() {
-			fmt.Printf("   Created: %s\n\n", created.Format(time.RFC3339))
+			fmt.Printf("   Created: %s\n", created.Format(time.RFC3339))
 		}
+		// Safe: use GetDueDateValue() to avoid nil pointer panic
+		if dueDate := iss.GetDueDateValue(); !dueDate.IsZero() {
+			fmt.Printf("   Due Date: %s\n", dueDate.Format("2006-01-02"))
+		}
+		fmt.Println()
 	}
 
 	// 3. Search for issues using JQL

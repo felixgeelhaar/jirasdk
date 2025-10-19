@@ -205,8 +205,17 @@ func (i *Issue) GetComponents() []*Component {
 	return i.Fields.Components
 }
 
-// GetCreated safely retrieves the issue creation timestamp.
+// GetCreated safely retrieves the issue creation timestamp as a pointer.
 // Returns nil if Fields or Created is nil.
+//
+// Example usage:
+//
+//	if created := issue.GetCreated(); created != nil {
+//	    fmt.Printf("Created: %s\n", created.Format(time.RFC3339))
+//	}
+//
+// WARNING: Never directly access issue.Fields.Created as it may be nil and cause a panic.
+// Always use this safe accessor method or GetCreatedTime() instead.
 func (i *Issue) GetCreated() *time.Time {
 	if i.Fields == nil {
 		return nil
@@ -217,6 +226,15 @@ func (i *Issue) GetCreated() *time.Time {
 // GetCreatedTime safely retrieves the issue creation timestamp as a value.
 // Returns zero time (time.Time{}) if Fields or Created is nil.
 // Use this method when you need a time.Time value instead of a pointer.
+//
+// Example usage:
+//
+//	if created := issue.GetCreatedTime(); !created.IsZero() {
+//	    fmt.Printf("Created: %s\n", created.Format(time.RFC3339))
+//	}
+//
+// This is the recommended method for most use cases as it avoids nil pointer checks.
+// WARNING: Never directly access issue.Fields.Created as it may be nil and cause a panic.
 func (i *Issue) GetCreatedTime() time.Time {
 	created := i.GetCreated()
 	if created == nil {
@@ -225,8 +243,17 @@ func (i *Issue) GetCreatedTime() time.Time {
 	return *created
 }
 
-// GetUpdated safely retrieves the issue last update timestamp.
+// GetUpdated safely retrieves the issue last update timestamp as a pointer.
 // Returns nil if Fields or Updated is nil.
+//
+// Example usage:
+//
+//	if updated := issue.GetUpdated(); updated != nil {
+//	    fmt.Printf("Updated: %s\n", updated.Format(time.RFC3339))
+//	}
+//
+// WARNING: Never directly access issue.Fields.Updated as it may be nil and cause a panic.
+// Always use this safe accessor method or GetUpdatedTime() instead.
 func (i *Issue) GetUpdated() *time.Time {
 	if i.Fields == nil {
 		return nil
@@ -237,6 +264,15 @@ func (i *Issue) GetUpdated() *time.Time {
 // GetUpdatedTime safely retrieves the issue last update timestamp as a value.
 // Returns zero time (time.Time{}) if Fields or Updated is nil.
 // Use this method when you need a time.Time value instead of a pointer.
+//
+// Example usage:
+//
+//	if updated := issue.GetUpdatedTime(); !updated.IsZero() {
+//	    fmt.Printf("Updated: %s\n", updated.Format(time.RFC3339))
+//	}
+//
+// This is the recommended method for most use cases as it avoids nil pointer checks.
+// WARNING: Never directly access issue.Fields.Updated as it may be nil and cause a panic.
 func (i *Issue) GetUpdatedTime() time.Time {
 	updated := i.GetUpdated()
 	if updated == nil {
@@ -245,8 +281,17 @@ func (i *Issue) GetUpdatedTime() time.Time {
 	return *updated
 }
 
-// GetDueDate safely retrieves the issue due date.
+// GetDueDate safely retrieves the issue due date as a pointer.
 // Returns nil if Fields or DueDate is nil.
+//
+// Example usage:
+//
+//	if dueDate := issue.GetDueDate(); dueDate != nil {
+//	    fmt.Printf("Due: %s\n", dueDate.Format("2006-01-02"))
+//	}
+//
+// WARNING: Never directly access issue.Fields.DueDate as it may be nil and cause a panic.
+// Always use this safe accessor method or GetDueDateValue() instead.
 func (i *Issue) GetDueDate() *time.Time {
 	if i.Fields == nil {
 		return nil
@@ -257,6 +302,18 @@ func (i *Issue) GetDueDate() *time.Time {
 // GetDueDateValue safely retrieves the issue due date as a value.
 // Returns zero time (time.Time{}) if Fields or DueDate is nil.
 // Use this method when you need a time.Time value instead of a pointer.
+//
+// Example usage:
+//
+//	if dueDate := issue.GetDueDateValue(); !dueDate.IsZero() {
+//	    fmt.Printf("Due: %s\n", dueDate.Format("2006-01-02"))
+//	    if time.Now().After(dueDate) {
+//	        fmt.Println("Task is OVERDUE!")
+//	    }
+//	}
+//
+// This is the recommended method for most use cases as it avoids nil pointer checks.
+// WARNING: Never directly access issue.Fields.DueDate as it may be nil and cause a panic.
 func (i *Issue) GetDueDateValue() time.Time {
 	dueDate := i.GetDueDate()
 	if dueDate == nil {
@@ -275,11 +332,17 @@ type IssueFields struct {
 	Priority    *Priority    `json:"priority,omitempty"`
 	Assignee    *User        `json:"assignee,omitempty"`
 	Reporter    *User        `json:"reporter,omitempty"`
-	Created     *time.Time   `json:"created,omitempty"`
-	Updated     *time.Time   `json:"updated,omitempty"`
-	DueDate     *time.Time   `json:"duedate,omitempty"`
-	Labels      []string     `json:"labels,omitempty"`
-	Components  []*Component `json:"components,omitempty"`
+
+	// Date/Time fields - IMPORTANT: Use safe accessor methods to avoid nil pointer panics!
+	// - Created: Use GetCreated() or GetCreatedTime() instead of direct access
+	// - Updated: Use GetUpdated() or GetUpdatedTime() instead of direct access
+	// - DueDate: Use GetDueDate() or GetDueDateValue() instead of direct access
+	Created *time.Time `json:"created,omitempty"`
+	Updated *time.Time `json:"updated,omitempty"`
+	DueDate *time.Time `json:"duedate,omitempty"`
+
+	Labels     []string     `json:"labels,omitempty"`
+	Components []*Component `json:"components,omitempty"`
 
 	// Custom contains custom field values
 	// Use the type-safe CustomFields methods for setting/getting values
