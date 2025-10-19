@@ -210,24 +210,23 @@ func main() {
 
 	// Example 9: DANGEROUS - What NOT to do
 	fmt.Println("9. ⚠️  DANGEROUS patterns to AVOID:")
-	fmt.Println(`
-   ❌ NEVER do this (can cause nil pointer panic):
-
-   dueDate := issue.Fields.DueDate
-   fmt.Println(dueDate.Format("2006-01-02"))  // PANIC if DueDate is nil!
-
-   ✅ ALWAYS use safe accessors instead:
-
-   if dueDate := issue.GetDueDateValue(); !dueDate.IsZero() {
-       fmt.Println(dueDate.Format("2006-01-02"))  // Safe!
-   }
-
-   Or use the pointer accessor:
-
-   if dueDate := issue.GetDueDate(); dueDate != nil {
-       fmt.Println(dueDate.Format("2006-01-02"))  // Safe!
-   }
-`)
+	fmt.Println()
+	fmt.Println("   ❌ NEVER do this (can cause nil pointer panic):")
+	fmt.Println()
+	fmt.Println("   dueDate := issue.Fields.DueDate")
+	fmt.Println("   fmt.Println(dueDate.Format(\"2006-01-02\"))  // PANIC if DueDate is nil!")
+	fmt.Println()
+	fmt.Println("   ✅ ALWAYS use safe accessors instead:")
+	fmt.Println()
+	fmt.Println("   if dueDate := issue.GetDueDateValue(); !dueDate.IsZero() {")
+	fmt.Println("       fmt.Println(dueDate.Format(\"2006-01-02\"))  // Safe!")
+	fmt.Println("   }")
+	fmt.Println()
+	fmt.Println("   Or use the pointer accessor:")
+	fmt.Println()
+	fmt.Println("   if dueDate := issue.GetDueDate(); dueDate != nil {")
+	fmt.Println("       fmt.Println(dueDate.Format(\"2006-01-02\"))  // Safe!")
+	fmt.Println("   }")
 
 	fmt.Println("=== Date handling examples completed! ===")
 }
