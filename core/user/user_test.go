@@ -3,10 +3,10 @@ package user
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -585,7 +585,7 @@ func TestFindByName(t *testing.T) {
 				if expectedMaxResults <= 0 {
 					expectedMaxResults = 50
 				}
-				assert.Equal(t, fmt.Sprintf("%d", expectedMaxResults), r.URL.Query().Get("maxResults"))
+				assert.Equal(t, strconv.Itoa(expectedMaxResults), r.URL.Query().Get("maxResults"))
 
 				w.WriteHeader(tt.responseStatus)
 				json.NewEncoder(w).Encode(tt.responseBody)

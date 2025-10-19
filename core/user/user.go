@@ -883,6 +883,7 @@ func (s *Service) FindUsersWithBrowsePermission(ctx context.Context, opts *FindU
 // FindByName is a convenience method to find users by their display name or email.
 // It searches for users matching the provided name string and returns up to maxResults or an error.
 // If maxResults is 0 or negative, defaults to 50 results.
+// If name is empty, an error is returned.
 //
 // This method searches across display names, email addresses, and account IDs.
 // For more control over search parameters, use SearchJQL() instead.
