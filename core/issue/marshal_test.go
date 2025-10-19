@@ -172,6 +172,49 @@ func TestComponentMarshaling(t *testing.T) {
 	}
 }
 
+// TestIssueLinkTypeMarshaling verifies that empty fields are omitted when marshaling IssueLinkType
+func TestIssueLinkTypeMarshaling(t *testing.T) {
+	tests := []struct {
+		name         string
+		issueLinkType *IssueLinkType
+		expected     string
+	}{
+		{
+			name:         "IssueLinkType with only Name",
+			issueLinkType: &IssueLinkType{Name: "Blocks"},
+			expected:     `{"name":"Blocks"}`,
+		},
+		{
+			name:         "IssueLinkType with only ID",
+			issueLinkType: &IssueLinkType{ID: "10001"},
+			expected:     `{"id":"10001"}`,
+		},
+		{
+			name:         "IssueLinkType with Name and directions",
+			issueLinkType: &IssueLinkType{Name: "Blocks", Inward: "is blocked by", Outward: "blocks"},
+			expected:     `{"name":"Blocks","inward":"is blocked by","outward":"blocks"}`,
+		},
+		{
+			name:         "Empty IssueLinkType",
+			issueLinkType: &IssueLinkType{},
+			expected:     `{}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, err := json.Marshal(tt.issueLinkType)
+			if err != nil {
+				t.Fatalf("Failed to marshal issue link type: %v", err)
+			}
+
+			if string(data) != tt.expected {
+				t.Errorf("Expected %s, got %s", tt.expected, string(data))
+			}
+		})
+	}
+}
+
 // TestIssueFieldsMarshaling verifies complete IssueFields marshaling behavior
 func TestIssueFieldsMarshaling(t *testing.T) {
 	fields := &IssueFields{
