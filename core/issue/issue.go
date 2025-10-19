@@ -324,14 +324,14 @@ func (i *Issue) GetDueDateValue() time.Time {
 
 // IssueFields contains the fields of an issue.
 type IssueFields struct {
-	Summary     string       `json:"summary,omitempty"`
-	Description string       `json:"description,omitempty"`
-	IssueType   *IssueType   `json:"issuetype,omitempty"`
-	Project     *Project     `json:"project,omitempty"`
-	Status      *Status      `json:"status,omitempty"`
-	Priority    *Priority    `json:"priority,omitempty"`
-	Assignee    *User        `json:"assignee,omitempty"`
-	Reporter    *User        `json:"reporter,omitempty"`
+	Summary     string     `json:"summary,omitempty"`
+	Description string     `json:"description,omitempty"`
+	IssueType   *IssueType `json:"issuetype,omitempty"`
+	Project     *Project   `json:"project,omitempty"`
+	Status      *Status    `json:"status,omitempty"`
+	Priority    *Priority  `json:"priority,omitempty"`
+	Assignee    *User      `json:"assignee,omitempty"`
+	Reporter    *User      `json:"reporter,omitempty"`
 
 	// Date/Time fields - IMPORTANT: Use safe accessor methods to avoid nil pointer panics!
 	// - Created: Use GetCreated() or GetCreatedTime() instead of direct access
@@ -404,13 +404,13 @@ func tryParseDateTime(value string) (time.Time, bool) {
 
 	// List of formats to try, in order of likelihood
 	formats := []string{
-		"2006-01-02",                      // Date only (YYYY-MM-DD)
-		"2006-01-02T15:04:05.000-0700",    // Jira format with timezone
-		time.RFC3339,                       // Standard RFC3339
-		"2006-01-02T15:04:05Z",            // RFC3339 without milliseconds
-		time.RFC3339Nano,                   // RFC3339 with nanoseconds
-		"15:04:05",                         // Time only (HH:MM:SS)
-		"15:04",                            // Time without seconds (HH:MM)
+		"2006-01-02",                   // Date only (YYYY-MM-DD)
+		"2006-01-02T15:04:05.000-0700", // Jira format with timezone
+		time.RFC3339,                   // Standard RFC3339
+		"2006-01-02T15:04:05Z",         // RFC3339 without milliseconds
+		time.RFC3339Nano,               // RFC3339 with nanoseconds
+		"15:04:05",                     // Time only (HH:MM:SS)
+		"15:04",                        // Time without seconds (HH:MM)
 	}
 
 	for _, format := range formats {
