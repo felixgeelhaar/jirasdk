@@ -415,6 +415,13 @@ err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
 
 // Date and Time Handling
 // ⚠️ IMPORTANT: Always use safe accessor methods for date fields to avoid nil pointer panics
+//
+// 📝 Note: The SDK automatically handles Jira's various date/time formats:
+//   - Date only: "2025-10-30"
+//   - DateTime with timezone: "2024-01-01T10:30:00.000+0000" (non-standard Jira format)
+//   - RFC3339: "2024-01-01T10:30:00.000Z"
+//   - Time only: "15:30:00"
+// This works transparently for both standard fields AND custom date/datetime fields!
 
 // Reading standard date fields (Created, Updated, DueDate)
 // ✅ SAFE: Use GetCreatedTime(), GetUpdatedTime(), GetDueDateValue()

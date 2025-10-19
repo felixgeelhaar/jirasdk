@@ -396,3 +396,164 @@ func TestIssueFields_RoundTrip(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, []string{"bug", "urgent"}, labels)
 }
+
+func TestIssueFields_UnmarshalJSON_FlexibleDateFormats(t *testing.T) {
+	t.Run("DueDate with date-only format (YYYY-MM-DD)", func(t *testing.T) {
+		jsonData := `{
+			"summary": "Test issue",
+			"duedate": "2025-10-30"
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Test issue", fields.Summary)
+		require.NotNil(t, fields.DueDate)
+
+		// Verify the date was parsed correctly
+		expected := time.Date(2025, 10, 30, 0, 0, 0, 0, time.UTC)
+		assert.Equal(t, expected, *fields.DueDate)
+	})
+
+	t.Run("DueDate with RFC3339 format (fallback)", func(t *testing.T) {
+		jsonData := `{
+			"summary": "Test issue",
+			"duedate": "2025-10-30T15:04:05Z"
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Test issue", fields.Summary)
+		require.NotNil(t, fields.DueDate)
+
+		// Verify the date was parsed correctly with time component
+		expected := time.Date(2025, 10, 30, 15, 4, 5, 0, time.UTC)
+		assert.Equal(t, expected, *fields.DueDate)
+	})
+
+	t.Run("DueDate with null value", func(t *testing.T) {
+		jsonData := `{
+			"summary": "Test issue",
+			"duedate": null
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Test issue", fields.Summary)
+		assert.Nil(t, fields.DueDate)
+	})
+
+	t.Run("DueDate missing from JSON", func(t *testing.T) {
+		jsonData := `{
+			"summary": "Test issue"
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Test issue", fields.Summary)
+		assert.Nil(t, fields.DueDate)
+	})
+
+	t.Run("Created and Updated with RFC3339 format", func(t *testing.T) {
+		jsonData := `{
+			"summary": "Test issue",
+			"created": "2024-01-15T10:30:00.000Z",
+			"updated": "2024-01-20T14:45:30.000Z",
+			"duedate": "2025-10-30"
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Test issue", fields.Summary)
+
+		// Verify Created
+		require.NotNil(t, fields.Created)
+		expectedCreated := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
+		assert.Equal(t, expectedCreated, *fields.Created)
+
+		// Verify Updated
+		require.NotNil(t, fields.Updated)
+		expectedUpdated := time.Date(2024, 1, 20, 14, 45, 30, 0, time.UTC)
+		assert.Equal(t, expectedUpdated, *fields.Updated)
+
+		// Verify DueDate (date-only format)
+		require.NotNil(t, fields.DueDate)
+		expectedDue := time.Date(2025, 10, 30, 0, 0, 0, 0, time.UTC)
+		assert.Equal(t, expectedDue, *fields.DueDate)
+	})
+
+	t.Run("All date fields with realistic Jira response", func(t *testing.T) {
+		// Realistic Jira API response format
+		jsonData := `{
+			"summary": "Implement user authentication",
+			"description": "Add OAuth 2.0 support",
+			"created": "2024-01-01T10:30:00.000+0000",
+			"updated": "2024-01-05T15:20:30.000+0000",
+			"duedate": "2024-02-01"
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Implement user authentication", fields.Summary)
+		assert.Equal(t, "Add OAuth 2.0 support", fields.Description)
+
+		// All date fields should be parsed successfully
+		require.NotNil(t, fields.Created)
+		require.NotNil(t, fields.Updated)
+		require.NotNil(t, fields.DueDate)
+	})
+
+	t.Run("Custom date fields with various formats", func(t *testing.T) {
+		// Test that custom fields also benefit from flexible date parsing
+		jsonData := `{
+			"summary": "Test with custom dates",
+			"customfield_10001": "2025-12-25",
+			"customfield_10002": "2024-06-15T09:30:00.000+0000",
+			"customfield_10003": "2024-07-20T14:00:00Z",
+			"customfield_10004": "not-a-date",
+			"customfield_10005": 12345
+		}`
+
+		var fields IssueFields
+		err := json.Unmarshal([]byte(jsonData), &fields)
+		require.NoError(t, err)
+
+		// Custom date-only field should be parsed
+		date1, ok := fields.Custom.GetDate("customfield_10001")
+		assert.True(t, ok)
+		expected1 := time.Date(2025, 12, 25, 0, 0, 0, 0, time.UTC)
+		assert.Equal(t, expected1, date1)
+
+		// Custom datetime with Jira format should be parsed
+		date2, ok := fields.Custom.GetDateTime("customfield_10002")
+		assert.True(t, ok)
+		assert.False(t, date2.IsZero())
+
+		// Custom datetime with RFC3339 should be parsed
+		date3, ok := fields.Custom.GetDateTime("customfield_10003")
+		assert.True(t, ok)
+		expected3 := time.Date(2024, 7, 20, 14, 0, 0, 0, time.UTC)
+		assert.Equal(t, expected3, date3)
+
+		// Non-date string should remain as string
+		str, ok := fields.Custom.GetString("customfield_10004")
+		assert.True(t, ok)
+		assert.Equal(t, "not-a-date", str)
+
+		// Number should remain as number
+		num, ok := fields.Custom.GetNumber("customfield_10005")
+		assert.True(t, ok)
+		assert.Equal(t, 12345.0, num)
+	})
+}

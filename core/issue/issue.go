@@ -389,10 +389,80 @@ func (f *IssueFields) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
+// tryParseDateTime attempts to intelligently parse a string value as a date/time.
+// It returns (parsedTime, true) if successful, (zero, false) if not a date/time string.
+//
+// Jira returns dates in various formats:
+//   - Date only: "2025-10-30"
+//   - DateTime with timezone: "2024-01-01T10:30:00.000+0000" (non-standard)
+//   - RFC3339: "2024-01-01T10:30:00.000Z"
+//   - Time only: "15:30:00" (for time-tracking fields)
+func tryParseDateTime(value string) (time.Time, bool) {
+	if value == "" {
+		return time.Time{}, false
+	}
+
+	// List of formats to try, in order of likelihood
+	formats := []string{
+		"2006-01-02",                      // Date only (YYYY-MM-DD)
+		"2006-01-02T15:04:05.000-0700",    // Jira format with timezone
+		time.RFC3339,                       // Standard RFC3339
+		"2006-01-02T15:04:05Z",            // RFC3339 without milliseconds
+		time.RFC3339Nano,                   // RFC3339 with nanoseconds
+		"15:04:05",                         // Time only (HH:MM:SS)
+		"15:04",                            // Time without seconds (HH:MM)
+	}
+
+	for _, format := range formats {
+		if parsed, err := time.Parse(format, value); err == nil {
+			return parsed, true
+		}
+	}
+
+	return time.Time{}, false
+}
+
+// normalizeFieldValue attempts to normalize a field value, converting date/time strings
+// to a format that Go's time.Time can unmarshal.
+// Returns the original value if it's not a date/time string.
+func normalizeFieldValue(value interface{}) interface{} {
+	// Only process string values
+	str, ok := value.(string)
+	if !ok || str == "" {
+		return value
+	}
+
+	// Try to parse as date/time
+	if parsed, isDateTime := tryParseDateTime(str); isDateTime {
+		// Convert to RFC3339 format which time.Time can unmarshal
+		return parsed.Format(time.RFC3339)
+	}
+
+	return value
+}
+
 // UnmarshalJSON implements custom JSON unmarshaling for IssueFields.
-// It extracts custom fields from the API response.
+// It handles flexible date/time formats from Jira and extracts custom fields.
 func (f *IssueFields) UnmarshalJSON(data []byte) error {
-	// Unmarshal standard fields
+	// First, unmarshal to map for preprocessing
+	var raw map[string]interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	// Normalize all field values - this handles both standard and custom date fields
+	// by converting non-standard date formats to RFC3339
+	for key, value := range raw {
+		raw[key] = normalizeFieldValue(value)
+	}
+
+	// Re-marshal the normalized data
+	normalizedData, err := json.Marshal(raw)
+	if err != nil {
+		return err
+	}
+
+	// Unmarshal standard fields with type alias to avoid recursion
 	type Alias IssueFields
 	aux := &struct {
 		*Alias
@@ -400,13 +470,7 @@ func (f *IssueFields) UnmarshalJSON(data []byte) error {
 		Alias: (*Alias)(f),
 	}
 
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	// Unmarshal to map to extract custom fields
-	var raw map[string]interface{}
-	if err := json.Unmarshal(data, &raw); err != nil {
+	if err := json.Unmarshal(normalizedData, aux); err != nil {
 		return err
 	}
 
@@ -416,6 +480,7 @@ func (f *IssueFields) UnmarshalJSON(data []byte) error {
 	}
 
 	// Extract custom fields (fields starting with "customfield_")
+	// The values have already been normalized, so custom date fields will work
 	for key, value := range raw {
 		if strings.HasPrefix(key, "customfield_") {
 			f.Custom[key] = &CustomField{

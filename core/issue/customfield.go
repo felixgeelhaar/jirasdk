@@ -136,6 +136,7 @@ func (cf CustomFields) SetDate(fieldID string, value time.Time) CustomFields {
 }
 
 // GetDate retrieves a date custom field value.
+// Flexibly parses various date formats from Jira.
 func (cf CustomFields) GetDate(fieldID string) (time.Time, bool) {
 	field, ok := cf[fieldID]
 	if !ok {
@@ -143,8 +144,8 @@ func (cf CustomFields) GetDate(fieldID string) (time.Time, bool) {
 	}
 
 	if str, ok := field.Value.(string); ok {
-		t, err := time.Parse("2006-01-02", str)
-		if err == nil {
+		// Use flexible parsing to handle various Jira date formats
+		if t, parsed := tryParseDateTime(str); parsed {
 			return t, true
 		}
 	}
@@ -166,6 +167,7 @@ func (cf CustomFields) SetDateTime(fieldID string, value time.Time) CustomFields
 }
 
 // GetDateTime retrieves a datetime custom field value.
+// Flexibly parses various date/time formats from Jira.
 func (cf CustomFields) GetDateTime(fieldID string) (time.Time, bool) {
 	field, ok := cf[fieldID]
 	if !ok {
@@ -173,8 +175,8 @@ func (cf CustomFields) GetDateTime(fieldID string) (time.Time, bool) {
 	}
 
 	if str, ok := field.Value.(string); ok {
-		t, err := time.Parse(time.RFC3339, str)
-		if err == nil {
+		// Use flexible parsing to handle various Jira date/time formats
+		if t, parsed := tryParseDateTime(str); parsed {
 			return t, true
 		}
 	}

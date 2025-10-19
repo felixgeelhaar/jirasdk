@@ -6,6 +6,15 @@
 //   - Working with custom date and datetime fields
 //   - Safe date handling patterns to avoid nil pointer panics
 //   - Date formatting and parsing best practices
+//   - Automatic flexible date/time parsing for Jira's various formats
+//
+// Note: The SDK automatically handles Jira's various date/time formats:
+//   - Date only: "2025-10-30"
+//   - DateTime with timezone: "2024-01-01T10:30:00.000+0000"
+//   - RFC3339: "2024-01-01T10:30:00.000Z"
+//   - Time only: "15:30:00"
+//
+// This works for both standard fields AND custom date/datetime fields!
 package main
 
 import (
