@@ -7,6 +7,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-10-19
+
+### Added
+
+#### Flexible Date/Time Parsing
+
+- **Automatic Format Detection** - Intelligent parsing of multiple Jira date/time formats:
+  - Date only: `"2025-10-30"` (YYYY-MM-DD)
+  - DateTime with timezone: `"2024-01-01T10:30:00.000+0000"` (Jira non-standard format)
+  - RFC3339: `"2024-01-01T10:30:00.000Z"`
+  - RFC3339 without milliseconds: `"2024-01-01T10:30:05Z"`
+  - RFC3339 with nanoseconds
+  - Time only: `"15:04:05"` (HH:MM:SS)
+  - Time without seconds: `"15:04"` (HH:MM)
+
+- **Universal Field Support** - Works transparently for:
+  - Standard date fields (Created, Updated, DueDate)
+  - Custom date fields (`customfield_*`)
+  - Custom datetime fields
+  - All date-containing responses from Jira API
+
+- **Implementation Details**:
+  - `tryParseDateTime()` - Flexible parser supporting 7 date/time formats
+  - `normalizeFieldValue()` - Generic field normalization for JSON unmarshaling
+  - Updated `IssueFields.UnmarshalJSON()` - Normalizes ALL fields before parsing
+  - Updated `CustomFields.GetDate()` - Flexible parsing for custom date fields
+  - Updated `CustomFields.GetDateTime()` - Flexible parsing for custom datetime fields
+
+#### Documentation & Examples
+
+- **Comprehensive Dates Example** (`examples/dates/main.go`) - 230+ lines covering:
+  - Creating issues with DueDate
+  - Reading standard date fields safely (Created, Updated, DueDate)
+  - Updating and clearing DueDate
+  - Working with custom date and datetime fields
+  - Common date formatting patterns
+  - Anti-patterns and what to avoid
+
+- **Enhanced README** - New date handling section with:
+  - Automatic format handling documentation
+  - Safe accessor examples for all date fields
+  - Warnings about nil pointer panics
+  - Custom date field usage examples
+
+- **Inline Documentation** - Improved date field documentation in:
+  - `core/issue/issue.go` - Warning comments above date fields
+  - `core/issue/customfield.go` - Flexible parsing documentation
+
+#### Testing
+
+- **Comprehensive Date Format Tests** - 7 test scenarios covering:
+  - Date-only format parsing (`"2025-10-30"`)
+  - RFC3339 format parsing
+  - Null/missing date values
+  - Realistic Jira API responses
+  - Custom date field scenarios with multiple formats
+  - Non-date field preservation (numbers, strings)
+
+### Fixed
+
+- **Date Parsing Errors** - Resolved JSON unmarshaling failures:
+  - Fixed: `parsing time "2025-10-30" as "2006-01-02T15:04:05Z07:00": cannot parse "" as "T"`
+  - Root cause: Jira returns dates in multiple formats, but Go's default `time.Time` JSON unmarshaler expects RFC3339
+  - Solution: Generic field normalization that converts all date strings to RFC3339 before unmarshaling
+
+- **Custom Field Date Parsing** - Fixed date retrieval from custom fields:
+  - `GetDate()` now handles all Jira date formats automatically
+  - `GetDateTime()` now handles all Jira datetime formats automatically
+  - No code changes required from SDK users
+
+### Changed
+
+- **Backward Compatible** - All changes maintain full backward compatibility:
+  - Existing code continues to work without modifications
+  - Safe accessors (GetDueDate, GetCreated, GetUpdated) unchanged
+  - API surface remains identical
+
+- **Format Handling** - Transparent automatic conversion:
+  - All date strings automatically normalized to RFC3339 during JSON unmarshaling
+  - Users can continue using standard Go `time.Time` operations
+  - No special handling required for different Jira date formats
+
+### Technical Details
+
+- **Normalization Strategy** - Pre-unmarshaling field value processing:
+  - Detects date/time strings using pattern matching
+  - Converts to RFC3339 format for Go compatibility
+  - Preserves non-date values unchanged
+  - Works for both standard and custom fields
+
+- **Performance** - Minimal overhead:
+  - Format detection uses early-exit strategy
+  - Only processes string values
+  - No regex, only format string parsing
+  - Caches successful format matches
+
 ## [1.2.2] - 2025-10-18
 
 ### Added
