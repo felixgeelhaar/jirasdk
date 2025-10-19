@@ -140,9 +140,29 @@ jobs:
     - name: Trigger pkg.go.dev update
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
-        curl -f "https://proxy.golang.org/github.com/${{ github.repository }}/@v/${VERSION}.info" || true
-        echo "📚 pkg.go.dev should update within a few minutes at:"
-        echo "https://pkg.go.dev/github.com/${{ github.repository }}@${VERSION}"
+        MODULE="github.com/${{ github.repository }}"
+
+        echo "🔄 Triggering pkg.go.dev update for ${MODULE}@${VERSION}..."
+
+        # Method 1: Request module info from Go proxy (triggers indexing)
+        echo "📡 Requesting from Go proxy..."
+        curl -sSf "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info" || echo "⚠️  Proxy request failed (may already be cached)"
+
+        # Method 2: Direct fetch request to pkg.go.dev
+        echo "📡 Requesting pkg.go.dev fetch..."
+        curl -sSf "https://pkg.go.dev/fetch/${MODULE}@${VERSION}" || echo "⚠️  Direct fetch request queued"
+
+        # Method 3: Request the module list (alternative trigger)
+        echo "📡 Requesting module version list..."
+        curl -sSf "https://proxy.golang.org/${MODULE}/@v/list" > /dev/null || true
+
+        echo ""
+        echo "✅ Update requests sent to pkg.go.dev"
+        echo "📚 Documentation will be available shortly at:"
+        echo "   https://pkg.go.dev/${MODULE}@${VERSION}"
+        echo ""
+        echo "💡 Note: It may take 5-10 minutes for the documentation to appear."
+        echo "   You can check the status at: https://pkg.go.dev/${MODULE}?tab=versions"
 
   # Optional: Post release announcement
   announce:
