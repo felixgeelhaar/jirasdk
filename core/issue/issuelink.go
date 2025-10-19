@@ -17,10 +17,10 @@ type IssueLink struct {
 
 // IssueLinkType represents the type of link between issues.
 type IssueLinkType struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Inward  string `json:"inward"`  // e.g., "is blocked by"
-	Outward string `json:"outward"` // e.g., "blocks"
+	ID      string `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Inward  string `json:"inward,omitempty"`  // e.g., "is blocked by"
+	Outward string `json:"outward,omitempty"` // e.g., "blocks"
 	Self    string `json:"self,omitempty"`
 }
 
