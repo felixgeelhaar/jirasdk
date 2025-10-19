@@ -205,8 +205,17 @@ func (i *Issue) GetComponents() []*Component {
 	return i.Fields.Components
 }
 
-// GetCreated safely retrieves the issue creation timestamp.
+// GetCreated safely retrieves the issue creation timestamp as a pointer.
 // Returns nil if Fields or Created is nil.
+//
+// Example usage:
+//
+//	if created := issue.GetCreated(); created != nil {
+//	    fmt.Printf("Created: %s\n", created.Format(time.RFC3339))
+//	}
+//
+// WARNING: Never directly access issue.Fields.Created as it may be nil and cause a panic.
+// Always use this safe accessor method or GetCreatedTime() instead.
 func (i *Issue) GetCreated() *time.Time {
 	if i.Fields == nil {
 		return nil
@@ -217,6 +226,15 @@ func (i *Issue) GetCreated() *time.Time {
 // GetCreatedTime safely retrieves the issue creation timestamp as a value.
 // Returns zero time (time.Time{}) if Fields or Created is nil.
 // Use this method when you need a time.Time value instead of a pointer.
+//
+// Example usage:
+//
+//	if created := issue.GetCreatedTime(); !created.IsZero() {
+//	    fmt.Printf("Created: %s\n", created.Format(time.RFC3339))
+//	}
+//
+// This is the recommended method for most use cases as it avoids nil pointer checks.
+// WARNING: Never directly access issue.Fields.Created as it may be nil and cause a panic.
 func (i *Issue) GetCreatedTime() time.Time {
 	created := i.GetCreated()
 	if created == nil {
@@ -225,8 +243,17 @@ func (i *Issue) GetCreatedTime() time.Time {
 	return *created
 }
 
-// GetUpdated safely retrieves the issue last update timestamp.
+// GetUpdated safely retrieves the issue last update timestamp as a pointer.
 // Returns nil if Fields or Updated is nil.
+//
+// Example usage:
+//
+//	if updated := issue.GetUpdated(); updated != nil {
+//	    fmt.Printf("Updated: %s\n", updated.Format(time.RFC3339))
+//	}
+//
+// WARNING: Never directly access issue.Fields.Updated as it may be nil and cause a panic.
+// Always use this safe accessor method or GetUpdatedTime() instead.
 func (i *Issue) GetUpdated() *time.Time {
 	if i.Fields == nil {
 		return nil
@@ -237,6 +264,15 @@ func (i *Issue) GetUpdated() *time.Time {
 // GetUpdatedTime safely retrieves the issue last update timestamp as a value.
 // Returns zero time (time.Time{}) if Fields or Updated is nil.
 // Use this method when you need a time.Time value instead of a pointer.
+//
+// Example usage:
+//
+//	if updated := issue.GetUpdatedTime(); !updated.IsZero() {
+//	    fmt.Printf("Updated: %s\n", updated.Format(time.RFC3339))
+//	}
+//
+// This is the recommended method for most use cases as it avoids nil pointer checks.
+// WARNING: Never directly access issue.Fields.Updated as it may be nil and cause a panic.
 func (i *Issue) GetUpdatedTime() time.Time {
 	updated := i.GetUpdated()
 	if updated == nil {
@@ -245,8 +281,17 @@ func (i *Issue) GetUpdatedTime() time.Time {
 	return *updated
 }
 
-// GetDueDate safely retrieves the issue due date.
+// GetDueDate safely retrieves the issue due date as a pointer.
 // Returns nil if Fields or DueDate is nil.
+//
+// Example usage:
+//
+//	if dueDate := issue.GetDueDate(); dueDate != nil {
+//	    fmt.Printf("Due: %s\n", dueDate.Format("2006-01-02"))
+//	}
+//
+// WARNING: Never directly access issue.Fields.DueDate as it may be nil and cause a panic.
+// Always use this safe accessor method or GetDueDateValue() instead.
 func (i *Issue) GetDueDate() *time.Time {
 	if i.Fields == nil {
 		return nil
@@ -257,6 +302,18 @@ func (i *Issue) GetDueDate() *time.Time {
 // GetDueDateValue safely retrieves the issue due date as a value.
 // Returns zero time (time.Time{}) if Fields or DueDate is nil.
 // Use this method when you need a time.Time value instead of a pointer.
+//
+// Example usage:
+//
+//	if dueDate := issue.GetDueDateValue(); !dueDate.IsZero() {
+//	    fmt.Printf("Due: %s\n", dueDate.Format("2006-01-02"))
+//	    if time.Now().After(dueDate) {
+//	        fmt.Println("Task is OVERDUE!")
+//	    }
+//	}
+//
+// This is the recommended method for most use cases as it avoids nil pointer checks.
+// WARNING: Never directly access issue.Fields.DueDate as it may be nil and cause a panic.
 func (i *Issue) GetDueDateValue() time.Time {
 	dueDate := i.GetDueDate()
 	if dueDate == nil {
@@ -267,19 +324,25 @@ func (i *Issue) GetDueDateValue() time.Time {
 
 // IssueFields contains the fields of an issue.
 type IssueFields struct {
-	Summary     string       `json:"summary,omitempty"`
-	Description string       `json:"description,omitempty"`
-	IssueType   *IssueType   `json:"issuetype,omitempty"`
-	Project     *Project     `json:"project,omitempty"`
-	Status      *Status      `json:"status,omitempty"`
-	Priority    *Priority    `json:"priority,omitempty"`
-	Assignee    *User        `json:"assignee,omitempty"`
-	Reporter    *User        `json:"reporter,omitempty"`
-	Created     *time.Time   `json:"created,omitempty"`
-	Updated     *time.Time   `json:"updated,omitempty"`
-	DueDate     *time.Time   `json:"duedate,omitempty"`
-	Labels      []string     `json:"labels,omitempty"`
-	Components  []*Component `json:"components,omitempty"`
+	Summary     string     `json:"summary,omitempty"`
+	Description string     `json:"description,omitempty"`
+	IssueType   *IssueType `json:"issuetype,omitempty"`
+	Project     *Project   `json:"project,omitempty"`
+	Status      *Status    `json:"status,omitempty"`
+	Priority    *Priority  `json:"priority,omitempty"`
+	Assignee    *User      `json:"assignee,omitempty"`
+	Reporter    *User      `json:"reporter,omitempty"`
+
+	// Date/Time fields - IMPORTANT: Use safe accessor methods to avoid nil pointer panics!
+	// - Created: Use GetCreated() or GetCreatedTime() instead of direct access
+	// - Updated: Use GetUpdated() or GetUpdatedTime() instead of direct access
+	// - DueDate: Use GetDueDate() or GetDueDateValue() instead of direct access
+	Created *time.Time `json:"created,omitempty"`
+	Updated *time.Time `json:"updated,omitempty"`
+	DueDate *time.Time `json:"duedate,omitempty"`
+
+	Labels     []string     `json:"labels,omitempty"`
+	Components []*Component `json:"components,omitempty"`
 
 	// Custom contains custom field values
 	// Use the type-safe CustomFields methods for setting/getting values
@@ -326,10 +389,80 @@ func (f *IssueFields) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
+// tryParseDateTime attempts to intelligently parse a string value as a date/time.
+// It returns (parsedTime, true) if successful, (zero, false) if not a date/time string.
+//
+// Jira returns dates in various formats:
+//   - Date only: "2025-10-30"
+//   - DateTime with timezone: "2024-01-01T10:30:00.000+0000" (non-standard)
+//   - RFC3339: "2024-01-01T10:30:00.000Z"
+//   - Time only: "15:30:00" (for time-tracking fields)
+func tryParseDateTime(value string) (time.Time, bool) {
+	if value == "" {
+		return time.Time{}, false
+	}
+
+	// List of formats to try, in order of likelihood
+	formats := []string{
+		"2006-01-02",                   // Date only (YYYY-MM-DD)
+		"2006-01-02T15:04:05.000-0700", // Jira format with timezone
+		time.RFC3339,                   // Standard RFC3339
+		"2006-01-02T15:04:05Z",         // RFC3339 without milliseconds
+		time.RFC3339Nano,               // RFC3339 with nanoseconds
+		"15:04:05",                     // Time only (HH:MM:SS)
+		"15:04",                        // Time without seconds (HH:MM)
+	}
+
+	for _, format := range formats {
+		if parsed, err := time.Parse(format, value); err == nil {
+			return parsed, true
+		}
+	}
+
+	return time.Time{}, false
+}
+
+// normalizeFieldValue attempts to normalize a field value, converting date/time strings
+// to a format that Go's time.Time can unmarshal.
+// Returns the original value if it's not a date/time string.
+func normalizeFieldValue(value interface{}) interface{} {
+	// Only process string values
+	str, ok := value.(string)
+	if !ok || str == "" {
+		return value
+	}
+
+	// Try to parse as date/time
+	if parsed, isDateTime := tryParseDateTime(str); isDateTime {
+		// Convert to RFC3339 format which time.Time can unmarshal
+		return parsed.Format(time.RFC3339)
+	}
+
+	return value
+}
+
 // UnmarshalJSON implements custom JSON unmarshaling for IssueFields.
-// It extracts custom fields from the API response.
+// It handles flexible date/time formats from Jira and extracts custom fields.
 func (f *IssueFields) UnmarshalJSON(data []byte) error {
-	// Unmarshal standard fields
+	// First, unmarshal to map for preprocessing
+	var raw map[string]interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	// Normalize all field values - this handles both standard and custom date fields
+	// by converting non-standard date formats to RFC3339
+	for key, value := range raw {
+		raw[key] = normalizeFieldValue(value)
+	}
+
+	// Re-marshal the normalized data
+	normalizedData, err := json.Marshal(raw)
+	if err != nil {
+		return err
+	}
+
+	// Unmarshal standard fields with type alias to avoid recursion
 	type Alias IssueFields
 	aux := &struct {
 		*Alias
@@ -337,13 +470,7 @@ func (f *IssueFields) UnmarshalJSON(data []byte) error {
 		Alias: (*Alias)(f),
 	}
 
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	// Unmarshal to map to extract custom fields
-	var raw map[string]interface{}
-	if err := json.Unmarshal(data, &raw); err != nil {
+	if err := json.Unmarshal(normalizedData, aux); err != nil {
 		return err
 	}
 
@@ -353,6 +480,7 @@ func (f *IssueFields) UnmarshalJSON(data []byte) error {
 	}
 
 	// Extract custom fields (fields starting with "customfield_")
+	// The values have already been normalized, so custom date fields will work
 	for key, value := range raw {
 		if strings.HasPrefix(key, "customfield_") {
 			f.Custom[key] = &CustomField{
