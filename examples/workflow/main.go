@@ -94,16 +94,17 @@ func main() {
 	// 3. Comment Operations
 	fmt.Println("3. Working with Comments...")
 
-	// Add a comment
-	newComment := &issue.AddCommentInput{
-		Body: "This is an automated comment from the jira-connect library.",
-	}
+	// Add a comment using SetBodyText convenience method
+	newComment := &issue.AddCommentInput{}
+	newComment.SetBodyText("This is an automated comment from the jira-connect library.")
 
 	addedComment, err := client.Issue.AddComment(ctx, issueKey, newComment)
 	if err != nil {
 		log.Printf("   Warning: Could not add comment: %v\n", err)
 	} else {
 		fmt.Printf("   Added comment: %s\n", addedComment.ID)
+		// Safe: use GetBodyText to extract plain text from ADF
+		fmt.Printf("   Comment body: %s\n", addedComment.GetBodyText())
 	}
 
 	// List all comments
@@ -113,16 +114,25 @@ func main() {
 	} else {
 		fmt.Printf("   Total comments on issue: %d\n", len(comments))
 		for i, c := range comments {
-			// Safe: check for nil before accessing Author and Created
-			authorName := "Unknown"
-			if c.Author != nil {
-				authorName = c.Author.DisplayName
+			// Safe: use GetAuthorName and GetCreatedTime to avoid nil pointer panics
+			authorName := c.GetAuthorName()
+			if authorName == "" {
+				authorName = "Unknown"
 			}
-			createdTime := "Unknown"
-			if c.Created != nil {
-				createdTime = c.Created.Format(time.RFC3339)
+
+			createdTime := c.GetCreatedTime()
+			createdTimeStr := "Unknown"
+			if !createdTime.IsZero() {
+				createdTimeStr = createdTime.Format(time.RFC3339)
 			}
-			fmt.Printf("   %d. By %s at %s\n", i+1, authorName, createdTime)
+
+			fmt.Printf("   %d. By %s at %s\n", i+1, authorName, createdTimeStr)
+			// Optionally show comment body (truncated)
+			bodyText := c.GetBodyText()
+			if len(bodyText) > 50 {
+				bodyText = bodyText[:50] + "..."
+			}
+			fmt.Printf("      Body: %s\n", bodyText)
 		}
 		fmt.Println()
 	}

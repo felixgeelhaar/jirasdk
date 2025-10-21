@@ -48,13 +48,13 @@ func main() {
 	// Example 2: Create a "blocks" relationship
 	// PROJ-123 blocks PROJ-456
 	fmt.Println("=== Creating Issue Link: PROJ-123 blocks PROJ-456 ===")
+	linkComment := &issue.LinkComment{}
+	linkComment.SetBodyText("These issues are related through a blocking dependency")
 	err = client.Issue.CreateIssueLink(ctx, &issue.CreateIssueLinkInput{
 		Type:         issue.BlocksLinkType(),
 		InwardIssue:  &issue.IssueRef{Key: "PROJ-123"},
 		OutwardIssue: &issue.IssueRef{Key: "PROJ-456"},
-		Comment: &issue.LinkComment{
-			Body: "These issues are related through a blocking dependency",
-		},
+		Comment:      linkComment,
 	})
 	if err != nil {
 		log.Printf("Failed to create issue link: %v", err)
@@ -156,17 +156,18 @@ func main() {
 
 	// Example 9: Create link with visibility restrictions
 	fmt.Println("\n=== Creating Link with Comment Visibility ===")
+	restrictedComment := &issue.LinkComment{
+		Visibility: &issue.CommentVisibility{
+			Type:  "role",
+			Value: "Developers",
+		},
+	}
+	restrictedComment.SetBodyText("This link is only visible to developers")
 	err = client.Issue.CreateIssueLink(ctx, &issue.CreateIssueLinkInput{
 		Type:         issue.BlocksLinkType(),
 		InwardIssue:  &issue.IssueRef{Key: "PROJ-100"},
 		OutwardIssue: &issue.IssueRef{Key: "PROJ-200"},
-		Comment: &issue.LinkComment{
-			Body: "This link is only visible to developers",
-			Visibility: &issue.CommentVisibility{
-				Type:  "role",
-				Value: "Developers",
-			},
-		},
+		Comment:      restrictedComment,
 	})
 	if err != nil {
 		log.Printf("Failed to create link with visibility: %v", err)

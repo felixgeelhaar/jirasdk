@@ -120,7 +120,7 @@ func TestIssueGet(t *testing.T) {
 				Key: "PROJ-123",
 				Fields: &IssueFields{
 					Summary:     "Test issue",
-					Description: "Test description",
+					Description: ADFFromText("Test description"),
 				},
 			},
 			wantErr: false,
