@@ -1,10 +1,10 @@
-# Migration Guide: v1.x to v2.0
+# Migration Guide: v1.3.0 to v1.4.0
 
-This guide helps you migrate from jirasdk v1.x to v2.0. Version 2.0 introduces breaking changes to align with Jira Cloud REST API v3 requirements for ADF (Atlassian Document Format).
+This guide helps you migrate from jirasdk v1.3.0 to v1.4.0. Version 1.4.0 introduces breaking changes to align with Jira Cloud REST API v3 requirements for ADF (Atlassian Document Format).
 
 ## Breaking Changes Overview
 
-Version 2.0 updates the following fields to use `*ADF` instead of `string`:
+Version 1.4.0 updates the following fields to use `*ADF` instead of `string`:
 
 1. **Comment operations** - Comment bodies now use ADF format
 2. **Issue link comments** - Link comments now use ADF format
@@ -35,7 +35,7 @@ comment, err := client.Issue.AddComment(ctx, issueKey, input)
 fmt.Println(comment.Body) // Direct string access
 ```
 
-#### After (v2.0) - Recommended Approach
+#### After (v1.4.0) - Recommended Approach
 
 ```go
 // Adding a comment - use SetBodyText() convenience method
@@ -47,7 +47,7 @@ comment, err := client.Issue.AddComment(ctx, issueKey, input)
 fmt.Println(comment.GetBodyText()) // Safe, never panics
 ```
 
-#### After (v2.0) - Rich Formatting
+#### After (v1.4.0) - Rich Formatting
 
 ```go
 // Adding a rich formatted comment
@@ -72,7 +72,7 @@ updateInput := &issue.UpdateCommentInput{
 updated, err := client.Issue.UpdateComment(ctx, issueKey, commentID, updateInput)
 ```
 
-#### After (v2.0)
+#### After (v1.4.0)
 
 ```go
 updateInput := &issue.UpdateCommentInput{}
@@ -101,7 +101,7 @@ err := client.Issue.CreateIssueLink(ctx, &issue.CreateIssueLinkInput{
 })
 ```
 
-#### After (v2.0)
+#### After (v1.4.0)
 
 ```go
 linkComment := &issue.LinkComment{}
@@ -162,7 +162,7 @@ authorName := comment.Author.DisplayName
 createdTime := comment.Created.Format(time.RFC3339)
 ```
 
-#### After (v2.0) - Safe
+#### After (v1.4.0) - Safe
 
 ```go
 // Safe accessors - never panic
@@ -202,7 +202,7 @@ if input.Body == "" {
 }
 ```
 
-#### After (v2.0)
+#### After (v1.4.0)
 
 ```go
 if input.Body.IsEmpty() {
@@ -240,7 +240,7 @@ if input.Body.IsEmpty() {
 // v1.x
 input := &issue.AddCommentInput{Body: "My comment"}
 
-// v2.0
+// v1.4.0
 input := &issue.AddCommentInput{}
 input.SetBodyText("My comment")
 ```
@@ -253,7 +253,7 @@ for _, c := range comments {
     fmt.Printf("%s: %s\n", c.Author.DisplayName, c.Body)
 }
 
-// v2.0 (safe)
+// v1.4.0 (safe)
 for _, c := range comments {
     author := c.GetAuthorName()
     if author == "" {
@@ -271,7 +271,7 @@ if comment.Created != nil {
     fmt.Println(comment.Created.Format(time.RFC3339))
 }
 
-// v2.0 (safe)
+// v1.4.0 (safe)
 created := comment.GetCreatedTime()
 if !created.IsZero() {
     fmt.Println(created.Format(time.RFC3339))
