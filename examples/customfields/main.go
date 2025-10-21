@@ -44,7 +44,7 @@ func main() {
 			IssueType: &issue.IssueType{
 				Name: "Story",
 			},
-			Description: "Add OAuth 2.0 authentication to the application",
+			Description: issue.ADFFromText("Add OAuth 2.0 authentication to the application"),
 			Custom:      customFields,
 		},
 	})

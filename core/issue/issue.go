@@ -64,13 +64,44 @@ func (i *Issue) GetSummary() string {
 	return i.Fields.Summary
 }
 
-// GetDescription safely retrieves the issue description.
-// Returns an empty string if Fields is nil.
-func (i *Issue) GetDescription() string {
+// GetDescription safely retrieves the issue description as ADF.
+// Returns nil if Fields or Description is nil.
+func (i *Issue) GetDescription() *ADF {
 	if i.Fields == nil {
-		return ""
+		return nil
 	}
 	return i.Fields.Description
+}
+
+// GetDescriptionText safely retrieves the issue description as plain text.
+// This extracts text from the ADF format.
+// Returns an empty string if Fields or Description is nil.
+func (i *Issue) GetDescriptionText() string {
+	adf := i.GetDescription()
+	if adf == nil {
+		return ""
+	}
+	return adf.ToText()
+}
+
+// GetEnvironment safely retrieves the issue environment as ADF.
+// Returns nil if Fields or Environment is nil.
+func (i *Issue) GetEnvironment() *ADF {
+	if i.Fields == nil {
+		return nil
+	}
+	return i.Fields.Environment
+}
+
+// GetEnvironmentText safely retrieves the issue environment as plain text.
+// This extracts text from the ADF format.
+// Returns an empty string if Fields or Environment is nil.
+func (i *Issue) GetEnvironmentText() string {
+	adf := i.GetEnvironment()
+	if adf == nil {
+		return ""
+	}
+	return adf.ToText()
 }
 
 // GetStatus safely retrieves the issue status.
@@ -325,7 +356,8 @@ func (i *Issue) GetDueDateValue() time.Time {
 // IssueFields contains the fields of an issue.
 type IssueFields struct {
 	Summary     string     `json:"summary,omitempty"`
-	Description string     `json:"description,omitempty"`
+	Description *ADF       `json:"description,omitempty"` // ADF format required for Jira Cloud API v3
+	Environment *ADF       `json:"environment,omitempty"` // ADF format required for Jira Cloud API v3
 	IssueType   *IssueType `json:"issuetype,omitempty"`
 	Project     *Project   `json:"project,omitempty"`
 	Status      *Status    `json:"status,omitempty"`
@@ -351,6 +383,61 @@ type IssueFields struct {
 	// UnknownFields stores any additional fields from the API response
 	// This includes both custom fields and any future fields added by Jira
 	UnknownFields map[string]interface{} `json:"-"`
+}
+
+// SetDescriptionText is a convenience method to set the description from plain text.
+// It automatically converts the text to ADF format required by Jira Cloud API v3.
+//
+// Example:
+//
+//	fields := &issue.IssueFields{
+//		Summary: "My Issue",
+//	}
+//	fields.SetDescriptionText("This is the issue description.\n\nMultiple paragraphs supported.")
+func (f *IssueFields) SetDescriptionText(text string) {
+	f.Description = ADFFromText(text)
+}
+
+// SetDescription sets the description using an ADF document.
+//
+// Example:
+//
+//	adf := issue.NewADF().
+//		AddHeading("Problem", 2).
+//		AddParagraph("The application crashes when...").
+//		AddBulletList([]string{"Step 1", "Step 2", "Step 3"})
+//	fields.SetDescription(adf)
+func (f *IssueFields) SetDescription(adf *ADF) {
+	f.Description = adf
+}
+
+// SetEnvironmentText is a convenience method to set the environment from plain text.
+// It automatically converts the text to ADF format required by Jira Cloud API v3.
+//
+// Example:
+//
+//	fields := &issue.IssueFields{
+//		Summary: "Production Issue",
+//	}
+//	fields.SetEnvironmentText("Production server: web-prod-01\nOS: Ubuntu 22.04")
+func (f *IssueFields) SetEnvironmentText(text string) {
+	f.Environment = ADFFromText(text)
+}
+
+// SetEnvironment sets the environment using an ADF document.
+//
+// Example:
+//
+//	adf := issue.NewADF().
+//		AddHeading("Server Environment", 3).
+//		AddBulletList([]string{
+//			"Server: web-prod-01",
+//			"OS: Ubuntu 22.04",
+//			"Database: PostgreSQL 15",
+//		})
+//	fields.SetEnvironment(adf)
+func (f *IssueFields) SetEnvironment(adf *ADF) {
+	f.Environment = adf
 }
 
 // MarshalJSON implements custom JSON marshaling for IssueFields.

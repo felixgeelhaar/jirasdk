@@ -14,14 +14,14 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	testAuthor := &User{AccountID: "user1", DisplayName: "John Doe"}
 
 	t.Run("GetAuthor with nil Author", func(t *testing.T) {
-		comment := &Comment{ID: "10001", Body: "Test comment"}
+		comment := &Comment{ID: "10001", Body: ADFFromText("Test comment")}
 		assert.Nil(t, comment.GetAuthor())
 	})
 
 	t.Run("GetAuthor with populated Author", func(t *testing.T) {
 		comment := &Comment{
 			ID:     "10001",
-			Body:   "Test comment",
+			Body:   ADFFromText("Test comment"),
 			Author: testAuthor,
 		}
 		author := comment.GetAuthor()
@@ -31,28 +31,28 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	})
 
 	t.Run("GetAuthorName with nil Author", func(t *testing.T) {
-		comment := &Comment{ID: "10001", Body: "Test comment"}
+		comment := &Comment{ID: "10001", Body: ADFFromText("Test comment")}
 		assert.Equal(t, "", comment.GetAuthorName())
 	})
 
 	t.Run("GetAuthorName with populated Author", func(t *testing.T) {
 		comment := &Comment{
 			ID:     "10001",
-			Body:   "Test comment",
+			Body:   ADFFromText("Test comment"),
 			Author: testAuthor,
 		}
 		assert.Equal(t, "John Doe", comment.GetAuthorName())
 	})
 
 	t.Run("GetCreated with nil Created", func(t *testing.T) {
-		comment := &Comment{ID: "10001", Body: "Test comment"}
+		comment := &Comment{ID: "10001", Body: ADFFromText("Test comment")}
 		assert.Nil(t, comment.GetCreated())
 	})
 
 	t.Run("GetCreated with populated Created", func(t *testing.T) {
 		comment := &Comment{
 			ID:      "10001",
-			Body:    "Test comment",
+			Body:    ADFFromText("Test comment"),
 			Created: testCreated,
 		}
 		created := comment.GetCreated()
@@ -61,7 +61,7 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	})
 
 	t.Run("GetCreatedTime with nil Created", func(t *testing.T) {
-		comment := &Comment{ID: "10001", Body: "Test comment"}
+		comment := &Comment{ID: "10001", Body: ADFFromText("Test comment")}
 		created := comment.GetCreatedTime()
 		assert.True(t, created.IsZero())
 	})
@@ -69,7 +69,7 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	t.Run("GetCreatedTime with populated Created", func(t *testing.T) {
 		comment := &Comment{
 			ID:      "10001",
-			Body:    "Test comment",
+			Body:    ADFFromText("Test comment"),
 			Created: testCreated,
 		}
 		created := comment.GetCreatedTime()
@@ -78,14 +78,14 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	})
 
 	t.Run("GetUpdated with nil Updated", func(t *testing.T) {
-		comment := &Comment{ID: "10001", Body: "Test comment"}
+		comment := &Comment{ID: "10001", Body: ADFFromText("Test comment")}
 		assert.Nil(t, comment.GetUpdated())
 	})
 
 	t.Run("GetUpdated with populated Updated", func(t *testing.T) {
 		comment := &Comment{
 			ID:      "10001",
-			Body:    "Test comment",
+			Body:    ADFFromText("Test comment"),
 			Updated: testUpdated,
 		}
 		updated := comment.GetUpdated()
@@ -94,7 +94,7 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	})
 
 	t.Run("GetUpdatedTime with nil Updated", func(t *testing.T) {
-		comment := &Comment{ID: "10001", Body: "Test comment"}
+		comment := &Comment{ID: "10001", Body: ADFFromText("Test comment")}
 		updated := comment.GetUpdatedTime()
 		assert.True(t, updated.IsZero())
 	})
@@ -102,7 +102,7 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 	t.Run("GetUpdatedTime with populated Updated", func(t *testing.T) {
 		comment := &Comment{
 			ID:      "10001",
-			Body:    "Test comment",
+			Body:    ADFFromText("Test comment"),
 			Updated: testUpdated,
 		}
 		updated := comment.GetUpdatedTime()
@@ -110,10 +110,39 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 		assert.Equal(t, *testUpdated, updated)
 	})
 
+	t.Run("GetBody with nil Body", func(t *testing.T) {
+		comment := &Comment{ID: "10001"}
+		assert.Nil(t, comment.GetBody())
+	})
+
+	t.Run("GetBody with populated Body", func(t *testing.T) {
+		testBody := ADFFromText("Test comment body")
+		comment := &Comment{
+			ID:   "10001",
+			Body: testBody,
+		}
+		body := comment.GetBody()
+		assert.NotNil(t, body)
+		assert.Equal(t, "Test comment body", body.ToText())
+	})
+
+	t.Run("GetBodyText with nil Body", func(t *testing.T) {
+		comment := &Comment{ID: "10001"}
+		assert.Equal(t, "", comment.GetBodyText())
+	})
+
+	t.Run("GetBodyText with populated Body", func(t *testing.T) {
+		comment := &Comment{
+			ID:   "10001",
+			Body: ADFFromText("Test comment body"),
+		}
+		assert.Equal(t, "Test comment body", comment.GetBodyText())
+	})
+
 	t.Run("All fields with complete comment", func(t *testing.T) {
 		comment := &Comment{
 			ID:      "10001",
-			Body:    "Complete test comment",
+			Body:    ADFFromText("Complete test comment"),
 			Author:  testAuthor,
 			Created: testCreated,
 			Updated: testUpdated,
@@ -124,10 +153,12 @@ func TestCommentSafeHelperMethods(t *testing.T) {
 		assert.Equal(t, "John Doe", comment.GetAuthorName())
 		assert.NotNil(t, comment.GetCreated())
 		assert.NotNil(t, comment.GetUpdated())
+		assert.NotNil(t, comment.GetBody())
 
 		// Test value methods
 		assert.False(t, comment.GetCreatedTime().IsZero())
 		assert.False(t, comment.GetUpdatedTime().IsZero())
+		assert.Equal(t, "Complete test comment", comment.GetBodyText())
 
 		// Test values match
 		assert.Equal(t, *testCreated, comment.GetCreatedTime())

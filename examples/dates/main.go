@@ -52,11 +52,11 @@ func main() {
 			Project: &issue.Project{
 				Key: "PROJ", // Replace with your project key
 			},
-			Summary: "Task with due date",
+			Summary:     "Task with due date",
 			IssueType: &issue.IssueType{
 				Name: "Task",
 			},
-			Description: "This task has a due date set",
+			Description: issue.ADFFromText("This task has a due date set"),
 			DueDate:     &dueDate,
 		},
 	}

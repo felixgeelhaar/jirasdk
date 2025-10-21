@@ -314,7 +314,21 @@ func TestIssueFields_MarshalJSON_WithoutCustomFields(t *testing.T) {
 func TestIssueFields_UnmarshalJSON_WithCustomFields(t *testing.T) {
 	jsonData := `{
 		"summary": "Test issue",
-		"description": "Test description",
+		"description": {
+			"type": "doc",
+			"version": 1,
+			"content": [
+				{
+					"type": "paragraph",
+					"content": [
+						{
+							"type": "text",
+							"text": "Test description"
+						}
+					]
+				}
+			]
+		},
 		"customfield_10001": "Sprint 1",
 		"customfield_10002": 42.5,
 		"customfield_10003": {"accountId": "123"}
@@ -325,7 +339,8 @@ func TestIssueFields_UnmarshalJSON_WithCustomFields(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "Test issue", fields.Summary)
-	assert.Equal(t, "Test description", fields.Description)
+	require.NotNil(t, fields.Description)
+	assert.Equal(t, "Test description", fields.Description.ToText())
 
 	// Check custom fields were extracted
 	assert.Len(t, fields.Custom, 3)
@@ -345,7 +360,21 @@ func TestIssueFields_UnmarshalJSON_WithCustomFields(t *testing.T) {
 func TestIssueFields_UnmarshalJSON_WithoutCustomFields(t *testing.T) {
 	jsonData := `{
 		"summary": "Test issue",
-		"description": "Test description"
+		"description": {
+			"type": "doc",
+			"version": 1,
+			"content": [
+				{
+					"type": "paragraph",
+					"content": [
+						{
+							"type": "text",
+							"text": "Test description"
+						}
+					]
+				}
+			]
+		}
 	}`
 
 	var fields IssueFields
@@ -353,7 +382,8 @@ func TestIssueFields_UnmarshalJSON_WithoutCustomFields(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "Test issue", fields.Summary)
-	assert.Equal(t, "Test description", fields.Description)
+	require.NotNil(t, fields.Description)
+	assert.Equal(t, "Test description", fields.Description.ToText())
 
 	// Custom fields should be initialized but empty
 	assert.NotNil(t, fields.Custom)
@@ -363,7 +393,7 @@ func TestIssueFields_UnmarshalJSON_WithoutCustomFields(t *testing.T) {
 func TestIssueFields_RoundTrip(t *testing.T) {
 	original := &IssueFields{
 		Summary:     "Test issue",
-		Description: "Test description",
+		Description: ADFFromText("Test description"),
 		Custom: NewCustomFields().
 			SetString("customfield_10001", "Sprint 1").
 			SetNumber("customfield_10002", 42.5).
@@ -495,7 +525,21 @@ func TestIssueFields_UnmarshalJSON_FlexibleDateFormats(t *testing.T) {
 		// Realistic Jira API response format
 		jsonData := `{
 			"summary": "Implement user authentication",
-			"description": "Add OAuth 2.0 support",
+			"description": {
+				"type": "doc",
+				"version": 1,
+				"content": [
+					{
+						"type": "paragraph",
+						"content": [
+							{
+								"type": "text",
+								"text": "Add OAuth 2.0 support"
+							}
+						]
+					}
+				]
+			},
 			"created": "2024-01-01T10:30:00.000+0000",
 			"updated": "2024-01-05T15:20:30.000+0000",
 			"duedate": "2024-02-01"
@@ -506,7 +550,8 @@ func TestIssueFields_UnmarshalJSON_FlexibleDateFormats(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, "Implement user authentication", fields.Summary)
-		assert.Equal(t, "Add OAuth 2.0 support", fields.Description)
+		require.NotNil(t, fields.Description)
+		assert.Equal(t, "Add OAuth 2.0 support", fields.Description.ToText())
 
 		// All date fields should be parsed successfully
 		require.NotNil(t, fields.Created)

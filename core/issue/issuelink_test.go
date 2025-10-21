@@ -35,7 +35,7 @@ func TestCreateIssueLink(t *testing.T) {
 				InwardIssue:  &IssueRef{Key: "PROJ-123"},
 				OutwardIssue: &IssueRef{Key: "PROJ-789"},
 				Comment: &LinkComment{
-					Body: "These issues are duplicates",
+					Body: ADFFromText("These issues are duplicates"),
 				},
 			},
 			responseStatus: http.StatusCreated,
