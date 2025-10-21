@@ -23,9 +23,9 @@ import "encoding/json"
 //	  ]
 //	}
 type ADF struct {
-	Type    string      `json:"type"`
-	Version int         `json:"version"`
-	Content []ADFNode   `json:"content,omitempty"`
+	Type    string    `json:"type"`
+	Version int       `json:"version"`
+	Content []ADFNode `json:"content,omitempty"`
 }
 
 // ADFNode represents a node in an ADF document.

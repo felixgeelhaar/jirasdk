@@ -52,7 +52,7 @@ func main() {
 			Project: &issue.Project{
 				Key: "PROJ", // Replace with your project key
 			},
-			Summary:     "Task with due date",
+			Summary: "Task with due date",
 			IssueType: &issue.IssueType{
 				Name: "Task",
 			},
