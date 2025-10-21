@@ -1013,7 +1013,7 @@ MIT License - see LICENSE file for details
 ---
 
 [Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.4.0...HEAD
-[2.0.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
+[1.4.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
 [1.3.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.3.0
 [1.2.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.2
 [1.2.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.0
