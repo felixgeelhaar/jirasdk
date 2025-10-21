@@ -29,12 +29,12 @@ func TestListComments(t *testing.T) {
 				Comments: []*Comment{
 					{
 						ID:      "10000",
-						Body:    "First comment",
+						Body:    ADFFromText("First comment"),
 						Created: &now,
 					},
 					{
 						ID:      "10001",
-						Body:    "Second comment",
+						Body:    ADFFromText("Second comment"),
 						Created: &now,
 					},
 				},
@@ -100,12 +100,12 @@ func TestAddComment(t *testing.T) {
 			name:         "successful add",
 			issueKeyOrID: "PROJ-123",
 			input: &AddCommentInput{
-				Body: "This is a test comment",
+				Body: ADFFromText("This is a test comment"),
 			},
 			responseStatus: http.StatusCreated,
 			responseBody: &Comment{
 				ID:      "10000",
-				Body:    "This is a test comment",
+				Body:    ADFFromText("This is a test comment"),
 				Created: &now,
 			},
 			wantErr: false,
@@ -114,7 +114,7 @@ func TestAddComment(t *testing.T) {
 			name:         "empty issue key",
 			issueKeyOrID: "",
 			input: &AddCommentInput{
-				Body: "Comment",
+				Body: ADFFromText("Comment"),
 			},
 			wantErr: true,
 			errMsg:  "issue key or ID is required",
@@ -130,7 +130,7 @@ func TestAddComment(t *testing.T) {
 			name:         "empty body",
 			issueKeyOrID: "PROJ-123",
 			input: &AddCommentInput{
-				Body: "",
+				Body: NewADF(), // Empty ADF
 			},
 			wantErr: true,
 			errMsg:  "comment body is required",
@@ -139,7 +139,7 @@ func TestAddComment(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.issueKeyOrID == "" || tt.input == nil || tt.input.Body == "" {
+			if tt.issueKeyOrID == "" || tt.input == nil || tt.input.Body.IsEmpty() {
 				service := NewService(nil)
 				_, err := service.AddComment(context.Background(), tt.issueKeyOrID, tt.input)
 				require.Error(t, err)
@@ -195,12 +195,12 @@ func TestUpdateComment(t *testing.T) {
 			issueKeyOrID: "PROJ-123",
 			commentID:    "10000",
 			input: &UpdateCommentInput{
-				Body: "Updated comment",
+				Body: ADFFromText("Updated comment"),
 			},
 			responseStatus: http.StatusOK,
 			responseBody: &Comment{
 				ID:      "10000",
-				Body:    "Updated comment",
+				Body:    ADFFromText("Updated comment"),
 				Updated: &now,
 			},
 			wantErr: false,
@@ -210,7 +210,7 @@ func TestUpdateComment(t *testing.T) {
 			issueKeyOrID: "",
 			commentID:    "10000",
 			input: &UpdateCommentInput{
-				Body: "Updated",
+				Body: ADFFromText("Updated"),
 			},
 			wantErr: true,
 			errMsg:  "issue key or ID is required",
@@ -220,7 +220,7 @@ func TestUpdateComment(t *testing.T) {
 			issueKeyOrID: "PROJ-123",
 			commentID:    "",
 			input: &UpdateCommentInput{
-				Body: "Updated",
+				Body: ADFFromText("Updated"),
 			},
 			wantErr: true,
 			errMsg:  "comment ID is required",
@@ -238,7 +238,7 @@ func TestUpdateComment(t *testing.T) {
 			issueKeyOrID: "PROJ-123",
 			commentID:    "10000",
 			input: &UpdateCommentInput{
-				Body: "",
+				Body: NewADF(), // Empty ADF
 			},
 			wantErr: true,
 			errMsg:  "comment body is required",
@@ -247,7 +247,7 @@ func TestUpdateComment(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.issueKeyOrID == "" || tt.commentID == "" || tt.input == nil || tt.input.Body == "" {
+			if tt.issueKeyOrID == "" || tt.commentID == "" || tt.input == nil || tt.input.Body.IsEmpty() {
 				service := NewService(nil)
 				_, err := service.UpdateComment(context.Background(), tt.issueKeyOrID, tt.commentID, tt.input)
 				require.Error(t, err)

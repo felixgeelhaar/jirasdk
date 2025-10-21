@@ -7,6 +7,234 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-10-21
+
+### Breaking Changes
+
+**IMPORTANT**: This is a major version release with breaking changes to align with Jira Cloud REST API v3 requirements for ADF (Atlassian Document Format).
+
+#### ADF Format Required for Text Fields
+
+All rich text fields now use `*ADF` (Atlassian Document Format) instead of `string`:
+
+- **Comment.Body**: `string` → `*ADF`
+- **AddCommentInput.Body**: `string` → `*ADF`
+- **UpdateCommentInput.Body**: `string` → `*ADF`
+- **LinkComment.Body**: `string` → `*ADF`
+- **IssueFields.Environment**: New field using `*ADF`
+
+See [MIGRATION_v2.md](MIGRATION_v2.md) for complete migration guide.
+
+### Added
+
+#### Comment Operations - ADF Support
+
+- **Safe Accessor Methods** for Comment:
+  - `GetBody()` - Returns ADF body (may be nil)
+  - `GetBodyText()` - Extracts plain text from ADF (safe, never panics)
+
+- **Convenience Methods** for Creating/Updating Comments:
+  - `AddCommentInput.SetBodyText(text)` - Auto-converts plain text to ADF
+  - `AddCommentInput.SetBody(adf)` - Sets ADF directly for rich formatting
+  - `UpdateCommentInput.SetBodyText(text)` - Auto-converts plain text to ADF
+  - `UpdateCommentInput.SetBody(adf)` - Sets ADF directly for rich formatting
+
+#### Issue Link Comments - ADF Support
+
+- **Convenience Methods** for Link Comments:
+  - `LinkComment.SetBodyText(text)` - Auto-converts plain text to ADF
+  - `LinkComment.SetBody(adf)` - Sets ADF directly for rich formatting
+
+#### Environment Field - New Feature
+
+- **New Field**: `IssueFields.Environment` as `*ADF`
+  - Required by Jira Cloud API v3 for environment information
+  - Supports both plain text and rich formatting
+
+- **IssueFields Convenience Methods**:
+  - `SetEnvironmentText(text)` - Auto-converts plain text to ADF
+  - `SetEnvironment(adf)` - Sets ADF directly
+
+- **Issue Safe Accessors**:
+  - `GetEnvironment()` - Returns environment as ADF (may be nil)
+  - `GetEnvironmentText()` - Extracts plain text from environment (safe)
+
+#### Documentation & Examples
+
+- **MIGRATION_v2.md** - Comprehensive migration guide covering:
+  - Breaking changes overview
+  - Step-by-step migration instructions
+  - Before/after code examples
+  - Safe accessor pattern documentation
+  - Migration checklist
+  - Common migration patterns
+  - Testing recommendations
+
+- **New Example**: `examples/comments/main.go` (230+ lines) demonstrating:
+  - Plain text comment creation with SetBodyText()
+  - Rich formatted comments with ADF
+  - Safe comment reading with GetBodyText()
+  - Comment metadata access with safe accessors
+  - Update and delete operations
+  - Best practices guide
+
+- **Updated Examples**:
+  - `examples/workflow/main.go` - Uses new comment API
+  - `examples/issuelinks/main.go` - Uses SetBodyText() for link comments
+
+#### Testing
+
+- **Comment Tests Updated**:
+  - `comment_safe_test.go` - 4 new tests for Body accessors
+  - `comment_test.go` - Updated for ADF validation
+  - `issuelink_test.go` - Updated for ADF LinkComment
+
+- **New Test File**: `environment_test.go` (170 lines) covering:
+  - GetEnvironment/GetEnvironmentText accessors (7 scenarios)
+  - SetEnvironmentText/SetEnvironment setters (7 scenarios)
+  - Complete integration workflows (1 comprehensive test)
+
+**Total Test Coverage**: All 99+ tests pass ✅
+
+### Changed
+
+#### API Usage Patterns
+
+**Before v2.0 (String-based)**:
+```go
+// Creating comments
+input := &issue.AddCommentInput{
+    Body: "My comment",
+}
+
+// Reading comments
+text := comment.Body // Direct string access
+```
+
+**After v2.0 (ADF-based with convenience methods)**:
+```go
+// Creating comments - plain text
+input := &issue.AddCommentInput{}
+input.SetBodyText("My comment")
+
+// Reading comments - safe accessor
+text := comment.GetBodyText()
+```
+
+**Rich Formatting Support**:
+```go
+// Rich formatted comment
+adf := issue.NewADF().
+    AddHeading("Update", 3).
+    AddParagraph("Status changed").
+    AddBulletList([]string{"Item 1", "Item 2"})
+input.SetBody(adf)
+```
+
+#### Validation Logic
+
+- **Empty Check**: Changed from `input.Body == ""` to `input.Body.IsEmpty()`
+- **Nil Safety**: All ADF fields are now `*ADF` (pointer) for nil-ability
+
+### Technical Details
+
+#### Dual API Approach
+
+Version 2.0 provides two complementary APIs for maximum flexibility:
+
+1. **Convenience Methods** (Recommended for most use cases):
+   - `SetBodyText(text)` - Auto-converts plain text to ADF
+   - `GetBodyText()` - Extracts plain text from ADF
+   - Zero learning curve for simple text operations
+
+2. **Direct ADF Methods** (For advanced formatting):
+   - `SetBody(adf)` - Full control over ADF structure
+   - `GetBody()` - Access to raw ADF for manipulation
+   - Enables rich formatting (headings, lists, code blocks, etc.)
+
+#### Safety Features
+
+- **Nil-safe accessors**: All Get methods handle nil gracefully
+- **Zero-value returns**: GetBodyText() returns "" if Body is nil
+- **Type safety**: ADF validation at construction time
+- **No panics**: Safe accessors prevent nil pointer dereferences
+
+### Migration Path
+
+#### Quick Migration (Plain Text Only)
+
+For simple text-only comments, minimal changes required:
+
+```go
+// Change from:
+input := &issue.AddCommentInput{Body: "text"}
+text := comment.Body
+
+// To:
+input := &issue.AddCommentInput{}
+input.SetBodyText("text")
+text := comment.GetBodyText()
+```
+
+#### Complete Migration Checklist
+
+- [ ] Replace `Body: "text"` with `SetBodyText("text")` in AddCommentInput
+- [ ] Replace `Body: "text"` with `SetBodyText("text")` in UpdateCommentInput
+- [ ] Replace direct `comment.Body` access with `comment.GetBodyText()`
+- [ ] Update LinkComment to use `SetBodyText()` or `SetBody()`
+- [ ] Add Environment field support if needed
+- [ ] Run tests to verify all changes compile and work correctly
+
+See [MIGRATION_v2.md](MIGRATION_v2.md) for detailed instructions.
+
+### Backward Compatibility
+
+⚠️ **Breaking Changes** - This release is NOT backward compatible with v1.x:
+
+- Comment body fields changed from `string` to `*ADF`
+- Direct field access must be replaced with convenience methods
+- Validation logic updated for ADF format
+
+**Migration Required**: All code using comment operations must be updated.
+**Timeline**: Upgrade to v1.4.0 is recommended immediately for Jira Cloud API v3 compliance.
+
+### Upgrade Path
+
+1. **Install v1.4.0**:
+   ```bash
+   go get github.com/felixgeelhaar/jirasdk@v1.4.0
+   ```
+
+2. **Read Migration Guide**:
+   - Review [MIGRATION_v2.md](MIGRATION_v2.md)
+   - Understand breaking changes
+
+3. **Update Code**:
+   - Use convenience methods: SetBodyText(), GetBodyText()
+   - Update validation: IsEmpty() instead of == ""
+   - Add Environment field support if needed
+
+4. **Test Thoroughly**:
+   - Run all unit tests
+   - Test against Jira instance
+   - Verify comment operations work correctly
+
+### Installation
+
+```bash
+go get github.com/felixgeelhaar/jirasdk@v1.4.0
+```
+
+### Contributors
+
+- Felix Geelhaar (@felixgeelhaar)
+
+### Links
+
+- [Migration Guide](MIGRATION_v2.md)
+- [Comment Example](examples/comments/main.go)
+- [Full Changelog](https://github.com/felixgeelhaar/jirasdk/compare/v1.3.0...v1.4.0)
+
 ## [1.3.0] - 2025-10-19
 
 ### Added
@@ -477,7 +705,7 @@ result, err := client.Expression.EvaluateExpression(ctx, &expression.EvaluationI
 
 ### Breaking Changes in Future Versions
 
-**v2.0.0** (After October 31, 2025) will remove:
+**v1.4.0** (After October 31, 2025) will remove:
 - All deprecated search methods and types
 - All deprecated expression methods
 - Legacy pagination support
@@ -784,7 +1012,9 @@ MIT License - see LICENSE file for details
 
 ---
 
-[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
+[1.3.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.3.0
 [1.2.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.2
 [1.2.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.0
 [1.1.1]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.1.1

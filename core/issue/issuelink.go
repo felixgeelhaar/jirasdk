@@ -56,8 +56,29 @@ type IssueRef struct {
 
 // LinkComment represents a comment added when creating a link.
 type LinkComment struct {
-	Body       string             `json:"body"`
+	Body       *ADF               `json:"body"` // ADF format required for Jira Cloud API v3
 	Visibility *CommentVisibility `json:"visibility,omitempty"`
+}
+
+// SetBodyText is a convenience method to set the comment body from plain text.
+// It automatically converts the text to ADF format required by Jira Cloud API v3.
+//
+// Example:
+//
+//	comment := &issue.LinkComment{}
+//	comment.SetBodyText("Linking related issues")
+func (lc *LinkComment) SetBodyText(text string) {
+	lc.Body = ADFFromText(text)
+}
+
+// SetBody sets the comment body using an ADF document.
+//
+// Example:
+//
+//	adf := issue.NewADF().AddParagraph("Linking related issues")
+//	comment.SetBody(adf)
+func (lc *LinkComment) SetBody(adf *ADF) {
+	lc.Body = adf
 }
 
 // CommentVisibility controls who can see the comment.

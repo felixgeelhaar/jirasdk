@@ -56,7 +56,7 @@ func main() {
 			IssueType: &issue.IssueType{
 				Name: "Task",
 			},
-			Description: "This task has a due date set",
+			Description: issue.ADFFromText("This task has a due date set"),
 			DueDate:     &dueDate,
 		},
 	}

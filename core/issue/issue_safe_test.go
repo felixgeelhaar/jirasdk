@@ -27,14 +27,14 @@ func TestIssueSafeHelperMethods(t *testing.T) {
 			Key: "PROJ-123",
 			Fields: &IssueFields{
 				Summary:     "Test summary",
-				Description: "Test description",
+				Description: ADFFromText("Test description"),
 			},
 		}
 
 		fields := issue.SafeFields()
 		assert.NotNil(t, fields)
 		assert.Equal(t, "Test summary", fields.Summary)
-		assert.Equal(t, "Test description", fields.Description)
+		assert.Equal(t, "Test description", fields.Description.ToText())
 	})
 
 	t.Run("GetSummary with nil Fields", func(t *testing.T) {
@@ -51,14 +51,16 @@ func TestIssueSafeHelperMethods(t *testing.T) {
 
 	t.Run("GetDescription with nil Fields", func(t *testing.T) {
 		issue := &Issue{ID: "10001", Key: "PROJ-123"}
-		assert.Equal(t, "", issue.GetDescription())
+		assert.Nil(t, issue.GetDescription())
 	})
 
 	t.Run("GetDescription with populated Fields", func(t *testing.T) {
 		issue := &Issue{
-			Fields: &IssueFields{Description: "Test description"},
+			Fields: &IssueFields{Description: ADFFromText("Test description")},
 		}
-		assert.Equal(t, "Test description", issue.GetDescription())
+		desc := issue.GetDescription()
+		assert.NotNil(t, desc)
+		assert.Equal(t, "Test description", desc.ToText())
 	})
 
 	t.Run("GetStatus with nil Fields", func(t *testing.T) {
@@ -302,7 +304,7 @@ func TestIssueSafeHelperMethods(t *testing.T) {
 			Key: "PROJ-123",
 			Fields: &IssueFields{
 				Summary:     "Full test issue",
-				Description: "Complete description",
+				Description: ADFFromText("Complete description"),
 				Status:      &Status{ID: "1", Name: "Open"},
 				Priority:    &Priority{ID: "2", Name: "High"},
 				Assignee:    &User{DisplayName: "John Assignee"},
@@ -317,7 +319,7 @@ func TestIssueSafeHelperMethods(t *testing.T) {
 		// All methods should work without panicking
 		assert.NotNil(t, issue.SafeFields())
 		assert.Equal(t, "Full test issue", issue.GetSummary())
-		assert.Equal(t, "Complete description", issue.GetDescription())
+		assert.Equal(t, "Complete description", issue.GetDescriptionText())
 		assert.Equal(t, "Open", issue.GetStatusName())
 		assert.Equal(t, "High", issue.GetPriorityName())
 		assert.Equal(t, "John Assignee", issue.GetAssigneeName())

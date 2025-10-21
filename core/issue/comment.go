@@ -12,7 +12,7 @@ type Comment struct {
 	ID      string     `json:"id"`
 	Self    string     `json:"self,omitempty"`
 	Author  *User      `json:"author,omitempty"`
-	Body    string     `json:"body"`
+	Body    *ADF       `json:"body"` // ADF format required for Jira Cloud API v3
 	Created *time.Time `json:"created,omitempty"`
 	Updated *time.Time `json:"updated,omitempty"`
 }
@@ -64,6 +64,22 @@ func (c *Comment) GetUpdatedTime() time.Time {
 	return *c.Updated
 }
 
+// GetBody safely retrieves the comment body as ADF.
+// Returns nil if Body is nil.
+func (c *Comment) GetBody() *ADF {
+	return c.Body
+}
+
+// GetBodyText safely retrieves the comment body as plain text.
+// This extracts text from the ADF format.
+// Returns an empty string if Body is nil.
+func (c *Comment) GetBodyText() string {
+	if c.Body == nil {
+		return ""
+	}
+	return c.Body.ToText()
+}
+
 // CommentsResult contains a list of comments with pagination.
 type CommentsResult struct {
 	Comments   []*Comment `json:"comments"`
@@ -107,22 +123,45 @@ func (s *Service) ListComments(ctx context.Context, issueKeyOrID string) ([]*Com
 
 // AddCommentInput contains the data for adding a comment.
 type AddCommentInput struct {
-	Body string `json:"body"`
+	Body *ADF `json:"body"` // ADF format required for Jira Cloud API v3
+}
+
+// SetBodyText is a convenience method to set the comment body from plain text.
+// It automatically converts the text to ADF format required by Jira Cloud API v3.
+//
+// Example:
+//
+//	input := &issue.AddCommentInput{}
+//	input.SetBodyText("This is my comment")
+func (a *AddCommentInput) SetBodyText(text string) {
+	a.Body = ADFFromText(text)
+}
+
+// SetBody sets the comment body using an ADF document.
+//
+// Example:
+//
+//	adf := issue.NewADF().
+//		AddHeading("Update", 3).
+//		AddParagraph("Status has been changed")
+//	input.SetBody(adf)
+func (a *AddCommentInput) SetBody(adf *ADF) {
+	a.Body = adf
 }
 
 // AddComment adds a comment to an issue.
 //
 // Example:
 //
-//	comment, err := client.Issue.AddComment(ctx, "PROJ-123", &issue.AddCommentInput{
-//		Body: "This is a comment",
-//	})
+//	input := &issue.AddCommentInput{}
+//	input.SetBodyText("This is a comment")
+//	comment, err := client.Issue.AddComment(ctx, "PROJ-123", input)
 func (s *Service) AddComment(ctx context.Context, issueKeyOrID string, input *AddCommentInput) (*Comment, error) {
 	if issueKeyOrID == "" {
 		return nil, fmt.Errorf("issue key or ID is required")
 	}
 
-	if input == nil || input.Body == "" {
+	if input == nil || input.Body.IsEmpty() {
 		return nil, fmt.Errorf("comment body is required")
 	}
 
@@ -151,16 +190,38 @@ func (s *Service) AddComment(ctx context.Context, issueKeyOrID string, input *Ad
 
 // UpdateCommentInput contains the data for updating a comment.
 type UpdateCommentInput struct {
-	Body string `json:"body"`
+	Body *ADF `json:"body"` // ADF format required for Jira Cloud API v3
+}
+
+// SetBodyText is a convenience method to set the comment body from plain text.
+// It automatically converts the text to ADF format required by Jira Cloud API v3.
+//
+// Example:
+//
+//	input := &issue.UpdateCommentInput{}
+//	input.SetBodyText("Updated comment text")
+func (u *UpdateCommentInput) SetBodyText(text string) {
+	u.Body = ADFFromText(text)
+}
+
+// SetBody sets the comment body using an ADF document.
+//
+// Example:
+//
+//	adf := issue.NewADF().
+//		AddParagraph("Updated with rich formatting")
+//	input.SetBody(adf)
+func (u *UpdateCommentInput) SetBody(adf *ADF) {
+	u.Body = adf
 }
 
 // UpdateComment updates an existing comment.
 //
 // Example:
 //
-//	comment, err := client.Issue.UpdateComment(ctx, "PROJ-123", "10000", &issue.UpdateCommentInput{
-//		Body: "Updated comment",
-//	})
+//	input := &issue.UpdateCommentInput{}
+//	input.SetBodyText("Updated comment")
+//	comment, err := client.Issue.UpdateComment(ctx, "PROJ-123", "10000", input)
 func (s *Service) UpdateComment(ctx context.Context, issueKeyOrID, commentID string, input *UpdateCommentInput) (*Comment, error) {
 	if issueKeyOrID == "" {
 		return nil, fmt.Errorf("issue key or ID is required")
@@ -170,7 +231,7 @@ func (s *Service) UpdateComment(ctx context.Context, issueKeyOrID, commentID str
 		return nil, fmt.Errorf("comment ID is required")
 	}
 
-	if input == nil || input.Body == "" {
+	if input == nil || input.Body.IsEmpty() {
 		return nil, fmt.Errorf("comment body is required")
 	}
 
