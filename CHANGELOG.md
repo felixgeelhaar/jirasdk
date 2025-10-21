@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.0] - 2025-10-21
+## [1.4.0] - 2025-10-21
 
 ### Breaking Changes
 
@@ -196,13 +196,13 @@ See [MIGRATION_v2.md](MIGRATION_v2.md) for detailed instructions.
 - Validation logic updated for ADF format
 
 **Migration Required**: All code using comment operations must be updated.
-**Timeline**: Upgrade to v2.0.0 is recommended immediately for Jira Cloud API v3 compliance.
+**Timeline**: Upgrade to v1.4.0 is recommended immediately for Jira Cloud API v3 compliance.
 
 ### Upgrade Path
 
-1. **Install v2.0.0**:
+1. **Install v1.4.0**:
    ```bash
-   go get github.com/felixgeelhaar/jirasdk@v2.0.0
+   go get github.com/felixgeelhaar/jirasdk@v1.4.0
    ```
 
 2. **Read Migration Guide**:
@@ -222,7 +222,7 @@ See [MIGRATION_v2.md](MIGRATION_v2.md) for detailed instructions.
 ### Installation
 
 ```bash
-go get github.com/felixgeelhaar/jirasdk@v2.0.0
+go get github.com/felixgeelhaar/jirasdk@v1.4.0
 ```
 
 ### Contributors
@@ -233,7 +233,7 @@ go get github.com/felixgeelhaar/jirasdk@v2.0.0
 
 - [Migration Guide](MIGRATION_v2.md)
 - [Comment Example](examples/comments/main.go)
-- [Full Changelog](https://github.com/felixgeelhaar/jirasdk/compare/v1.3.0...v2.0.0)
+- [Full Changelog](https://github.com/felixgeelhaar/jirasdk/compare/v1.3.0...v1.4.0)
 
 ## [1.3.0] - 2025-10-19
 
@@ -705,7 +705,7 @@ result, err := client.Expression.EvaluateExpression(ctx, &expression.EvaluationI
 
 ### Breaking Changes in Future Versions
 
-**v2.0.0** (After October 31, 2025) will remove:
+**v1.4.0** (After October 31, 2025) will remove:
 - All deprecated search methods and types
 - All deprecated expression methods
 - Legacy pagination support
@@ -1012,8 +1012,8 @@ MIT License - see LICENSE file for details
 
 ---
 
-[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v2.0.0
+[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
 [1.3.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.3.0
 [1.2.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.2
 [1.2.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.0
