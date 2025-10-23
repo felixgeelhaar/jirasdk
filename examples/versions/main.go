@@ -358,7 +358,7 @@ func main() {
 		if err == nil {
 			// SAFE ACCESSORS: These NEVER panic, even when fields aren't set
 
-			// Returns nil for unset slice fields
+			// Returns empty (never nil) slices for unset version fields
 			affectsVersions := retrieved.GetAffectsVersions()
 			fixVersions := retrieved.GetFixVersions()
 
