@@ -473,127 +473,126 @@ func (i *Issue) GetDueDateValue() time.Time {
 //
 // 1. CREATING ISSUES - Required and Optional Fields:
 //
-//    Required for all issues:
-//      - Summary: Short description (string)
-//      - Project: Project reference with Key
-//      - IssueType: Issue type with Name (e.g., "Bug", "Story", "Task")
+//	Required for all issues:
+//	  - Summary: Short description (string)
+//	  - Project: Project reference with Key
+//	  - IssueType: Issue type with Name (e.g., "Bug", "Story", "Task")
 //
-//    Required for specific issue types:
-//      - Parent: Required for subtasks (use &IssueRef{Key: "PARENT-KEY"})
+//	Required for specific issue types:
+//	  - Parent: Required for subtasks (use &IssueRef{Key: "PARENT-KEY"})
 //
-//    Optional common fields:
-//      - Description: Detailed description (use SetDescriptionText() or ADF)
-//      - Priority: Priority level (e.g., &Priority{Name: "High"})
-//      - Assignee: User assignment (use &User{AccountID: "..."})
-//      - Labels: Tags for categorization
-//      - FixVersions: Versions where issue will be/was fixed
-//      - AffectsVersions: Versions affected by the issue (typically for bugs)
-//      - DueDate: Deadline for the issue
+//	Optional common fields:
+//	  - Description: Detailed description (use SetDescriptionText() or ADF)
+//	  - Priority: Priority level (e.g., &Priority{Name: "High"})
+//	  - Assignee: User assignment (use &User{AccountID: "..."})
+//	  - Labels: Tags for categorization
+//	  - FixVersions: Versions where issue will be/was fixed
+//	  - AffectsVersions: Versions affected by the issue (typically for bugs)
+//	  - DueDate: Deadline for the issue
 //
-//    Example - Creating a bug:
-//      fields := &IssueFields{
-//          Summary:   "Critical login bug",
-//          Project:   &Project{Key: "PROJ"},
-//          IssueType: &IssueType{Name: "Bug"},
-//          Priority:  &Priority{Name: "High"},
-//          AffectsVersions: []*project.Version{{Name: "1.0.0"}},
-//      }
-//      fields.SetDescriptionText("Users cannot log in after update")
+//	Example - Creating a bug:
+//	  fields := &IssueFields{
+//	      Summary:   "Critical login bug",
+//	      Project:   &Project{Key: "PROJ"},
+//	      IssueType: &IssueType{Name: "Bug"},
+//	      Priority:  &Priority{Name: "High"},
+//	      AffectsVersions: []*project.Version{{Name: "1.0.0"}},
+//	  }
+//	  fields.SetDescriptionText("Users cannot log in after update")
 //
-//    Example - Creating a subtask:
-//      fields := &IssueFields{
-//          Summary:   "Implement login API",
-//          Project:   &Project{Key: "PROJ"},
-//          IssueType: &IssueType{Name: "Sub-task"},
-//          Parent:    &IssueRef{Key: "PROJ-123"},  // Link to parent issue
-//      }
+//	Example - Creating a subtask:
+//	  fields := &IssueFields{
+//	      Summary:   "Implement login API",
+//	      Project:   &Project{Key: "PROJ"},
+//	      IssueType: &IssueType{Name: "Sub-task"},
+//	      Parent:    &IssueRef{Key: "PROJ-123"},  // Link to parent issue
+//	  }
 //
 // 2. READING ISSUE DATA - ALWAYS Use Safe Accessor Methods:
 //
-//    Safe accessors prevent nil pointer panics and provide sensible defaults:
-//      - issue.GetSummary() - returns string (empty if nil)
-//      - issue.GetDescription() - returns *ADF (nil if not set)
-//      - issue.GetStatusName() - returns string (empty if nil)
-//      - issue.GetPriorityName() - returns string (empty if nil)
-//      - issue.GetAssignee() - returns *User (nil if not assigned)
-//      - issue.GetParent() - returns *IssueRef (nil if not a subtask)
-//      - issue.GetFixVersions() - returns []*Version (never nil, may be empty)
-//      - issue.GetAffectsVersions() - returns []*Version (never nil, may be empty)
-//      - issue.GetCreatedTime() - returns time.Time (zero if nil)
+//	Safe accessors prevent nil pointer panics and provide sensible defaults:
+//	  - issue.GetSummary() - returns string (empty if nil)
+//	  - issue.GetDescription() - returns *ADF (nil if not set)
+//	  - issue.GetStatusName() - returns string (empty if nil)
+//	  - issue.GetPriorityName() - returns string (empty if nil)
+//	  - issue.GetAssignee() - returns *User (nil if not assigned)
+//	  - issue.GetParent() - returns *IssueRef (nil if not a subtask)
+//	  - issue.GetFixVersions() - returns []*Version (never nil, may be empty)
+//	  - issue.GetAffectsVersions() - returns []*Version (never nil, may be empty)
+//	  - issue.GetCreatedTime() - returns time.Time (zero if nil)
 //
-//    ❌ NEVER access fields directly: issue.Fields.Status
-//    ✅ ALWAYS use safe accessors: issue.GetStatusName()
+//	❌ NEVER access fields directly: issue.Fields.Status
+//	✅ ALWAYS use safe accessors: issue.GetStatusName()
 //
 // 3. UPDATING ISSUES - Use UpdateInput with map[string]interface{}:
 //
-//    When updating issues, you must use lowercase field names (Jira API convention):
+//	When updating issues, you must use lowercase field names (Jira API convention):
 //
-//    Example - Update summary and priority:
-//      err := client.Issue.Update(ctx, issueKey, &UpdateInput{
-//          Fields: map[string]interface{}{
-//              "summary":  "Updated summary",
-//              "priority": map[string]string{"name": "Critical"},
-//          },
-//      })
+//	Example - Update summary and priority:
+//	  err := client.Issue.Update(ctx, issueKey, &UpdateInput{
+//	      Fields: map[string]interface{}{
+//	          "summary":  "Updated summary",
+//	          "priority": map[string]string{"name": "Critical"},
+//	      },
+//	  })
 //
-//    Example - Update fix versions:
-//      err := client.Issue.Update(ctx, issueKey, &UpdateInput{
-//          Fields: map[string]interface{}{
-//              "fixVersions": []map[string]string{
-//                  {"name": "2.0.0"},
-//                  {"name": "2.1.0"},
-//              },
-//          },
-//      })
+//	Example - Update fix versions:
+//	  err := client.Issue.Update(ctx, issueKey, &UpdateInput{
+//	      Fields: map[string]interface{}{
+//	          "fixVersions": []map[string]string{
+//	              {"name": "2.0.0"},
+//	              {"name": "2.1.0"},
+//	          },
+//	      },
+//	  })
 //
-//    Example - Set resolution (when closing):
-//      err := client.Issue.Update(ctx, issueKey, &UpdateInput{
-//          Fields: map[string]interface{}{
-//              "resolution": map[string]string{"name": "Done"},
-//          },
-//      })
+//	Example - Set resolution (when closing):
+//	  err := client.Issue.Update(ctx, issueKey, &UpdateInput{
+//	      Fields: map[string]interface{}{
+//	          "resolution": map[string]string{"name": "Done"},
+//	      },
+//	  })
 //
 // 4. ADF (Atlassian Document Format) Fields:
 //
-//    Description and Environment fields require ADF format (Jira Cloud API v3):
+//	Description and Environment fields require ADF format (Jira Cloud API v3):
 //
-//    Simple text - Use convenience methods:
-//      fields.SetDescriptionText("Plain text description")
-//      fields.SetEnvironmentText("Production environment")
+//	Simple text - Use convenience methods:
+//	  fields.SetDescriptionText("Plain text description")
+//	  fields.SetEnvironmentText("Production environment")
 //
-//    Rich formatting - Use ADF builder:
-//      adf := issue.NewADF().
-//          AddHeading("Problem", 2).
-//          AddParagraph("Detailed description...").
-//          AddBulletList([]string{"Item 1", "Item 2"})
-//      fields.SetDescription(adf)
+//	Rich formatting - Use ADF builder:
+//	  adf := issue.NewADF().
+//	      AddHeading("Problem", 2).
+//	      AddParagraph("Detailed description...").
+//	      AddBulletList([]string{"Item 1", "Item 2"})
+//	  fields.SetDescription(adf)
 //
 // 5. VERSION FIELDS:
 //
-//    FixVersions: Versions where the issue is/will be fixed (used for tracking releases)
-//      - Set when planning which release will contain the fix
-//      - Common for all issue types when release planning is needed
-//      - Use []*project.Version{{Name: "2.0.0"}}
+//	FixVersions: Versions where the issue is/will be fixed (used for tracking releases)
+//	  - Set when planning which release will contain the fix
+//	  - Common for all issue types when release planning is needed
+//	  - Use []*project.Version{{Name: "2.0.0"}}
 //
-//    AffectsVersions: Versions where the issue exists (typically for bugs)
-//      - Set when reporting bugs to indicate which versions have the problem
-//      - Helps determine backporting needs
-//      - Use []*project.Version{{Name: "1.0.0"}, {Name: "1.1.0"}}
+//	AffectsVersions: Versions where the issue exists (typically for bugs)
+//	  - Set when reporting bugs to indicate which versions have the problem
+//	  - Helps determine backporting needs
+//	  - Use []*project.Version{{Name: "1.0.0"}, {Name: "1.1.0"}}
 //
 // 6. READ-ONLY FIELDS:
 //
-//    These fields are set by Jira and cannot be modified directly:
-//      - Status: Updated via transitions (see client.Issue.Transition)
-//      - Reporter: Set automatically to the creating user
-//      - Created: Set automatically when issue is created
-//      - Updated: Set automatically when issue is modified
+//	These fields are set by Jira and cannot be modified directly:
+//	  - Status: Updated via transitions (see client.Issue.Transition)
+//	  - Reporter: Set automatically to the creating user
+//	  - Created: Set automatically when issue is created
+//	  - Updated: Set automatically when issue is modified
 //
 // 7. CUSTOM FIELDS:
 //
-//    For custom fields defined in your Jira instance:
-//      - Use the Custom field with CustomFields helper methods
-//      - Access via UnknownFields for dynamic handling
-//
+//	For custom fields defined in your Jira instance:
+//	  - Use the Custom field with CustomFields helper methods
+//	  - Access via UnknownFields for dynamic handling
 type IssueFields struct {
 	// Core Fields
 	// ===========

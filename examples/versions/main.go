@@ -9,30 +9,30 @@
 // IMPORTANT TYPE USAGE PATTERNS:
 //
 // 1. VERSION REFERENCES - Use Name for simplicity, ID for precision:
-//    - By Name (recommended for most cases):
-//      {Name: "1.0.0"}
-//    - By ID (when you have the version ID from API):
-//      {ID: "10001"}
-//    - Both (ID takes precedence):
-//      {ID: "10001", Name: "1.0.0"}
+//   - By Name (recommended for most cases):
+//     {Name: "1.0.0"}
+//   - By ID (when you have the version ID from API):
+//     {ID: "10001"}
+//   - Both (ID takes precedence):
+//     {ID: "10001", Name: "1.0.0"}
 //
 // 2. RESOLUTION REFERENCES - Same pattern as versions:
-//    - By Name (most common):
-//      {Name: "Done"}
-//    - By ID:
-//      {ID: "1"}
+//   - By Name (most common):
+//     {Name: "Done"}
+//   - By ID:
+//     {ID: "1"}
 //
 // 3. SAFE ACCESSORS - Always use these to avoid nil pointer panics:
-//    - issue.GetAffectsVersions() - returns []*project.Version (never nil)
-//    - issue.GetFixVersions() - returns []*project.Version (never nil)
-//    - issue.GetResolutionName() - returns string (empty if unresolved)
-//    - issue.GetResolution() - returns *resolution.Resolution (may be nil)
+//   - issue.GetAffectsVersions() - returns []*project.Version (never nil)
+//   - issue.GetFixVersions() - returns []*project.Version (never nil)
+//   - issue.GetResolutionName() - returns string (empty if unresolved)
+//   - issue.GetResolution() - returns *resolution.Resolution (may be nil)
 //
 // 4. COMMON MISTAKES TO AVOID:
-//    - ❌ Don't access issue.Fields.FixVersions directly (may cause panic)
-//    - ✅ Use issue.GetFixVersions() instead
-//    - ❌ Don't assume resolution is always set
-//    - ✅ Check if GetResolutionName() returns empty string
+//   - ❌ Don't access issue.Fields.FixVersions directly (may cause panic)
+//   - ✅ Use issue.GetFixVersions() instead
+//   - ❌ Don't assume resolution is always set
+//   - ✅ Check if GetResolutionName() returns empty string
 package main
 
 import (

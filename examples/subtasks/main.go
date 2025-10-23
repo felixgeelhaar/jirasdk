@@ -11,35 +11,38 @@
 // IMPORTANT TYPE USAGE PATTERNS:
 //
 // 1. PARENT REFERENCES - Use IssueRef with Key or ID:
-//    - By Key (recommended for most cases):
-//      Parent: &issue.IssueRef{Key: "PROJ-123"}
-//    - By ID (when you have the issue ID from API):
-//      Parent: &issue.IssueRef{ID: "10001"}
-//    - Both (Key takes precedence):
-//      Parent: &issue.IssueRef{Key: "PROJ-123", ID: "10001"}
+//   - By Key (recommended for most cases):
+//     Parent: &issue.IssueRef{Key: "PROJ-123"}
+//   - By ID (when you have the issue ID from API):
+//     Parent: &issue.IssueRef{ID: "10001"}
+//   - Both (Key takes precedence):
+//     Parent: &issue.IssueRef{Key: "PROJ-123", ID: "10001"}
 //
 // 2. CREATING SUBTASKS - Three required steps:
-//    - Set IssueType to "Sub-task" (exact name varies by Jira config)
-//    - Set Parent field to reference the parent issue
-//    - Include all standard required fields (Project, Summary, etc.)
 //
-//    Example:
-//      IssueType: &issue.IssueType{Name: "Sub-task"}
-//      Parent:    &issue.IssueRef{Key: "PROJ-123"}
+//   - Set IssueType to "Sub-task" (exact name varies by Jira config)
+//
+//   - Set Parent field to reference the parent issue
+//
+//   - Include all standard required fields (Project, Summary, etc.)
+//
+//     Example:
+//     IssueType: &issue.IssueType{Name: "Sub-task"}
+//     Parent:    &issue.IssueRef{Key: "PROJ-123"}
 //
 // 3. SAFE ACCESSORS - Always use these to avoid nil pointer panics:
-//    - issue.GetParent() - returns *issue.IssueRef (may be nil)
-//    - issue.GetParentKey() - returns string (empty if no parent)
+//   - issue.GetParent() - returns *issue.IssueRef (may be nil)
+//   - issue.GetParentKey() - returns string (empty if no parent)
 //
 // 4. QUERYING SUBTASKS - Use JQL:
-//    - All subtasks of a parent: "parent = PROJ-123"
-//    - Subtasks in specific status: "parent = PROJ-123 AND status = 'In Progress'"
+//   - All subtasks of a parent: "parent = PROJ-123"
+//   - Subtasks in specific status: "parent = PROJ-123 AND status = 'In Progress'"
 //
 // 5. COMMON MISTAKES TO AVOID:
-//    - ❌ Don't access issue.Fields.Parent directly (may cause panic)
-//    - ✅ Use issue.GetParent() or issue.GetParentKey() instead
-//    - ❌ Don't forget to set IssueType to "Sub-task"
-//    - ✅ Verify your Jira's exact subtask type name
+//   - ❌ Don't access issue.Fields.Parent directly (may cause panic)
+//   - ✅ Use issue.GetParent() or issue.GetParentKey() instead
+//   - ❌ Don't forget to set IssueType to "Sub-task"
+//   - ✅ Verify your Jira's exact subtask type name
 package main
 
 import (
