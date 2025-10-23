@@ -205,7 +205,7 @@ func (s *Service) DownloadAttachment(ctx context.Context, attachmentID string) (
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		_ = resp.Body.Close() // Explicit ignore in error path
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
