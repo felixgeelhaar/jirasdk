@@ -41,7 +41,7 @@ func main() {
 	// Simulate receiving the authorization code
 	var authCode string
 	fmt.Print("\nEnter the authorization code: ")
-	fmt.Scanln(&authCode) // #nosec G104 - Example code, error checked by validating authCode below
+	fmt.Scanln(&authCode) // #nosec G104 -- Example code, error checked by validating authCode below
 
 	if authCode == "" {
 		log.Fatal("Authorization code is required")
@@ -167,7 +167,7 @@ func startCallbackServer() {
 	})
 
 	fmt.Println("Starting callback server on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil)) // #nosec G114 - Example code only, production should use http.Server with timeouts
+	log.Fatal(http.ListenAndServe(":8080", nil)) // #nosec G114 -- Example code only, production should use http.Server with timeouts
 }
 
 // sanitizeForLog removes newline characters from strings to prevent log injection attacks.
