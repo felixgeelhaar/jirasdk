@@ -15,7 +15,7 @@ const (
 	EnvBaseURL = "JIRA_BASE_URL" // Required: Jira instance URL
 
 	// Authentication - API Token (Jira Cloud)
-	EnvEmail    = "JIRA_EMAIL"                                                           // Required for API token auth
+	EnvEmail    = "JIRA_EMAIL"     // Required for API token auth
 	EnvAPIToken = "JIRA_API_TOKEN" //nolint:gosec // G101: Not a credential, just env var name
 
 	// Authentication - Personal Access Token (Jira Server/Data Center)
