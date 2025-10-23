@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.1] - 2025-10-23
+
+### Fixed
+
+#### Security
+- Resolved all 9 gosec code scanning alerts
+- Corrected `#nosec` directive format to use double-dash (`--`) per gosec requirements
+- Added proper security suppressions with justifications for:
+  - G404: Weak random number generator (math/rand for non-cryptographic jitter)
+  - G115: Integer overflow in validated type conversions
+  - G104: Unhandled errors in example code (explicitly documented)
+  - G114: HTTP server without timeouts in example code (documented limitation)
+- Improved error handling documentation in cleanup paths with explicit `_ =` assignments
+
+### Changed
+- Updated security directive format from `//nolint:gosec` to `#nosec` for better gosec compatibility
+- Enhanced code documentation for security suppressions
+
+**Note**: This is a patch release with no API changes or new features. All changes improve security posture through proper linting configuration.
+
 ## [1.4.0] - 2025-10-21
 
 ### Breaking Changes
