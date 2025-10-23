@@ -75,7 +75,7 @@ func retryMiddleware(maxRetries int) Middleware {
 
 				// Close the response body if present to avoid resource leaks
 				if resp != nil && resp.Body != nil {
-					resp.Body.Close()
+					_ = resp.Body.Close() // Explicit ignore in cleanup path
 				}
 			}
 
@@ -108,7 +108,7 @@ func rateLimitMiddleware(buffer time.Duration) Middleware {
 
 				// Close the response body
 				if resp.Body != nil {
-					resp.Body.Close()
+					_ = resp.Body.Close() // Explicit ignore before retry
 				}
 
 				// Wait for the specified duration or context cancellation
