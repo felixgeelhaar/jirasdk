@@ -164,8 +164,7 @@ func calculateBackoff(attempt int) time.Duration {
 	}
 
 	// Add jitter (±25%)
-	//nolint:gosec // G404: Weak random OK for jitter, doesn't need crypto/rand
-	jitter := delay * 0.25 * (rand.Float64()*2 - 1)
+	jitter := delay * 0.25 * (rand.Float64()*2 - 1) //nolint:gosec // G404: Weak random OK for jitter, doesn't need crypto/rand
 	finalDelay := time.Duration(delay + jitter)
 
 	return finalDelay
