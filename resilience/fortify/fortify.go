@@ -48,8 +48,7 @@ func NewAdapter(config jira.ResilienceConfig) *Adapter {
 			Interval:    config.CircuitBreakerInterval,
 			Timeout:     config.CircuitBreakerTimeout,
 			ReadyToTrip: func(counts circuitbreaker.Counts) bool {
-				//nolint:gosec // G115: Safe conversion - config value is validated
-				return counts.ConsecutiveFailures >= uint32(config.CircuitBreakerThreshold)
+				return counts.ConsecutiveFailures >= uint32(config.CircuitBreakerThreshold) // #nosec G115 - Safe conversion, config value is validated
 			},
 		})
 	}
