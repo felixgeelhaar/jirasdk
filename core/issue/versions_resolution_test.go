@@ -626,12 +626,16 @@ func TestVersionsResolution_NilSafety(t *testing.T) {
 			t.Errorf("GetResolutionName() = %s, want empty", resolutionName)
 		}
 		fixVersions := issue.GetFixVersions()
-		if fixVersions != nil {
-			t.Errorf("GetFixVersions() = %v, want nil", fixVersions)
+		if fixVersions == nil {
+			t.Errorf("GetFixVersions() = nil, want empty slice")
+		} else if len(fixVersions) != 0 {
+			t.Errorf("GetFixVersions() = %v, want empty slice", fixVersions)
 		}
 		affectsVersions := issue.GetAffectsVersions()
-		if affectsVersions != nil {
-			t.Errorf("GetAffectsVersions() = %v, want nil", affectsVersions)
+		if affectsVersions == nil {
+			t.Errorf("GetAffectsVersions() = nil, want empty slice")
+		} else if len(affectsVersions) != 0 {
+			t.Errorf("GetAffectsVersions() = %v, want empty slice", affectsVersions)
 		}
 	})
 }
