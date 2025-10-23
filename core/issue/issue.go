@@ -257,11 +257,11 @@ func (i *Issue) GetResolutionName() string {
 }
 
 // GetFixVersions safely retrieves the issue fix versions.
-// Returns nil if Fields is nil, or an empty slice if FixVersions is nil.
+// Always returns a slice (never nil, but may be empty) for safe iteration.
 //
 // Example usage:
 //
-//	versions := issue.GetFixVersions()
+//	versions := issue.GetFixVersions()  // Safe: never nil, always iterable
 //	for _, version := range versions {
 //	    fmt.Printf("Fix Version: %s\n", version.Name)
 //	}
@@ -269,18 +269,18 @@ func (i *Issue) GetResolutionName() string {
 // WARNING: Never directly access issue.Fields.FixVersions as Fields may be nil.
 // Always use this safe accessor method.
 func (i *Issue) GetFixVersions() []*project.Version {
-	if i.Fields == nil {
-		return nil
+	if i.Fields == nil || i.Fields.FixVersions == nil {
+		return []*project.Version{}
 	}
 	return i.Fields.FixVersions
 }
 
 // GetAffectsVersions safely retrieves the versions affected by the issue.
-// Returns nil if Fields is nil, or an empty slice if AffectsVersions is nil.
+// Always returns a slice (never nil, but may be empty) for safe iteration.
 //
 // Example usage:
 //
-//	versions := issue.GetAffectsVersions()
+//	versions := issue.GetAffectsVersions()  // Safe: never nil, always iterable
 //	for _, version := range versions {
 //	    fmt.Printf("Affects Version: %s\n", version.Name)
 //	}
@@ -288,8 +288,8 @@ func (i *Issue) GetFixVersions() []*project.Version {
 // WARNING: Never directly access issue.Fields.AffectsVersions as Fields may be nil.
 // Always use this safe accessor method.
 func (i *Issue) GetAffectsVersions() []*project.Version {
-	if i.Fields == nil {
-		return nil
+	if i.Fields == nil || i.Fields.AffectsVersions == nil {
+		return []*project.Version{}
 	}
 	return i.Fields.AffectsVersions
 }
@@ -517,7 +517,8 @@ func (i *Issue) GetDueDateValue() time.Time {
 //      - issue.GetPriorityName() - returns string (empty if nil)
 //      - issue.GetAssignee() - returns *User (nil if not assigned)
 //      - issue.GetParent() - returns *IssueRef (nil if not a subtask)
-//      - issue.GetFixVersions() - returns []*Version (nil if not set)
+//      - issue.GetFixVersions() - returns []*Version (never nil, may be empty)
+//      - issue.GetAffectsVersions() - returns []*Version (never nil, may be empty)
 //      - issue.GetCreatedTime() - returns time.Time (zero if nil)
 //
 //    ❌ NEVER access fields directly: issue.Fields.Status

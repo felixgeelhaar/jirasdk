@@ -126,7 +126,7 @@ func main() {
 	// ===========================================================
 	// IMPORTANT: Always use safe accessor methods to read version data
 	// ❌ NEVER: issue.Fields.FixVersions (can cause nil panic)
-	// ✅ ALWAYS: issue.GetFixVersions() (safe, returns []*project.Version (never nil, but may be empty slice))
+	// ✅ ALWAYS: issue.GetFixVersions() (safe, returns empty slice, never nil)
 	fmt.Println("3. Retrieving issue and displaying version information...")
 	fmt.Println("   Pattern: Use GetAffectsVersions() and GetFixVersions()")
 
@@ -358,7 +358,7 @@ func main() {
 		if err == nil {
 			// SAFE ACCESSORS: These NEVER panic, even when fields aren't set
 
-			// Returns empty (never nil) slices for unset version fields
+			// Returns empty slice (never nil) for unset version fields
 			affectsVersions := retrieved.GetAffectsVersions()
 			fixVersions := retrieved.GetFixVersions()
 
@@ -400,8 +400,8 @@ func main() {
 	fmt.Println("   }")
 	fmt.Println()
 	fmt.Println("3. READING DATA - ALWAYS USE SAFE ACCESSORS:")
-	fmt.Println("   ✅ issue.GetAffectsVersions()  // Returns []*project.Version or nil")
-	fmt.Println("   ✅ issue.GetFixVersions()      // Returns []*project.Version or nil")
+	fmt.Println("   ✅ issue.GetAffectsVersions()  // Returns []*project.Version (never nil, may be empty)")
+	fmt.Println("   ✅ issue.GetFixVersions()      // Returns []*project.Version (never nil, may be empty)")
 	fmt.Println("   ✅ issue.GetResolutionName()   // Returns string (empty if unresolved)")
 	fmt.Println("   ✅ issue.GetResolution()       // Returns *resolution.Resolution or nil")
 	fmt.Println("   ❌ issue.Fields.FixVersions    // NEVER! Can panic if Fields is nil")
