@@ -73,6 +73,243 @@ client, err := jira.NewClient(
 )
 ```
 
+## Type Usage Patterns & Best Practices
+
+This SDK uses **type-safe patterns** and **safe accessor methods** to prevent common errors like nil pointer panics. Follow these patterns for robust, production-ready code.
+
+### ✅ Safe Accessor Methods (Recommended)
+
+**ALWAYS use safe accessor methods** when reading issue data. These methods handle nil values gracefully and return sensible defaults:
+
+```go
+// Get an issue
+issue, err := client.Issue.Get(ctx, "PROJ-123", nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+// ✅ SAFE - Use accessor methods (recommended)
+summary := issue.GetSummary()                    // Returns string (empty if nil)
+statusName := issue.GetStatusName()              // Returns string (empty if nil)
+priorityName := issue.GetPriorityName()          // Returns string (empty if nil)
+assigneeName := issue.GetAssigneeName()          // Returns string (empty if nil)
+created := issue.GetCreatedTime()                // Returns time.Time (zero if nil)
+fixVersions := issue.GetFixVersions()            // Returns []*Version (empty slice if nil)
+parentKey := issue.GetParentKey()                // Returns string (empty if not subtask)
+
+// ❌ UNSAFE - Direct field access (can panic!)
+// summary := issue.Fields.Summary               // Panics if Fields is nil
+// status := issue.Fields.Status.Name            // Panics if Status is nil
+// created := *issue.Fields.Created              // Panics if Created is nil
+```
+
+### 📝 Creating Issues - Required & Optional Fields
+
+When creating issues, use the **typed structs** for required fields:
+
+```go
+// Create a bug with required fields
+newIssue, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        // Required fields
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "Critical login bug",
+        IssueType: &issue.IssueType{Name: "Bug"},
+
+        // Optional but commonly used
+        Priority:  &issue.Priority{Name: "High"},
+        Labels:    []string{"security", "urgent"},
+
+        // Version fields (typically for bugs)
+        AffectsVersions: []*project.Version{
+            {Name: "1.0.0"},
+        },
+        FixVersions: []*project.Version{
+            {Name: "1.1.0"},
+        },
+    },
+})
+```
+
+**Description and Environment** use ADF (Atlassian Document Format):
+
+```go
+// Simple text - Use convenience methods
+fields := &issue.IssueFields{
+    Project:   &issue.Project{Key: "PROJ"},
+    Summary:   "Production issue",
+    IssueType: &issue.IssueType{Name: "Bug"},
+}
+fields.SetDescriptionText("Users cannot log in after deployment")
+fields.SetEnvironmentText("Production: server-01, Ubuntu 22.04")
+
+// Rich formatting - Use ADF builder
+adf := issue.NewADF().
+    AddHeading("Problem", 2).
+    AddParagraph("The authentication service fails when...").
+    AddBulletList([]string{
+        "Step 1: Navigate to login page",
+        "Step 2: Enter credentials",
+        "Step 3: Click submit",
+    })
+fields.SetDescription(adf)
+```
+
+### 🔄 Updating Issues - Use map[string]interface{}
+
+When updating, use **lowercase field names** (Jira API convention):
+
+```go
+// Update multiple fields
+err := client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "summary":  "Updated summary",
+        "priority": map[string]string{"name": "Critical"},
+        "labels":   []string{"bug", "production"},
+
+        // Version updates
+        "fixVersions": []map[string]string{
+            {"name": "2.0.0"},
+        },
+
+        // Resolution (when closing)
+        "resolution": map[string]string{"name": "Done"},
+    },
+})
+```
+
+### 👨‍👩‍👧 Working with Subtasks
+
+Create subtasks by setting **IssueType** to "Sub-task" and providing a **Parent**:
+
+```go
+// Create subtask
+subtask, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "Implement login API",
+        IssueType: &issue.IssueType{Name: "Sub-task"},  // Critical!
+        Parent:    &issue.IssueRef{Key: "PROJ-123"},    // Link to parent
+    },
+})
+
+// Get subtask and access parent safely
+retrieved, err := client.Issue.Get(ctx, subtask.Key, nil)
+if parentKey := retrieved.GetParentKey(); parentKey != "" {
+    fmt.Printf("Parent: %s\n", parentKey)
+}
+
+// Move subtask to different parent
+err = client.Issue.Update(ctx, subtask.Key, &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "parent": map[string]string{"key": "PROJ-456"},
+    },
+})
+
+// Find all subtasks of a parent using JQL
+searchResult, err := client.Search.SearchJQL(ctx, &search.SearchJQLOptions{
+    JQL:        "parent = PROJ-123",
+    MaxResults: 50,
+})
+```
+
+### 📦 Version Management
+
+Use **FixVersions** for release planning and **AffectsVersions** for bug tracking:
+
+```go
+// Create bug with version tracking
+bug, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "Authentication fails in production",
+        IssueType: &issue.IssueType{Name: "Bug"},
+
+        // Which versions have this bug
+        AffectsVersions: []*project.Version{
+            {Name: "1.0.0"},
+            {Name: "1.1.0"},
+        },
+
+        // Which version will fix it
+        FixVersions: []*project.Version{
+            {Name: "1.2.0"},
+        },
+    },
+})
+
+// Read version information safely
+retrieved, err := client.Issue.Get(ctx, bug.Key, &issue.GetOptions{
+    Fields: []string{"versions", "fixVersions"},
+})
+
+// ✅ Safe - Use accessor methods
+affectsVersions := retrieved.GetAffectsVersions()  // Never nil
+fixVersions := retrieved.GetFixVersions()          // Never nil
+
+for _, v := range affectsVersions {
+    fmt.Printf("Affects: %s\n", v.Name)
+}
+```
+
+### ❌ Common Mistakes to Avoid
+
+```go
+// ❌ DON'T: Direct field access (can panic!)
+summary := issue.Fields.Summary                    // Panics if Fields is nil
+status := issue.Fields.Status.Name                 // Panics if Status is nil
+created := *issue.Fields.Created                   // Panics if Created is nil
+parent := issue.Fields.Parent.Key                  // Panics if Parent is nil
+
+// ✅ DO: Use safe accessor methods
+summary := issue.GetSummary()                      // Returns "" if nil
+status := issue.GetStatusName()                    // Returns "" if nil
+created := issue.GetCreatedTime()                  // Returns time.Time{} if nil
+parent := issue.GetParentKey()                     // Returns "" if nil
+
+// ❌ DON'T: Use uppercase field names in updates
+err := client.Issue.Update(ctx, key, &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "Summary": "Wrong",                        // Wrong! Won't work
+    },
+})
+
+// ✅ DO: Use lowercase field names (Jira API convention)
+err := client.Issue.Update(ctx, key, &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "summary": "Correct",                      // Correct!
+    },
+})
+
+// ❌ DON'T: Forget IssueType when creating subtasks
+subtask, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Summary: "Subtask",
+        Parent:  &issue.IssueRef{Key: "PROJ-123"}, // Missing IssueType!
+    },
+})
+
+// ✅ DO: Always set IssueType to "Sub-task"
+subtask, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Summary:   "Subtask",
+        IssueType: &issue.IssueType{Name: "Sub-task"},  // Required!
+        Parent:    &issue.IssueRef{Key: "PROJ-123"},
+    },
+})
+```
+
+### 📚 More Examples
+
+See the [examples directory](examples/) for complete, runnable examples:
+
+- [**Basic Usage**](examples/basic/) - Creating, reading, updating issues
+- [**Subtasks**](examples/subtasks/) - Parent/child relationships, moving subtasks, JQL queries
+- [**Versions**](examples/versions/) - Version management, affected/fix versions, resolutions
+- [**Custom Fields**](examples/customfields/) - Working with custom fields
+- [**Comments**](examples/comments/) - Adding and managing comments
+- [**Workflow**](examples/workflow/) - Issue transitions and workflow states
+
 ## ⚠️ Migration Notice (v1.2.0)
 
 **Enhanced JQL Service API** - We've introduced improved methods with better performance:
@@ -259,6 +496,92 @@ err = client.Issue.Update(ctx, "PROJ-123", updateInput)
 
 // Delete issue
 err = client.Issue.Delete(ctx, "PROJ-123")
+
+// Create subtask with parent
+subtask, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "Implement API endpoint",
+        IssueType: &issue.IssueType{Name: "Sub-task"},
+        Parent:    &issue.IssueRef{Key: "PROJ-123"}, // Parent issue
+    },
+})
+
+// Get subtask and access parent information
+retrieved, err := client.Issue.Get(ctx, subtask.Key, nil)
+if parentKey := retrieved.GetParentKey(); parentKey != "" {
+    fmt.Printf("Parent: %s\n", parentKey)
+}
+
+// Move subtask to different parent
+err = client.Issue.Update(ctx, subtask.Key, &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "parent": map[string]string{"key": "PROJ-456"},
+    },
+})
+
+// Version management - track affected and fix versions
+// Create bug with affected versions
+bug, err := client.Issue.Create(ctx, &issue.CreateInput{
+    Fields: &issue.IssueFields{
+        Project:   &issue.Project{Key: "PROJ"},
+        Summary:   "Critical bug in authentication",
+        IssueType: &issue.IssueType{Name: "Bug"},
+        AffectsVersions: []*project.Version{
+            {Name: "1.0.0"},
+            {Name: "1.1.0"},
+        },
+        FixVersions: []*project.Version{
+            {Name: "1.2.0"},
+        },
+    },
+})
+
+// Get issue and safely access version information
+retrieved, err := client.Issue.Get(ctx, bug.Key, &issue.GetOptions{
+    Fields: []string{"versions", "fixVersions"},
+})
+affectsVersions := retrieved.GetAffectsVersions()
+fixVersions := retrieved.GetFixVersions()
+for _, version := range affectsVersions {
+    fmt.Printf("Affects: %s\n", version.Name)
+}
+for _, version := range fixVersions {
+    fmt.Printf("Fixed in: %s\n", version.Name)
+}
+
+// Update issue to add/change versions
+err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "fixVersions": []map[string]string{
+            {"name": "2.0.0"},
+        },
+    },
+})
+
+// Resolution management - mark how issues were closed
+// Set resolution when closing an issue
+err = client.Issue.Update(ctx, "PROJ-123", &issue.UpdateInput{
+    Fields: map[string]interface{}{
+        "resolution": map[string]string{
+            "name": "Done",
+        },
+    },
+})
+
+// Get issue and safely access resolution
+retrieved, err = client.Issue.Get(ctx, "PROJ-123", &issue.GetOptions{
+    Fields: []string{"resolution"},
+})
+if resolutionName := retrieved.GetResolutionName(); resolutionName != "" {
+    fmt.Printf("Resolution: %s\n", resolutionName)
+}
+
+// List available resolutions
+resolutions, err := client.Resolution.List(ctx)
+for _, res := range resolutions {
+    fmt.Printf("%s (ID: %s)\n", res.Name, res.ID)
+}
 
 // Transition issue
 transitionInput := &issue.TransitionInput{
@@ -1279,6 +1602,8 @@ See the [examples](examples/) directory for complete, runnable examples:
 - **[examples/attachments](examples/attachments/main.go)** - Upload, download, and manage attachments
 - **[examples/oauth2](examples/oauth2/main.go)** - OAuth 2.0 authentication flow
 - **[examples/issuelinks](examples/issuelinks/main.go)** - Create and manage issue relationships
+- **[examples/subtasks](examples/subtasks/main.go)** - Create subtasks, manage parent-child relationships, and query hierarchies
+- **[examples/versions](examples/versions/main.go)** - Version and resolution management, track affected versions and fix versions
 - **[examples/worklogs](examples/worklogs/main.go)** - Time tracking and worklog management
 - **[examples/workflows](examples/workflows/main.go)** - Workflow configuration, transitions, statuses, and schemes
 - **[examples/projects](examples/projects/main.go)** - Project CRUD, component management, and version management

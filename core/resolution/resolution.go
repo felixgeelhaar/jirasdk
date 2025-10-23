@@ -31,9 +31,9 @@ func NewService(transport RoundTripper) *Service {
 
 // Resolution represents a Jira resolution.
 type Resolution struct {
-	ID          string `json:"id"`
+	ID          string `json:"id,omitempty"`
 	Self        string `json:"self,omitempty"`
-	Name        string `json:"name"`
+	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 	IsDefault   bool   `json:"isDefault,omitempty"`
 }
