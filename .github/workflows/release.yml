@@ -156,24 +156,21 @@ jobs:
 
         # Method 1: Request module info from Go proxy (triggers indexing)
         echo "📡 Requesting from Go proxy..."
-        curl -sSf "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info"
-        PROXY_OK=$?
+        curl -sSf "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info" && PROXY_OK=0 || PROXY_OK=$?
         if [ $PROXY_OK -ne 0 ]; then
           echo "⚠️  Proxy request failed (may already be cached)"
         fi
 
         # Method 2: Direct fetch request to pkg.go.dev
         echo "📡 Requesting pkg.go.dev fetch..."
-        curl -sSf "https://pkg.go.dev/fetch/${MODULE}@${VERSION}"
-        PKGDEV_OK=$?
+        curl -sSf "https://pkg.go.dev/fetch/${MODULE}@${VERSION}" && PKGDEV_OK=0 || PKGDEV_OK=$?
         if [ $PKGDEV_OK -ne 0 ]; then
           echo "⚠️  Direct fetch request queued"
         fi
 
         # Method 3: Request the module list (alternative trigger)
         echo "📡 Requesting module version list..."
-        curl -sSf "https://proxy.golang.org/${MODULE}/@v/list" > /dev/null
-        LIST_OK=$?
+        curl -sSf "https://proxy.golang.org/${MODULE}/@v/list" > /dev/null && LIST_OK=0 || LIST_OK=$?
         if [ $LIST_OK -ne 0 ]; then
           echo "⚠️  Module version list request failed"
         fi
