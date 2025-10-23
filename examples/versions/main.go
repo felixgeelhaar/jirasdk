@@ -126,7 +126,7 @@ func main() {
 	// ===========================================================
 	// IMPORTANT: Always use safe accessor methods to read version data
 	// ❌ NEVER: issue.Fields.FixVersions (can cause nil panic)
-	// ✅ ALWAYS: issue.GetFixVersions() (safe, returns nil if not set)
+	// ✅ ALWAYS: issue.GetFixVersions() (safe, returns []*project.Version (never nil, but may be empty slice))
 	fmt.Println("3. Retrieving issue and displaying version information...")
 	fmt.Println("   Pattern: Use GetAffectsVersions() and GetFixVersions()")
 
