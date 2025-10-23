@@ -15,8 +15,9 @@ const (
 	EnvBaseURL = "JIRA_BASE_URL" // Required: Jira instance URL
 
 	// Authentication - API Token (Jira Cloud)
-	EnvEmail    = "JIRA_EMAIL"     // Required for API token auth
-	EnvAPIToken = "JIRA_API_TOKEN" //nolint:gosec // G101: Not a hardcoded credential
+	EnvEmail = "JIRA_EMAIL" // Required for API token auth
+	//nolint:gosec // G101: False positive - this is an environment variable name, not a credential
+	EnvAPIToken = "JIRA_API_TOKEN"
 
 	// Authentication - Personal Access Token (Jira Server/Data Center)
 	EnvPAT = "JIRA_PAT" //nolint:gosec // G101: Not a hardcoded credential
@@ -26,8 +27,9 @@ const (
 	EnvPassword = "JIRA_PASSWORD" //nolint:gosec // G101: Not a hardcoded credential
 
 	// OAuth 2.0 configuration
-	EnvOAuthClientID     = "JIRA_OAUTH_CLIENT_ID"
-	EnvOAuthClientSecret = "JIRA_OAUTH_CLIENT_SECRET" //nolint:gosec // G101: Not a hardcoded credential
+	EnvOAuthClientID = "JIRA_OAUTH_CLIENT_ID"
+	//nolint:gosec // G101: False positive - this is an environment variable name, not a credential
+	EnvOAuthClientSecret = "JIRA_OAUTH_CLIENT_SECRET"
 	EnvOAuthRedirectURL  = "JIRA_OAUTH_REDIRECT_URL"
 
 	// Client configuration

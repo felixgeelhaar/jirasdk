@@ -41,6 +41,7 @@ func main() {
 	// Simulate receiving the authorization code
 	var authCode string
 	fmt.Print("\nEnter the authorization code: ")
+	//nolint:gosec,errcheck // G104: Example code - error checked by validating authCode below
 	fmt.Scanln(&authCode)
 
 	if authCode == "" {
@@ -167,6 +168,7 @@ func startCallbackServer() {
 	})
 
 	fmt.Println("Starting callback server on http://localhost:8080")
+	//nolint:gosec // G114: Example code only - production should use http.Server with timeouts
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
