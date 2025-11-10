@@ -6,7 +6,7 @@ require (
 	github.com/felixgeelhaar/bolt v1.2.1
 	github.com/felixgeelhaar/fortify v1.1.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/oauth2 v0.32.0
+	golang.org/x/oauth2 v0.33.0
 )
 
 require (
