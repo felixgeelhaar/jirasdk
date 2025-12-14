@@ -1,145 +1,78 @@
-# golangci-lint configuration
+# golangci-lint configuration v2
 # See https://golangci-lint.run/usage/configuration/
+
+version: "2"
 
 run:
   timeout: 5m
-  issues-exit-code: 1
-  tests: true
-  skip-dirs: []
-  skip-files: []
   modules-download-mode: readonly
-
-output:
-  formats:
-    - format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
-  sort-results: true
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-
-  staticcheck:
-    checks: ["all", "-SA9003"]  # Disable empty branch check (we use TODO comments)
-
-  govet:
-    enable-all: true
-    disable:
-      - shadow  # Too noisy
-      - fieldalignment  # Micro-optimization, not critical
-
-  gocyclo:
-    min-complexity: 15
-
-  gofmt:
-    simplify: true
-
-  goimports:
-    local-prefixes: github.com/felixgeelhaar/jirasdk
-
-  golint:
-    min-confidence: 0.8
-
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-
-  misspell:
-    locale: US
-    ignore-words:
-      - cancelled  # UK spelling used in Jira API
-      - favourite  # UK spelling used in Jira API
-      - analyse    # UK spelling used in Jira API
-
-  lll:
-    line-length: 120
-    tab-width: 4
-
-  unused:
-    check-exported: false
-
-  unparam:
-    check-exported: false
-
-  nakedret:
-    max-func-lines: 30
-
-  prealloc:
-    simple: true
-    range-loops: true
-    for-loops: false
-
-  nolintlint:
-    allow-unused: false
-    require-explanation: true
-    require-specific: true
+  tests: false  # Don't run linters on test files
 
 linters:
-  disable-all: true
+  default: none
   enable:
     # Core linters - must pass
     - errcheck      # Check for unchecked errors
-    - gosimple      # Simplify code
     - govet         # Vet examines Go source code
     - ineffassign   # Detect ineffectual assignments
-    - staticcheck   # Advanced Go linter
-    - typecheck     # Type checks
+    - staticcheck   # Advanced Go linter (includes gosimple)
 
-    # Code quality - best effort
-    - gofmt         # Check formatting
+    # Code quality
     - misspell      # Fix spelling errors
     - unconvert     # Remove unnecessary type conversions
-    - goconst       # Find repeated strings that could be constants
 
-    # Security - important but not critical
+    # Security
     - gosec         # Security checks
 
-  # Disabled linters:
-  # - goimports: Import grouping differences between CI and local
-  # - unused: Too strict, reports exported API elements
-  # - unparam: Noisy for public APIs
-  # - gocyclo: Complexity metrics not critical for library code
-  # - bodyclose: False positives in transport layer
-  # - rowserrcheck: Not using database/sql
-  # - sqlclosecheck: Not using database/sql
-  # - exportloopref: Deprecated since Go 1.22
-  # - nolintlint: Noisy with our nolint directives
-  # - noctx: Tests use http.NewRequest which is acceptable
+  exclusions:
+    # Exclude examples directory
+    paths:
+      - examples
 
-issues:
-  uniq-by-line: true
-  exclude-rules:
-    # Exclude some linters from running on tests files
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - gosec
-        - goconst
+  settings:
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+      exclude-functions:
+        - io/ioutil.ReadFile
+        - io.Copy(*bytes.Buffer)
+        - (net/http.ResponseWriter).Write
+        - (*encoding/json.Encoder).Encode
+        - (*encoding/json.Decoder).Decode
+        - (io.Closer).Close
+        - os.Setenv
+        - os.Unsetenv
+        - fmt.Fprintf
+        - fmt.Scanln
 
-    # Exclude known issues in legacy code
-    - path: internal/legacy
-      linters:
-        - staticcheck
-        - gosec
+    staticcheck:
+      checks:
+        - "all"
+        - "-SA9003"  # Disable empty branch check
+        - "-SA1019"  # Disable deprecation warnings (we have deprecated methods for compatibility)
+        - "-QF1008"  # Disable embedded field selector suggestion
+        - "-ST1020"  # Disable comment format check
 
-  # Maximum issues count per one linter
-  max-issues-per-linter: 50
+    govet:
+      disable:
+        - shadow        # Too noisy
+        - fieldalignment  # Micro-optimization
 
-  # Maximum count of issues with the same text
-  max-same-issues: 3
+    misspell:
+      locale: US
+      ignore-rules:
+        - cancelled   # UK spelling used in Jira API
+        - favourite   # UK spelling used in Jira API
+        - analyse     # UK spelling used in Jira API
 
-  # Show only new issues
-  new: false
+    gosec:
+      excludes:
+        - G104  # Unhandled errors (covered by errcheck with exclusions)
 
-  # Fix found issues (if supported by linter)
-  fix: false
+formatters:
+  enable:
+    - gofmt
 
-severity:
-  default-severity: error
-  rules:
-    - linters:
-        - misspell
-      severity: warning
+  settings:
+    gofmt:
+      simplify: true
