@@ -71,7 +71,7 @@ func NewAdapter(config jira.ResilienceConfig) *Adapter {
 
 	// Initialize rate limiter if enabled
 	if config.RateLimitEnabled {
-		adapter.rateLimiter = ratelimit.New(ratelimit.Config{
+		adapter.rateLimiter = ratelimit.New(&ratelimit.Config{
 			Rate:     config.RateLimitRate,
 			Burst:    config.RateLimitBurst,
 			Interval: config.RateLimitWindow,
