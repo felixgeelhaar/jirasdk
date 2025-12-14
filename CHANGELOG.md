@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.2] - 2025-12-14
+
+### Fixed
+- Prevent early exit in pkg.go.dev update job (#34)
+
+### Changed
+
+#### Dependencies
+- Updated `github.com/felixgeelhaar/fortify` from v1.1.0 to v1.1.1
+- Updated `golang.org/x/oauth2` from v0.32.0 to v0.34.0
+- Updated `go.opentelemetry.io/otel` from v1.38.0 to v1.39.0
+- Updated `go.uber.org/zap` from v1.27.0 to v1.27.1
+- Updated various `golang.org/x` packages to latest versions
+
+#### CI/CD
+- Migrated golangci-lint configuration to v2 format
+- Updated `golangci/golangci-lint-action` from v4 to v9
+- Updated `actions/checkout` from v4 to v6
+- Using golangci-lint v2.1.6
+
+**Note**: This is a maintenance release with dependency updates and CI improvements. No API changes.
+
 ## [1.5.1] - 2025-10-23
 
 ### Fixed
