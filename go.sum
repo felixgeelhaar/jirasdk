@@ -5,8 +5,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/felixgeelhaar/bolt v1.2.1 h1:SJytPusDL6kLLi5FMhkszc7gDKz68qbc+FYfckWO8Qs=
 github.com/felixgeelhaar/bolt v1.2.1/go.mod h1:z2DbH307CbcePSiuS8ZADrUMoUIwaC0yKZrnLSjnt6I=
-github.com/felixgeelhaar/fortify v1.1.1 h1:EBnE869y3UCYQWdIfb2GcATKtQJNN4JUy6MnDxIP0Gs=
-github.com/felixgeelhaar/fortify v1.1.1/go.mod h1:KV6SQHeB8D+v7y8DDOGQB0w0fb3lba++r13Hy4+JxHU=
+github.com/felixgeelhaar/fortify v1.1.2 h1:v/413a60nA9dusR0jOrI7wtaL67gtyH4nUO0xdj/oIM=
+github.com/felixgeelhaar/fortify v1.1.2/go.mod h1:SXyIu11ChgBHTX+7gmVdUwIcpC0udaH8tRp05tUl3S4=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
