@@ -47,3 +47,6 @@ dist/
 /attachments
 /oauth2
 .claude/
+
+# release memory
+.relicta/
