@@ -20,7 +20,7 @@ type OAuth2Config struct {
 	ClientID string
 
 	// ClientSecret is the OAuth 2.0 client secret
-	ClientSecret string
+	ClientSecret string //nolint:gosec // G117: struct field name, not a hardcoded secret
 
 	// RedirectURL is the callback URL for the OAuth 2.0 flow
 	RedirectURL string
