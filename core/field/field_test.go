@@ -660,3 +660,202 @@ func TestService_CreateOption(t *testing.T) {
 		})
 	}
 }
+
+func TestService_AssociateContextProjects(t *testing.T) {
+	tests := []struct {
+		name      string
+		fieldID   string
+		contextID string
+		input     *AssociateContextProjectsInput
+		wantErr   bool
+	}{
+		{
+			name:      "success",
+			fieldID:   "customfield_10000",
+			contextID: "10100",
+			input: &AssociateContextProjectsInput{
+				ProjectIDs: []string{"10000", "10001"},
+			},
+			wantErr: false,
+		},
+		{
+			name:      "empty field ID",
+			fieldID:   "",
+			contextID: "10100",
+			input: &AssociateContextProjectsInput{
+				ProjectIDs: []string{"10000"},
+			},
+			wantErr: true,
+		},
+		{
+			name:      "empty context ID",
+			fieldID:   "customfield_10000",
+			contextID: "",
+			input: &AssociateContextProjectsInput{
+				ProjectIDs: []string{"10000"},
+			},
+			wantErr: true,
+		},
+		{
+			name:      "nil input",
+			fieldID:   "customfield_10000",
+			contextID: "10100",
+			input:     nil,
+			wantErr:   true,
+		},
+		{
+			name:      "empty project IDs",
+			fieldID:   "customfield_10000",
+			contextID: "10100",
+			input:     &AssociateContextProjectsInput{},
+			wantErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockTransport := &mockRoundTripper{
+				response: &http.Response{
+					StatusCode: http.StatusNoContent,
+					Body:       io.NopCloser(strings.NewReader("")),
+				},
+			}
+			s := NewService(mockTransport)
+
+			err := s.AssociateContextProjects(context.Background(), tt.fieldID, tt.contextID, tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AssociateContextProjects() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestService_RemoveContextProjects(t *testing.T) {
+	tests := []struct {
+		name      string
+		fieldID   string
+		contextID string
+		input     *RemoveContextProjectsInput
+		wantErr   bool
+	}{
+		{
+			name:      "success",
+			fieldID:   "customfield_10000",
+			contextID: "10100",
+			input: &RemoveContextProjectsInput{
+				ProjectIDs: []string{"10000"},
+			},
+			wantErr: false,
+		},
+		{
+			name:      "empty field ID",
+			fieldID:   "",
+			contextID: "10100",
+			input: &RemoveContextProjectsInput{
+				ProjectIDs: []string{"10000"},
+			},
+			wantErr: true,
+		},
+		{
+			name:      "empty context ID",
+			fieldID:   "customfield_10000",
+			contextID: "",
+			input: &RemoveContextProjectsInput{
+				ProjectIDs: []string{"10000"},
+			},
+			wantErr: true,
+		},
+		{
+			name:      "nil input",
+			fieldID:   "customfield_10000",
+			contextID: "10100",
+			input:     nil,
+			wantErr:   true,
+		},
+		{
+			name:      "empty project IDs",
+			fieldID:   "customfield_10000",
+			contextID: "10100",
+			input:     &RemoveContextProjectsInput{},
+			wantErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockTransport := &mockRoundTripper{
+				response: &http.Response{
+					StatusCode: http.StatusNoContent,
+					Body:       io.NopCloser(strings.NewReader("")),
+				},
+			}
+			s := NewService(mockTransport)
+
+			err := s.RemoveContextProjects(context.Background(), tt.fieldID, tt.contextID, tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RemoveContextProjects() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestService_GetContextProjectMappings(t *testing.T) {
+	tests := []struct {
+		name    string
+		fieldID string
+		opts    *GetContextProjectMappingsOptions
+		wantErr bool
+	}{
+		{
+			name:    "success",
+			fieldID: "customfield_10000",
+			opts:    nil,
+			wantErr: false,
+		},
+		{
+			name:    "with context IDs filter",
+			fieldID: "customfield_10000",
+			opts: &GetContextProjectMappingsOptions{
+				ContextIDs: []string{"10100", "10101"},
+				MaxResults: 50,
+			},
+			wantErr: false,
+		},
+		{
+			name:    "empty field ID",
+			fieldID: "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := struct {
+				Values []*ContextProjectMapping `json:"values"`
+			}{
+				Values: []*ContextProjectMapping{
+					{ContextID: "10100", ProjectID: "10000", IsGlobal: false},
+					{ContextID: "10100", ProjectID: "10001", IsGlobal: false},
+				},
+			}
+			data, _ := json.Marshal(response)
+
+			mockTransport := &mockRoundTripper{
+				response: &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       io.NopCloser(strings.NewReader(string(data))),
+				},
+			}
+			s := NewService(mockTransport)
+
+			mappings, err := s.GetContextProjectMappings(context.Background(), tt.fieldID, tt.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetContextProjectMappings() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && len(mappings) != 2 {
+				t.Errorf("GetContextProjectMappings() returned %d mappings, want 2", len(mappings))
+			}
+		})
+	}
+}

@@ -140,6 +140,30 @@ type CreateOptionInput struct {
 	Disabled bool   `json:"disabled,omitempty"`
 }
 
+// AssociateContextProjectsInput represents input for associating projects with a field context.
+type AssociateContextProjectsInput struct {
+	ProjectIDs []string `json:"projectIds"`
+}
+
+// RemoveContextProjectsInput represents input for removing projects from a field context.
+type RemoveContextProjectsInput struct {
+	ProjectIDs []string `json:"projectIds"`
+}
+
+// ContextProjectMapping represents a mapping between a field context and a project.
+type ContextProjectMapping struct {
+	ContextID string `json:"contextId"`
+	ProjectID string `json:"projectId,omitempty"`
+	IsGlobal  bool   `json:"isGlobalContext"`
+}
+
+// GetContextProjectMappingsOptions configures the GetContextProjectMappings operation.
+type GetContextProjectMappingsOptions struct {
+	ContextIDs []string
+	StartAt    int
+	MaxResults int
+}
+
 // List retrieves all fields (system and custom).
 //
 // Example:
@@ -529,4 +553,130 @@ func (s *Service) CreateOption(ctx context.Context, fieldID, contextID string, i
 	}
 
 	return &option, nil
+}
+
+// AssociateContextProjects associates projects with a custom field context.
+//
+// This is required since creating custom fields no longer auto-associates them
+// with projects (Jira Cloud CHANGE-3033, February 2026).
+//
+// Example:
+//
+//	err := client.Field.AssociateContextProjects(ctx, "customfield_10000", "10100", &field.AssociateContextProjectsInput{
+//	    ProjectIDs: []string{"10000", "10001"},
+//	})
+func (s *Service) AssociateContextProjects(ctx context.Context, fieldID, contextID string, input *AssociateContextProjectsInput) error {
+	if fieldID == "" {
+		return fmt.Errorf("field ID is required")
+	}
+
+	if contextID == "" {
+		return fmt.Errorf("context ID is required")
+	}
+
+	if input == nil || len(input.ProjectIDs) == 0 {
+		return fmt.Errorf("at least one project ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/field/%s/context/%s/project", fieldID, contextID)
+
+	req, err := s.transport.NewRequest(ctx, http.MethodPut, path, input)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// RemoveContextProjects removes projects from a custom field context.
+//
+// Example:
+//
+//	err := client.Field.RemoveContextProjects(ctx, "customfield_10000", "10100", &field.RemoveContextProjectsInput{
+//	    ProjectIDs: []string{"10000"},
+//	})
+func (s *Service) RemoveContextProjects(ctx context.Context, fieldID, contextID string, input *RemoveContextProjectsInput) error {
+	if fieldID == "" {
+		return fmt.Errorf("field ID is required")
+	}
+
+	if contextID == "" {
+		return fmt.Errorf("context ID is required")
+	}
+
+	if input == nil || len(input.ProjectIDs) == 0 {
+		return fmt.Errorf("at least one project ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/field/%s/context/%s/project/remove", fieldID, contextID)
+
+	req, err := s.transport.NewRequest(ctx, http.MethodPost, path, input)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	_, err = s.transport.Do(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	return nil
+}
+
+// GetContextProjectMappings retrieves the project-to-context mappings for a custom field.
+//
+// Example:
+//
+//	mappings, err := client.Field.GetContextProjectMappings(ctx, "customfield_10000", &field.GetContextProjectMappingsOptions{
+//	    ContextIDs: []string{"10100", "10101"},
+//	})
+func (s *Service) GetContextProjectMappings(ctx context.Context, fieldID string, opts *GetContextProjectMappingsOptions) ([]*ContextProjectMapping, error) {
+	if fieldID == "" {
+		return nil, fmt.Errorf("field ID is required")
+	}
+
+	path := fmt.Sprintf("/rest/api/3/field/%s/context/projectmapping", fieldID)
+
+	req, err := s.transport.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if opts != nil {
+		q := req.URL.Query()
+
+		for _, id := range opts.ContextIDs {
+			q.Add("contextId", id)
+		}
+
+		if opts.StartAt > 0 {
+			q.Set("startAt", fmt.Sprintf("%d", opts.StartAt))
+		}
+
+		if opts.MaxResults > 0 {
+			q.Set("maxResults", fmt.Sprintf("%d", opts.MaxResults))
+		}
+
+		req.URL.RawQuery = q.Encode()
+	}
+
+	resp, err := s.transport.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	var result struct {
+		Values []*ContextProjectMapping `json:"values"`
+	}
+
+	if err := s.transport.DecodeResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return result.Values, nil
 }

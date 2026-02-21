@@ -676,3 +676,448 @@ func TestGetDefaultColumns(t *testing.T) {
 		})
 	}
 }
+
+func TestSetDefaultColumns(t *testing.T) {
+	tests := []struct {
+		name    string
+		columns []string
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name:    "success",
+			columns: []string{"issuekey", "summary", "priority", "status"},
+			wantErr: false,
+		},
+		{
+			name:    "empty columns",
+			columns: []string{},
+			wantErr: true,
+			errMsg:  "at least one column is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				err := service.SetDefaultColumns(context.Background(), tt.columns)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodPut, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/columns")
+
+				w.WriteHeader(http.StatusOK)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			err := service.SetDefaultColumns(context.Background(), tt.columns)
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestResetDefaultColumns(t *testing.T) {
+	tests := []struct {
+		name      string
+		accountID string
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "success",
+			accountID: "user123",
+			wantErr:   false,
+		},
+		{
+			name:      "empty account ID",
+			accountID: "",
+			wantErr:   true,
+			errMsg:    "account ID is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				err := service.ResetDefaultColumns(context.Background(), tt.accountID)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodDelete, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/columns")
+				assert.Equal(t, tt.accountID, r.URL.Query().Get("accountId"))
+
+				w.WriteHeader(http.StatusNoContent)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			err := service.ResetDefaultColumns(context.Background(), tt.accountID)
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestGetUserProperty(t *testing.T) {
+	tests := []struct {
+		name      string
+		accountID string
+		key       string
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "success",
+			accountID: "user123",
+			key:       "theme",
+			wantErr:   false,
+		},
+		{
+			name:      "empty account ID",
+			accountID: "",
+			key:       "theme",
+			wantErr:   true,
+			errMsg:    "account ID is required",
+		},
+		{
+			name:      "empty key",
+			accountID: "user123",
+			key:       "",
+			wantErr:   true,
+			errMsg:    "property key is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				_, err := service.GetUserProperty(context.Background(), tt.accountID, tt.key)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/properties/")
+				assert.Equal(t, tt.accountID, r.URL.Query().Get("accountId"))
+
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(&UserProperty{
+					Key:   tt.key,
+					Value: "dark",
+				})
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			prop, err := service.GetUserProperty(context.Background(), tt.accountID, tt.key)
+
+			require.NoError(t, err)
+			require.NotNil(t, prop)
+			assert.Equal(t, tt.key, prop.Key)
+		})
+	}
+}
+
+func TestSetUserProperty(t *testing.T) {
+	tests := []struct {
+		name      string
+		accountID string
+		key       string
+		value     interface{}
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "success",
+			accountID: "user123",
+			key:       "theme",
+			value:     map[string]string{"theme": "dark"},
+			wantErr:   false,
+		},
+		{
+			name:      "empty account ID",
+			accountID: "",
+			key:       "theme",
+			value:     "dark",
+			wantErr:   true,
+			errMsg:    "account ID is required",
+		},
+		{
+			name:      "empty key",
+			accountID: "user123",
+			key:       "",
+			value:     "dark",
+			wantErr:   true,
+			errMsg:    "property key is required",
+		},
+		{
+			name:      "nil value",
+			accountID: "user123",
+			key:       "theme",
+			value:     nil,
+			wantErr:   true,
+			errMsg:    "value is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				err := service.SetUserProperty(context.Background(), tt.accountID, tt.key, tt.value)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodPut, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/properties/")
+				assert.Equal(t, tt.accountID, r.URL.Query().Get("accountId"))
+
+				w.WriteHeader(http.StatusOK)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			err := service.SetUserProperty(context.Background(), tt.accountID, tt.key, tt.value)
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestDeleteUserProperty(t *testing.T) {
+	tests := []struct {
+		name      string
+		accountID string
+		key       string
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "success",
+			accountID: "user123",
+			key:       "theme",
+			wantErr:   false,
+		},
+		{
+			name:      "empty account ID",
+			accountID: "",
+			key:       "theme",
+			wantErr:   true,
+			errMsg:    "account ID is required",
+		},
+		{
+			name:      "empty key",
+			accountID: "user123",
+			key:       "",
+			wantErr:   true,
+			errMsg:    "property key is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				err := service.DeleteUserProperty(context.Background(), tt.accountID, tt.key)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodDelete, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/properties/")
+				assert.Equal(t, tt.accountID, r.URL.Query().Get("accountId"))
+
+				w.WriteHeader(http.StatusNoContent)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			err := service.DeleteUserProperty(context.Background(), tt.accountID, tt.key)
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestGetUserGroups(t *testing.T) {
+	tests := []struct {
+		name      string
+		accountID string
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "success",
+			accountID: "user123",
+			wantErr:   false,
+		},
+		{
+			name:      "empty account ID",
+			accountID: "",
+			wantErr:   true,
+			errMsg:    "account ID is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				_, err := service.GetUserGroups(context.Background(), tt.accountID)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/groups")
+				assert.Equal(t, tt.accountID, r.URL.Query().Get("accountId"))
+
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode([]*GroupItem{
+					{Name: "jira-developers"},
+					{Name: "jira-administrators"},
+				})
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			groups, err := service.GetUserGroups(context.Background(), tt.accountID)
+
+			require.NoError(t, err)
+			assert.Len(t, groups, 2)
+			assert.Equal(t, "jira-developers", groups[0].Name)
+		})
+	}
+}
+
+func TestFindUsersWithAllPermissions(t *testing.T) {
+	tests := []struct {
+		name    string
+		opts    *FindUsersWithAllPermissionsOptions
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name: "success",
+			opts: &FindUsersWithAllPermissionsOptions{
+				Permissions: []string{"EDIT_ISSUES", "DELETE_ISSUES"},
+				ProjectKey:  "PROJ",
+				Query:       "john",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "nil opts",
+			opts:    nil,
+			wantErr: true,
+			errMsg:  "at least one permission is required",
+		},
+		{
+			name: "empty permissions",
+			opts: &FindUsersWithAllPermissionsOptions{
+				ProjectKey: "PROJ",
+			},
+			wantErr: true,
+			errMsg:  "at least one permission is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				_, err := service.FindUsersWithAllPermissions(context.Background(), tt.opts)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/permission/search")
+				assert.NotEmpty(t, r.URL.Query().Get("permissions"))
+
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode([]*User{
+					{AccountID: "user1", DisplayName: "John Doe"},
+				})
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			users, err := service.FindUsersWithAllPermissions(context.Background(), tt.opts)
+
+			require.NoError(t, err)
+			assert.Len(t, users, 1)
+		})
+	}
+}
+
+func TestFindUsersWithBrowsePermission(t *testing.T) {
+	tests := []struct {
+		name    string
+		opts    *FindUsersWithBrowsePermissionOptions
+		wantErr bool
+	}{
+		{
+			name: "success",
+			opts: &FindUsersWithBrowsePermissionOptions{
+				ProjectKey: "PROJ",
+				Query:      "john",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "nil opts",
+			opts:    nil,
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/user/viewissue/search")
+
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode([]*User{
+					{AccountID: "user1", DisplayName: "John Doe"},
+				})
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			users, err := service.FindUsersWithBrowsePermission(context.Background(), tt.opts)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.NotNil(t, users)
+			}
+		})
+	}
+}
