@@ -173,7 +173,7 @@ opts := &search.SearchJQLOptions{
 - [ ] Add explicit field specifications (don't rely on defaults)
 - [ ] Remove code that depends on `Total` count (not available in new API)
 - [ ] Update tests to use new API
-- [ ] Test thoroughly before October 2025 deadline
+- [ ] Test thoroughly — the endpoint removal date has been extended but will eventually occur
 
 ## Performance Considerations
 
@@ -191,8 +191,8 @@ opts := &search.SearchJQLOptions{
 
 The SDK maintains backward compatibility by keeping the old `Search()` method available with deprecation warnings. However:
 
-- The old method will **stop working** after October 31, 2025
-- You should migrate as soon as possible
+- The old method was originally scheduled for removal on October 31, 2025, but the deadline has been extended and it remains functional as of February 2026
+- You should migrate as soon as possible — the endpoint will eventually be removed
 - The old method is marked as `Deprecated` in the API documentation
 
 ## Additional Resources
@@ -482,12 +482,16 @@ err := client.IssueType.RemoveIssueTypeFromScheme(ctx, "10000", "10004")
 
 | Endpoint | Removal Date | New Endpoint |
 |----------|--------------|--------------|
-| `/rest/api/3/search` | October 31, 2025 | `/rest/api/3/search/jql` |
+| `/rest/api/3/search` | Extended (originally October 31, 2025) | `/rest/api/3/search/jql` |
 | `/rest/api/3/expression/eval` | August 1, 2025 | `/rest/api/3/expression/evaluate` |
+| Field auto-association | Removed February 2026 | Explicit `AssociateContextProjects()` |
+| Work type auto-scheme | Removed February 2026 | Explicit `AddIssueTypesToScheme()` |
 
 ## Migration Priority
 
-1. **Expression Evaluation** (August 1, 2025) - Higher priority due to earlier deadline
-2. **Search API** (October 31, 2025) - More complex migration due to pagination changes
+1. **Field Context Project Association** (February 2026) - Breaking behavior change, action required now
+2. **Work Type Scheme Association** (February 2026) - Breaking behavior change, action required now
+3. **Expression Evaluation** (August 1, 2025) - Endpoint removal
+4. **Search API** (Extended) - Endpoint removal date extended, still functional as of February 2026
 
-Both migrations should be completed as soon as possible to avoid service disruptions.
+All migrations should be completed as soon as possible to avoid service disruptions.
