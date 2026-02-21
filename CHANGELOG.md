@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-02-21
+
+### Changed
+
+- Updated Go version support to 1.24, 1.25, 1.26 (last 3 versions)
+- Upgraded `setup-go` from v5 to v6 in release and tag workflows
+- Upgraded `golangci-lint` from v2.7.2 to v2.10.1 for Go 1.26 compatibility
+
+### Fixed
+
+- Suppressed gosec false positives: G117 (`ClientSecret` struct field name) and G704 (SSRF on user-configured base URL)
+
 ## [1.6.0] - 2026-02-21
 
 ### Added
