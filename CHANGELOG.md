@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-02-21
+
+### Added
+
+#### Field Context Project Association (CHANGE-3033)
+
+Since creating custom fields no longer auto-associates them with projects (February 2026), the following methods were added to the Field service:
+
+- `AssociateContextProjects()` - Associate projects with a custom field context
+- `RemoveContextProjects()` - Remove projects from a custom field context
+- `GetContextProjectMappings()` - Retrieve project-to-context mappings for a field
+
+#### Issue Type Scheme Management (CHANGE-2999/3000)
+
+Since creating issue types no longer auto-adds them to the Default Work Type Scheme (February 2026), the following methods were added to the IssueType service:
+
+- `ListIssueTypeSchemes()` - List all issue type schemes
+- `CreateIssueTypeScheme()` - Create a new issue type scheme
+- `UpdateIssueTypeScheme()` - Update an existing issue type scheme
+- `DeleteIssueTypeScheme()` - Delete an issue type scheme
+- `AddIssueTypesToScheme()` - Add issue types to a scheme
+- `RemoveIssueTypeFromScheme()` - Remove an issue type from a scheme
+- `GetIssueTypeSchemeMappings()` - Retrieve scheme-to-issue-type mappings
+
+#### Beta Rate-Limit Headers (CHANGE-3045)
+
+- Added parsing for `Beta-RateLimit-Policy` header (points-based quota format: `"100;w=60"`)
+- Added parsing for `Beta-RateLimit` header (remaining points format: `"r=85;policy=..."`)
+- Added structured logging for beta rate limit headers in logging middleware
+
+### Changed
+
+#### Documentation Updates
+
+- Updated search deprecation date in MIGRATION_GUIDE.md (endpoint still functional as of February 2026)
+- Added "Field Context Project Association Changes" section to MIGRATION_GUIDE.md
+- Added "Work Type Scheme Changes" section to MIGRATION_GUIDE.md
+
+### Testing
+
+- **IssueType Service**: Added comprehensive test file with 12 test functions covering all existing and new methods (0% → 80%+ coverage)
+- **User Service**: Added 8 test functions for SetDefaultColumns, ResetDefaultColumns, GetUserProperty, SetUserProperty, DeleteUserProperty, GetUserGroups, FindUsersWithAllPermissions, FindUsersWithBrowsePermission (42% → 80%+ coverage)
+- **Workflow Service**: Added 3 test functions for GetStatusCategories, GetStatusCategory, DoTransition (42% → 80%+ coverage)
+- **Workflow Scheme**: Added 5 test functions for CreateWorkflowScheme, UpdateWorkflowScheme, DeleteWorkflowScheme, SetWorkflowSchemeIssueType, DeleteWorkflowSchemeIssueType
+- **Transport**: Added tests for parseBetaRateLimitPolicy and parseBetaRateLimit
+
 ## [1.5.2] - 2025-12-14
 
 ### Fixed
@@ -1054,7 +1100,9 @@ MIT License - see LICENSE file for details
 
 ---
 
-[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.5.2...v1.6.0
+[1.5.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.5.2
 [1.4.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
 [1.3.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.3.0
 [1.2.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.2.2

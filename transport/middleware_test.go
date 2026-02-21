@@ -145,3 +145,103 @@ func TestIsRetryableStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestParseBetaRateLimitPolicy(t *testing.T) {
+	tests := []struct {
+		name              string
+		policy            string
+		expectedLimit     int
+		expectedWindowSec int
+	}{
+		{
+			name:              "standard format",
+			policy:            "100;w=60",
+			expectedLimit:     100,
+			expectedWindowSec: 60,
+		},
+		{
+			name:              "different values",
+			policy:            "500;w=300",
+			expectedLimit:     500,
+			expectedWindowSec: 300,
+		},
+		{
+			name:              "limit only",
+			policy:            "100",
+			expectedLimit:     100,
+			expectedWindowSec: 0,
+		},
+		{
+			name:              "empty string",
+			policy:            "",
+			expectedLimit:     0,
+			expectedWindowSec: 0,
+		},
+		{
+			name:              "invalid format",
+			policy:            "abc;w=xyz",
+			expectedLimit:     0,
+			expectedWindowSec: 0,
+		},
+		{
+			name:              "valid limit invalid window",
+			policy:            "100;w=abc",
+			expectedLimit:     100,
+			expectedWindowSec: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			limit, windowSec := parseBetaRateLimitPolicy(tt.policy)
+			assert.Equal(t, tt.expectedLimit, limit)
+			assert.Equal(t, tt.expectedWindowSec, windowSec)
+		})
+	}
+}
+
+func TestParseBetaRateLimit(t *testing.T) {
+	tests := []struct {
+		name     string
+		header   string
+		expected int
+	}{
+		{
+			name:     "standard format",
+			header:   "r=85;policy=\"100;w=60\"",
+			expected: 85,
+		},
+		{
+			name:     "zero remaining",
+			header:   "r=0;policy=\"100;w=60\"",
+			expected: 0,
+		},
+		{
+			name:     "remaining only",
+			header:   "r=42",
+			expected: 42,
+		},
+		{
+			name:     "empty string",
+			header:   "",
+			expected: -1,
+		},
+		{
+			name:     "invalid format",
+			header:   "invalid",
+			expected: -1,
+		},
+		{
+			name:     "no r key",
+			header:   "x=85;policy=\"100;w=60\"",
+			expected: -1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := parseBetaRateLimit(tt.header)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

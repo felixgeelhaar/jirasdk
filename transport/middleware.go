@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/felixgeelhaar/jirasdk/auth"
@@ -123,8 +124,17 @@ func rateLimitMiddleware(buffer time.Duration) Middleware {
 
 			// Check for rate limit headers (X-RateLimit-*)
 			if remaining := resp.Header.Get("X-RateLimit-Remaining"); remaining == "0" {
-				// TODO: Log or emit metric about approaching rate limit
-				// In a real implementation, this could trigger adaptive rate limiting
+				// Traditional rate limit exhausted — next request may be throttled
+			}
+
+			// Check for beta rate limit headers (points-based quota, CHANGE-3045)
+			if betaPolicy := resp.Header.Get("Beta-RateLimit-Policy"); betaPolicy != "" {
+				if betaRL := resp.Header.Get("Beta-RateLimit"); betaRL != "" {
+					remaining := parseBetaRateLimit(betaRL)
+					if remaining == 0 {
+						// Points exhausted — consider backing off
+					}
+				}
 			}
 
 			return resp, nil
@@ -196,4 +206,60 @@ func parseRetryAfter(retryAfter string) time.Duration {
 
 	// Default to 1 second if parsing fails
 	return time.Second
+}
+
+// parseBetaRateLimitPolicy parses the Beta-RateLimit-Policy header.
+//
+// Format: "100;w=60" where 100 is the limit and 60 is the window in seconds.
+// Returns the limit and window in seconds, or (0, 0) if parsing fails.
+func parseBetaRateLimitPolicy(policy string) (limit, windowSeconds int) {
+	if policy == "" {
+		return 0, 0
+	}
+
+	parts := strings.Split(policy, ";")
+	if len(parts) == 0 {
+		return 0, 0
+	}
+
+	// Parse limit
+	l, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return 0, 0
+	}
+	limit = l
+
+	// Parse window from "w=60" parameter
+	for _, part := range parts[1:] {
+		kv := strings.SplitN(strings.TrimSpace(part), "=", 2)
+		if len(kv) == 2 && kv[0] == "w" {
+			if w, err := strconv.Atoi(kv[1]); err == nil {
+				windowSeconds = w
+			}
+		}
+	}
+
+	return limit, windowSeconds
+}
+
+// parseBetaRateLimit parses the Beta-RateLimit header.
+//
+// Format: "r=85;policy=\"100;w=60\"" where r is the remaining points.
+// Returns the remaining points, or -1 if parsing fails.
+func parseBetaRateLimit(header string) int {
+	if header == "" {
+		return -1
+	}
+
+	parts := strings.Split(header, ";")
+	for _, part := range parts {
+		kv := strings.SplitN(strings.TrimSpace(part), "=", 2)
+		if len(kv) == 2 && kv[0] == "r" {
+			if remaining, err := strconv.Atoi(kv[1]); err == nil {
+				return remaining
+			}
+		}
+	}
+
+	return -1
 }

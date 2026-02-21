@@ -53,6 +53,14 @@ func loggingMiddleware(logger Logger) Middleware {
 					fields = append(fields, String("rate_limit_remaining", rateLimitRemaining))
 				}
 
+				// Add beta rate limit headers if present (points-based quota, CHANGE-3045)
+				if betaPolicy := resp.Header.Get("Beta-RateLimit-Policy"); betaPolicy != "" {
+					fields = append(fields, String("beta_rate_limit_policy", betaPolicy))
+				}
+				if betaRL := resp.Header.Get("Beta-RateLimit"); betaRL != "" {
+					fields = append(fields, String("beta_rate_limit", betaRL))
+				}
+
 				if resp.StatusCode >= 500 {
 					logger.Error(ctx, "jira_request_server_error", fields...)
 				} else if resp.StatusCode >= 400 {

@@ -5,7 +5,7 @@
 Atlassian is deprecating multiple REST API endpoints as part of their Enhanced JQL Service rollout. This SDK has been updated to support the new endpoints with better performance and scalability.
 
 **Affected Endpoints:**
-1. `/rest/api/3/search` → `/rest/api/3/search/jql` (Removal: October 31, 2025)
+1. `/rest/api/3/search` → `/rest/api/3/search/jql` (Removal date extended — still functional as of February 2026)
 2. `/rest/api/3/expression/eval` → `/rest/api/3/expression/evaluate` (Removal: August 1, 2025)
 
 ## Timeline
@@ -13,7 +13,7 @@ Atlassian is deprecating multiple REST API endpoints as part of their Enhanced J
 - **May 1, 2025**: Endpoint officially deprecated (still functional)
 - **May 5 - July 31, 2025**: Enhanced JQL Service rolled out under the hood for old APIs
 - **August 1 - October 31, 2025**: Progressive shutdown of deprecated APIs
-- **After October 31, 2025**: Complete removal of `/rest/api/3/search` endpoint
+- **After October 31, 2025**: Original removal date for `/rest/api/3/search` (extended — endpoint still functional as of February 2026)
 
 ## Key Differences
 
@@ -173,7 +173,7 @@ opts := &search.SearchJQLOptions{
 - [ ] Add explicit field specifications (don't rely on defaults)
 - [ ] Remove code that depends on `Total` count (not available in new API)
 - [ ] Update tests to use new API
-- [ ] Test thoroughly before October 2025 deadline
+- [ ] Test thoroughly — the endpoint removal date has been extended but will eventually occur
 
 ## Performance Considerations
 
@@ -191,8 +191,8 @@ opts := &search.SearchJQLOptions{
 
 The SDK maintains backward compatibility by keeping the old `Search()` method available with deprecation warnings. However:
 
-- The old method will **stop working** after October 31, 2025
-- You should migrate as soon as possible
+- The old method was originally scheduled for removal on October 31, 2025, but the deadline has been extended and it remains functional as of February 2026
+- You should migrate as soon as possible — the endpoint will eventually be removed
 - The old method is marked as `Deprecated` in the API documentation
 
 ## Additional Resources
@@ -386,18 +386,112 @@ If you encounter issues during migration:
 
 ---
 
+# Field Context Project Association Changes (February 2026)
+
+## Overview
+
+As of February 2026, creating custom fields via `POST /rest/api/3/field` no longer auto-associates them with projects (Jira Cloud CHANGE-3033). You must now explicitly associate field contexts with projects.
+
+## New Methods
+
+The SDK provides three new methods on the Field service:
+
+### Associate Projects with a Field Context
+
+```go
+err := client.Field.AssociateContextProjects(ctx, "customfield_10000", "10100", &field.AssociateContextProjectsInput{
+    ProjectIDs: []string{"10000", "10001"},
+})
+```
+
+### Remove Projects from a Field Context
+
+```go
+err := client.Field.RemoveContextProjects(ctx, "customfield_10000", "10100", &field.RemoveContextProjectsInput{
+    ProjectIDs: []string{"10000"},
+})
+```
+
+### Get Context-to-Project Mappings
+
+```go
+mappings, err := client.Field.GetContextProjectMappings(ctx, "customfield_10000", &field.GetContextProjectMappingsOptions{
+    ContextIDs: []string{"10100"},
+})
+```
+
+## Migration Checklist
+
+- [ ] After creating custom fields, explicitly associate them with the desired projects
+- [ ] Update automation scripts that create fields to include project association steps
+- [ ] Review existing field creation workflows for missing project associations
+
+---
+
+# Work Type Scheme Changes (February 2026)
+
+## Overview
+
+As of February 2026, creating work types (issue types) no longer auto-adds them to the Default Work Type Scheme (Jira Cloud CHANGE-2999/3000). You must now explicitly manage issue type scheme memberships.
+
+## New Methods
+
+The SDK provides seven new methods on the IssueType service:
+
+### List Issue Type Schemes
+
+```go
+schemes, err := client.IssueType.ListIssueTypeSchemes(ctx, nil)
+```
+
+### Create an Issue Type Scheme
+
+```go
+scheme, err := client.IssueType.CreateIssueTypeScheme(ctx, &issuetype.CreateIssueTypeSchemeInput{
+    Name:               "Software Development",
+    DefaultIssueTypeID: "10001",
+    IssueTypeIDs:       []string{"10001", "10002", "10003"},
+})
+```
+
+### Add Issue Types to a Scheme
+
+```go
+err := client.IssueType.AddIssueTypesToScheme(ctx, "10000", &issuetype.AddIssueTypesToSchemeInput{
+    IssueTypeIDs: []string{"10004", "10005"},
+})
+```
+
+### Remove an Issue Type from a Scheme
+
+```go
+err := client.IssueType.RemoveIssueTypeFromScheme(ctx, "10000", "10004")
+```
+
+## Migration Checklist
+
+- [ ] After creating new issue types, explicitly add them to the appropriate issue type schemes
+- [ ] Update automation scripts that create issue types to include scheme assignment steps
+- [ ] Review existing issue type creation workflows for missing scheme assignments
+
+---
+
 # Summary of All Changes
 
 ## Timeline Overview
 
 | Endpoint | Removal Date | New Endpoint |
 |----------|--------------|--------------|
-| `/rest/api/3/search` | October 31, 2025 | `/rest/api/3/search/jql` |
+| `/rest/api/3/search` | Extended (originally October 31, 2025) | `/rest/api/3/search/jql` |
 | `/rest/api/3/expression/eval` | August 1, 2025 | `/rest/api/3/expression/evaluate` |
+| Field auto-association | Removed February 2026 | Explicit `AssociateContextProjects()` |
+| Work type auto-scheme | Removed February 2026 | Explicit `AddIssueTypesToScheme()` |
 
 ## Migration Priority
 
-1. **Expression Evaluation** (August 1, 2025) - Higher priority due to earlier deadline
-2. **Search API** (October 31, 2025) - More complex migration due to pagination changes
+1. **Field Context Project Association** (February 2026) - Breaking behavior change, action required now
+2. **Work Type Scheme Association** (February 2026) - Breaking behavior change, action required now
+3. **Expression Evaluation** (August 1, 2025) - Endpoint removal
+4. **Search API** (Extended) - Endpoint removal date extended, still functional as of February 2026
 
-Both migrations should be completed as soon as possible to avoid service disruptions.
+All migrations should be completed as soon as possible to avoid service disruptions.

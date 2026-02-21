@@ -430,6 +430,158 @@ func TestGetAllStatuses(t *testing.T) {
 	}
 }
 
+func TestGetStatusCategories(t *testing.T) {
+	transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/rest/api/3/statuscategory", r.URL.Path)
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode([]*StatusCategory{
+			{ID: 1, Key: "new", Name: "To Do", ColorName: "blue-gray"},
+			{ID: 2, Key: "indeterminate", Name: "In Progress", ColorName: "yellow"},
+			{ID: 3, Key: "done", Name: "Done", ColorName: "green"},
+		})
+	})
+	defer transport.Close()
+
+	service := NewService(transport)
+	categories, err := service.GetStatusCategories(context.Background())
+
+	require.NoError(t, err)
+	require.Len(t, categories, 3)
+	assert.Equal(t, 1, categories[0].ID)
+	assert.Equal(t, "new", categories[0].Key)
+	assert.Equal(t, "To Do", categories[0].Name)
+}
+
+func TestGetStatusCategory(t *testing.T) {
+	tests := []struct {
+		name     string
+		idOrKey  string
+		wantErr  bool
+		errMsg   string
+	}{
+		{
+			name:    "success",
+			idOrKey: "2",
+			wantErr: false,
+		},
+		{
+			name:    "empty ID",
+			idOrKey: "",
+			wantErr: true,
+			errMsg:  "status category ID or key is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.idOrKey == "" {
+				service := NewService(nil)
+				_, err := service.GetStatusCategory(context.Background(), tt.idOrKey)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/statuscategory/")
+
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(&StatusCategory{
+					ID:        2,
+					Key:       "indeterminate",
+					Name:      "In Progress",
+					ColorName: "yellow",
+				})
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			category, err := service.GetStatusCategory(context.Background(), tt.idOrKey)
+
+			require.NoError(t, err)
+			require.NotNil(t, category)
+			assert.Equal(t, 2, category.ID)
+			assert.Equal(t, "In Progress", category.Name)
+		})
+	}
+}
+
+func TestDoTransition(t *testing.T) {
+	tests := []struct {
+		name         string
+		issueKeyOrID string
+		input        *DoTransitionInput
+		wantErr      bool
+		errMsg       string
+	}{
+		{
+			name:         "success",
+			issueKeyOrID: "PROJ-123",
+			input: &DoTransitionInput{
+				Transition: &TransitionInput{ID: "31"},
+				Fields: map[string]interface{}{
+					"resolution": map[string]string{"name": "Fixed"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:         "nil input",
+			issueKeyOrID: "PROJ-123",
+			input:        nil,
+			wantErr:      true,
+			errMsg:       "transition input is required",
+		},
+		{
+			name:         "empty issue key",
+			issueKeyOrID: "",
+			input: &DoTransitionInput{
+				Transition: &TransitionInput{ID: "31"},
+			},
+			wantErr: true,
+			errMsg:  "issue key or ID is required",
+		},
+		{
+			name:         "empty transition ID",
+			issueKeyOrID: "PROJ-123",
+			input: &DoTransitionInput{
+				Transition: &TransitionInput{ID: ""},
+			},
+			wantErr: true,
+			errMsg:  "transition ID is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				service := NewService(nil)
+				err := service.DoTransition(context.Background(), tt.issueKeyOrID, tt.input)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			transport := newMockTransport(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodPost, r.Method)
+				assert.Contains(t, r.URL.Path, "/rest/api/3/issue/")
+				assert.Contains(t, r.URL.Path, "/transitions")
+
+				w.WriteHeader(http.StatusNoContent)
+			})
+			defer transport.Close()
+
+			service := NewService(transport)
+			err := service.DoTransition(context.Background(), tt.issueKeyOrID, tt.input)
+
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestGetStatus(t *testing.T) {
 	tests := []struct {
 		name           string
