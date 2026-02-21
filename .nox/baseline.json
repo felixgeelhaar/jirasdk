@@ -1,0 +1,429 @@
+{
+  "schema_version": "1.0.0",
+  "entries": [
+    {
+      "fingerprint": "c101e077f11d57b1b75ee1a1e682442d763be19d8966feb0b026b22d783ec068",
+      "rule_id": "AI-006",
+      "file_path": "examples/agile/main.go",
+      "severity": "medium",
+      "reason": "False positive: fmt.Printf for completion rate in example code, not LLM logging",
+      "created_at": "2026-02-21T18:55:39.376679Z"
+    },
+    {
+      "fingerprint": "96b54ffa385ca225cf289b44b731b79103a100981c6238d6ed403035d47e8081",
+      "rule_id": "AI-006",
+      "file_path": "examples/bulk/main.go",
+      "severity": "medium",
+      "reason": "False positive: fmt.Println help text in example code, not LLM logging",
+      "created_at": "2026-02-21T18:55:39.426113Z"
+    },
+    {
+      "fingerprint": "8d395ecea9f8d9c4b751b52a7902fc883d13a45f76039edab21a20cba397211d",
+      "rule_id": "IAC-308",
+      "file_path": ".github/workflows/tag.yml",
+      "severity": "low",
+      "reason": "Intentional: workflow_dispatch required for manual tag/release workflow",
+      "created_at": "2026-02-21T18:55:39.48181Z"
+    },
+    {
+      "fingerprint": "a0aff516db4f004f8c36fdf70e486314c53381c75f84ed1a6f4c430421c11e89",
+      "rule_id": "DATA-001",
+      "file_path": "CHANGELOG.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:55:58.923396Z"
+    },
+    {
+      "fingerprint": "908cc59fb9ebfbe6eed3bff99ab08d0feb14dd86b7a1c8d87b888269fd1d18b8",
+      "rule_id": "DATA-001",
+      "file_path": "CHANGELOG.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:55:59.930733Z"
+    },
+    {
+      "fingerprint": "3de461a1fc0dfd9993eb6bcfabd63a447966afb405558d62ac05a9ff680e88c6",
+      "rule_id": "DATA-001",
+      "file_path": "README.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:01.014987Z"
+    },
+    {
+      "fingerprint": "5180b51eda409eabaecdbf83e13c4ba2e09bd588fa0d9ed5c6bc3f926719758d",
+      "rule_id": "DATA-001",
+      "file_path": "README.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:01.906207Z"
+    },
+    {
+      "fingerprint": "161df4ebe28daa1d0ea974006b3236b3563123d1c5a4738f5ccd301fde62e283",
+      "rule_id": "DATA-001",
+      "file_path": "README.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:02.881526Z"
+    },
+    {
+      "fingerprint": "52bb47f3f7c5a7c47d3f0c12bd50d0ac75761269ebbbaba46aa61e0188300a91",
+      "rule_id": "DATA-001",
+      "file_path": "SECURITY.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:03.90084Z"
+    },
+    {
+      "fingerprint": "927d08a2cda32861ee5698265b1254a863aae3fa0efce465326f2df4e5ba80c3",
+      "rule_id": "DATA-001",
+      "file_path": "SECURITY.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:04.833205Z"
+    },
+    {
+      "fingerprint": "85de003e7ab03aebc24459f1849388885b20e29aeaf46cd751c6fbe84c1324d1",
+      "rule_id": "DATA-001",
+      "file_path": "SECURITY.md",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:05.91217Z"
+    },
+    {
+      "fingerprint": "9bfdb9596e4011ec83a997b58446e360f82eaf241cd15432b023aa2011101ebc",
+      "rule_id": "DATA-001",
+      "file_path": "auth/auth_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:08.141232Z"
+    },
+    {
+      "fingerprint": "cb133a76340939acd7fdc5c6365850cef2fc81ff6be615cbc719773acc67190d",
+      "rule_id": "DATA-001",
+      "file_path": "client.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:09.148108Z"
+    },
+    {
+      "fingerprint": "7f234c89dbcca44c47b1c6160c177594175809672925fd2e5ae31aab1b80cbf0",
+      "rule_id": "DATA-001",
+      "file_path": "client.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:13.252355Z"
+    },
+    {
+      "fingerprint": "03b5b069194c0cc723633eac882bf8ebca1d474cba9325c51ac523b5714a5f5c",
+      "rule_id": "DATA-001",
+      "file_path": "client.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:14.095527Z"
+    },
+    {
+      "fingerprint": "433ac0a3aad4fddd9b43ddb1a3b6f3cb6a624187993b5c63289e5ddbab7405b8",
+      "rule_id": "DATA-001",
+      "file_path": "client.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:15.18688Z"
+    },
+    {
+      "fingerprint": "0ed1f18f9fc6496f80fd3f3be87103cc9b1aaa769cfc15007b3551bfe6907cb9",
+      "rule_id": "DATA-001",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:16.445044Z"
+    },
+    {
+      "fingerprint": "e67f060dd28b69b092260e3f21b9900f95226c3a0b0a4e903f09215ba5418edc",
+      "rule_id": "DATA-001",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:17.937286Z"
+    },
+    {
+      "fingerprint": "81d467956922f5b9da5febed5b12e61b530bc2b25fafd980f69a2a6334a0ead8",
+      "rule_id": "DATA-001",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:19.056301Z"
+    },
+    {
+      "fingerprint": "7f692759d5f23e1eebd23205050bfe3b72de60bbe294036e5d0f4a4d858168a7",
+      "rule_id": "DATA-001",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in documentation",
+      "created_at": "2026-02-21T18:56:20.124139Z"
+    },
+    {
+      "fingerprint": "a15725bbe9be15bc12153daca22eed9ae24377b7ecbe305da05f307f347cbb90",
+      "rule_id": "DATA-001",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:21.878136Z"
+    },
+    {
+      "fingerprint": "165238c440e85cd3c49f5923a7d53783cb5e433b2fa3d75da6706fb8c0355cf6",
+      "rule_id": "DATA-001",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:22.987365Z"
+    },
+    {
+      "fingerprint": "2a53fa0520329bffe25eab8e66d8bfe14ffaecde62bade0011b6f957d225e00c",
+      "rule_id": "DATA-001",
+      "file_path": "core/user/user_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:23.957783Z"
+    },
+    {
+      "fingerprint": "a5dbfe254851e345c0c99e48dfd6991ced02e54ca6409a4f1d501f0b9ce671dc",
+      "rule_id": "DATA-001",
+      "file_path": "core/user/user_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:29.619246Z"
+    },
+    {
+      "fingerprint": "439fe66e5f7057d0425447cfa2dd8e88ac2ccd4a2a131a35a450b03bda2fc8b0",
+      "rule_id": "DATA-001",
+      "file_path": "core/user/user_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:32.456547Z"
+    },
+    {
+      "fingerprint": "1a7b1adc3790b569fa086b3d1f2069c3ff7dae2906c808810478516c2a005f9a",
+      "rule_id": "DATA-001",
+      "file_path": "core/user/user_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:35.157442Z"
+    },
+    {
+      "fingerprint": "27dfe7ec5c5991e7b810a5cb53d040a4444d42513fa6738fae2a8db386e57f96",
+      "rule_id": "DATA-001",
+      "file_path": "doc.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:37.790888Z"
+    },
+    {
+      "fingerprint": "bb216c5b258f40aeba787a9c466590d5864e6eb7c287c4dff196320fac91d41d",
+      "rule_id": "DATA-001",
+      "file_path": "doc.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:40.401683Z"
+    },
+    {
+      "fingerprint": "df2d00dac9b602edc090d4b10a762517357f4e775e959e34bd3bf47f75687438",
+      "rule_id": "DATA-001",
+      "file_path": "doc.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in examples",
+      "created_at": "2026-02-21T18:56:42.736634Z"
+    },
+    {
+      "fingerprint": "9e023caabd963e741a98d74e8a4ed60b75ae2961e65e165c1437c7be7e6f4fe2",
+      "rule_id": "DATA-001",
+      "file_path": "env.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:45.516373Z"
+    },
+    {
+      "fingerprint": "40492ce50c82c83897a8a0f70a367b3e9b2f920508a3a39d4bf14f8d7ec15870",
+      "rule_id": "DATA-001",
+      "file_path": "env.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:48.461253Z"
+    },
+    {
+      "fingerprint": "68b2b8e4b819eb19349e1a98dabca546f8b08ffe82c50ac2f987fe5ccca28877",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:51.234331Z"
+    },
+    {
+      "fingerprint": "f2dcb45c3b29f6aa45e37eb97654574407d6f2a4c91b510914066c8dc23d5297",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:56:53.951093Z"
+    },
+    {
+      "fingerprint": "0c82ad90d6b273364b04336c40fd7b12bb44ff5ffcdde64f8ddb592317ebb4fa",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:00.008797Z"
+    },
+    {
+      "fingerprint": "3196819248711b2a77d51034550ac58e619b8156019d809528fd65412fe9b864",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:02.114984Z"
+    },
+    {
+      "fingerprint": "d8035c65f87c5c3fc2aca466b6b945379423b743ad5716fdea2262c03f0db4a3",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:04.980759Z"
+    },
+    {
+      "fingerprint": "2b7bb7e66b095c716aa1e8c217f845a4e01ff56e2e06b9d7653af8a7b344a6ea",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:07.827324Z"
+    },
+    {
+      "fingerprint": "d8e2c358beb9b5da5c33773a03240c6a649db495055db110dd72a9471f567da0",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:10.81473Z"
+    },
+    {
+      "fingerprint": "42c4550a701ed0fcbf3bb203c24fc85882f49527e827af445e61b68efd578ca2",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:13.043497Z"
+    },
+    {
+      "fingerprint": "59821cbca760dc63d52a74d3fb0c02069b123d7a00742b1b1a71d25fe202c027",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:15.829123Z"
+    },
+    {
+      "fingerprint": "d68bd7ef8250c6d4aca0dfb8b5d840b4ad6ab5ad903b560bf4c1d87569e66b3f",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:18.911691Z"
+    },
+    {
+      "fingerprint": "d838c3e3180c1e1e55eecb9a3c5f35d489f0d4615ca3e2a431bea7a87f23109f",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:21.870643Z"
+    },
+    {
+      "fingerprint": "588e955e6d53d6c43501a19ebbb690c759b6eef105e84c5b236bfa10624e01f6",
+      "rule_id": "DATA-001",
+      "file_path": "env_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:24.646975Z"
+    },
+    {
+      "fingerprint": "98c898e6a52a9b891f1510f3299841f6ff5cd6be65688bf28b637fd1f8a863ca",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:30.275118Z"
+    },
+    {
+      "fingerprint": "319c3165544d9b2ca25e4857253a50cb390fd33f19a0b337905ca679eb986aed",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:32.769251Z"
+    },
+    {
+      "fingerprint": "851f972f2fdd32afc0bb7d6ea1d6c98a2ac39dcab996a3699179ce690ff9e6f2",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in test fixtures",
+      "created_at": "2026-02-21T18:57:35.594709Z"
+    },
+    {
+      "fingerprint": "cfbc796d36c824044fd016497f4cff69b5f5ff1454f439f6b7bcef3612d4cbca",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in SECURITY.md",
+      "created_at": "2026-02-21T18:57:38.549618Z"
+    },
+    {
+      "fingerprint": "53c436b12ed9f53677ed49e6e0da40ac201a1e989ad58a2e78ca348c4a0b1cc7",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in SECURITY.md",
+      "created_at": "2026-02-21T18:57:41.36624Z"
+    },
+    {
+      "fingerprint": "673938e7a40c75e3d4d5da1206c48d0e831cca38a12d554458f572f6d4c958d9",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in SECURITY.md",
+      "created_at": "2026-02-21T18:57:44.03563Z"
+    },
+    {
+      "fingerprint": "83257028a080992e86310eeaffe6c7ac2b69685e5e908834873f2fe1936bee04",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in user test fixtures",
+      "created_at": "2026-02-21T18:57:47.007654Z"
+    },
+    {
+      "fingerprint": "34db3a70d0fc748286fd08346d961b5fec6069b0cb5ce1ab43e08361c213a60d",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in user test fixtures",
+      "created_at": "2026-02-21T18:57:49.284556Z"
+    },
+    {
+      "fingerprint": "b05d443ea67e021af4d405d1f42fe60e34fb94a4d4ed5aceaa556e3583f03556",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in user test fixtures",
+      "created_at": "2026-02-21T18:57:51.926254Z"
+    },
+    {
+      "fingerprint": "f2e56d3b99ca775e2172b71ec022b3c21e866daa0f88ac7a132a6bed49d209cd",
+      "rule_id": "DATA-001",
+      "file_path": "example_test.go",
+      "severity": "medium",
+      "reason": "RFC 2606 example email in user test fixtures",
+      "created_at": "2026-02-21T18:57:54.641554Z"
+    }
+  ]
+}
