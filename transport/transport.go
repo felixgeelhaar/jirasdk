@@ -172,7 +172,7 @@ func (t *Transport) baseRoundTrip(ctx context.Context, req *http.Request) (*http
 	req = req.Clone(ctx)
 
 	// Execute the request
-	resp, err := t.client.Do(req)
+	resp, err := t.client.Do(req) //nolint:gosec // G704: URL is from user-configured Jira base URL, not tainted input
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request failed: %w", err)
 	}
