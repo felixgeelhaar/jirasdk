@@ -71,7 +71,7 @@ func NewAdapter(config jira.ResilienceConfig) *Adapter {
 
 	// Initialize rate limiter if enabled
 	if config.RateLimitEnabled {
-		adapter.rateLimiter = ratelimit.New(&ratelimit.Config{
+		adapter.rateLimiter = ratelimit.New(ratelimit.Config{
 			Rate:     config.RateLimitRate,
 			Burst:    config.RateLimitBurst,
 			Interval: config.RateLimitWindow,
@@ -147,7 +147,7 @@ func (a *Adapter) ExecuteRequest(ctx context.Context, req *http.Request, do func
 	if a.retrier != nil {
 		retryExecute := execute
 		execute = func(ctx context.Context) (*http.Response, error) {
-			return a.retrier.Do(ctx, retryExecute)
+			return a.retrier.Execute(ctx, retryExecute)
 		}
 	}
 
