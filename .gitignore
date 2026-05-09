@@ -50,3 +50,6 @@ dist/
 
 # release memory
 .relicta/
+
+# roady project state
+.roady/

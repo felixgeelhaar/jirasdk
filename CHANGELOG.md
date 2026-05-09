@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (BREAKING)
+
+- **Minimum Go version raised to 1.25.** Dropped Go 1.24 support. CI matrix now `[1.25, 1.26]`. Consumers on Go 1.24 must pin `v1.6.1`. Driven by upstream dependencies (`golang.org/x/oauth2` v0.36, `github.com/felixgeelhaar/bolt` v1.3, `github.com/felixgeelhaar/fortify` v1.3) requiring Go ≥ 1.25. See `docs/adr/0001-go-version-policy.md`.
+- `github.com/felixgeelhaar/fortify` upgraded to v1.3.1 (was v1.1.2). Breaking API changes adapted in `resilience/fortify`:
+  - `ratelimit.New` now takes `Config` by value (was `*Config`).
+  - `retry.Retry[T].Do(...)` renamed to `Execute(...)`.
+- `github.com/felixgeelhaar/bolt` upgraded to v1.3.0 (was v1.2.1).
+- `golang.org/x/oauth2` upgraded to v0.36.0 (was v0.34.0).
+
+### Fixed
+
+- Workflow comment label `# v2` corrected to `# v3` for `softprops/action-gh-release` (SHA was already v3).
+
 ## [1.6.1] - 2026-02-21
 
 ### Changed

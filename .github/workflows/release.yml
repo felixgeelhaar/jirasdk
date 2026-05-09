@@ -48,7 +48,7 @@ jobs:
     if: needs.verify.outputs.on_main == 'true'
     strategy:
       matrix:
-        go-version: ['1.24', '1.25', '1.26']
+        go-version: ['1.25', '1.26']
 
     steps:
     - name: Checkout code
@@ -115,7 +115,7 @@ jobs:
     # Users will install it via: go get github.com/felixgeelhaar/jirasdk@vX.Y.Z
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v2
+      uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3
       with:
         body_path: /tmp/changelog.txt
         draft: false
