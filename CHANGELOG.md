@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.7.0] - 2026-05-09
+
 ### Changed (BREAKING)
 
 - **Minimum Go version raised to 1.25.** Dropped Go 1.24 support. CI matrix now `[1.25, 1.26]`. Consumers on Go 1.24 must pin `v1.6.1`. Driven by upstream dependencies (`golang.org/x/oauth2` v0.36, `github.com/felixgeelhaar/bolt` v1.3, `github.com/felixgeelhaar/fortify` v1.3) requiring Go ≥ 1.25. See `docs/adr/0001-go-version-policy.md`.
@@ -15,10 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `retry.Retry[T].Do(...)` renamed to `Execute(...)`.
 - `github.com/felixgeelhaar/bolt` upgraded to v1.3.0 (was v1.2.1).
 - `golang.org/x/oauth2` upgraded to v0.36.0 (was v0.34.0).
+- `go.opentelemetry.io/otel` upgraded to v1.41.0 (was v1.39.0).
 
-### Fixed
+### Added
 
-- Workflow comment label `# v2` corrected to `# v3` for `softprops/action-gh-release` (SHA was already v3).
+- `scripts/check-dep-go-version.sh` and CI job `Dependency Go-version drift` to detect when a transitive dependency raises its minimum Go above the module's, before the upgrade reaches Dependabot.
+- `docs/adr/0001-go-version-policy.md` documenting the shift from "last 3" to "last 2" Go versions.
+- `docs/observability.md` with `otelhttp` wiring guidance and a span attribute schema (`jira.endpoint`, `jira.issue.key`, `jira.jql`, etc.) aligned with `gen_ai.*` for LLM-agent traces.
+
+### CI
+
+- `actions/upload-artifact` 6 → 7.0.1.
+- `softprops/action-gh-release` v2 → v3 (SHA pin previously updated; comment label corrected).
+- `github/codeql-action` 3 → 4.35.4.
+- `actions/setup-go` 6.2 → 6.4.
 
 ## [1.6.1] - 2026-02-21
 
