@@ -5,8 +5,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/felixgeelhaar/bolt v1.3.0 h1:s0sIqOgwcOtqsiqdkISyFS2v1NoaL6lfs2KU3NcGBlQ=
 github.com/felixgeelhaar/bolt v1.3.0/go.mod h1:F2rG7IiusJpvjlHqpQz7Yflrux9G5+4l9HLXy3dMCiI=
-github.com/felixgeelhaar/fortify v1.3.1 h1:3QcIzs1Q+yIhM5wtplDPRpm5f53vD0Udk1+Z0OcWWCE=
-github.com/felixgeelhaar/fortify v1.3.1/go.mod h1:n4jrh2iyz/0aKeUuLG99ZOPKNvsLQbMklZEmVpvPD4Y=
+github.com/felixgeelhaar/fortify v1.5.0 h1:mNgnVE5N4/+1jiuT44NSFnvsfoisl+GEEeKui2Y3hao=
+github.com/felixgeelhaar/fortify v1.5.0/go.mod h1:n4jrh2iyz/0aKeUuLG99ZOPKNvsLQbMklZEmVpvPD4Y=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=
