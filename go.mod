@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/felixgeelhaar/bolt v1.3.0
-	github.com/felixgeelhaar/fortify v1.3.1
+	github.com/felixgeelhaar/fortify v1.5.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/oauth2 v0.36.0
 )
