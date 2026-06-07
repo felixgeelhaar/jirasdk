@@ -203,7 +203,7 @@ issue, err := client.Issue.Get(ctx, "PROJ-123")
 
 jirasdk depends on the following security-critical packages:
 - `golang.org/x/oauth2` - OAuth 2.0 implementation
-- `github.com/felixgeelhaar/fortify` - Resilience patterns
+- `go.klarlabs.de/fortify` - Resilience patterns
 
 We monitor these dependencies for security updates and will release patches as needed.
 

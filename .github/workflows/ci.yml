@@ -49,7 +49,7 @@ jobs:
 
     - name: Install coverctl
       if: matrix.go-version == '1.26'
-      run: go install github.com/felixgeelhaar/coverctl@latest
+      run: go install go.klarlabs.de/coverctl@v1.17.0
 
     - name: Check coverage with coverctl
       if: matrix.go-version == '1.26'

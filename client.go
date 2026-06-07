@@ -103,7 +103,7 @@
 //		jira "github.com/felixgeelhaar/jirasdk"
 //		boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
 //		"github.com/felixgeelhaar/jirasdk/resilience/fortify"
-//		"github.com/felixgeelhaar/bolt"
+//		"go.klarlabs.de/bolt"
 //	)
 //
 //	logger := bolt.New(bolt.NewJSONHandler(os.Stdout))
@@ -519,7 +519,7 @@ func WithUserAgent(userAgent string) Option {
 // Example:
 //
 //	import "github.com/felixgeelhaar/jirasdk/logger/bolt"
-//	import "github.com/felixgeelhaar/bolt"
+//	import "go.klarlabs.de/bolt"
 //
 //	logger := bolt.New(bolt.NewJSONHandler(os.Stdout))
 //	WithLogger(boltadapter.NewAdapter(logger))
