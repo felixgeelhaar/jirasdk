@@ -17,12 +17,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/felixgeelhaar/fortify/bulkhead"
-	"github.com/felixgeelhaar/fortify/circuitbreaker"
-	"github.com/felixgeelhaar/fortify/ratelimit"
-	"github.com/felixgeelhaar/fortify/retry"
-	"github.com/felixgeelhaar/fortify/timeout"
 	jira "github.com/felixgeelhaar/jirasdk"
+	"go.klarlabs.de/fortify/bulkhead"
+	"go.klarlabs.de/fortify/circuitbreaker"
+	"go.klarlabs.de/fortify/ratelimit"
+	"go.klarlabs.de/fortify/retry"
+	"go.klarlabs.de/fortify/timeout"
 )
 
 // Adapter adapts fortify resilience patterns to the jira-connect Resilience interface

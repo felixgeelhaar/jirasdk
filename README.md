@@ -1623,13 +1623,13 @@ See the [examples](examples/) directory for complete, runnable examples:
 
 ### Structured Logging with Bolt
 
-The library integrates with [bolt](https://github.com/felixgeelhaar/bolt) for zero-allocation structured logging:
+The library integrates with [bolt](https://github.com/klarlabs-studio/bolt) for zero-allocation structured logging:
 
 ```go
 import (
     jira "github.com/felixgeelhaar/jirasdk"
     boltadapter "github.com/felixgeelhaar/jirasdk/logger/bolt"
-    "github.com/felixgeelhaar/bolt"
+    "go.klarlabs.de/bolt"
 )
 
 // Production: JSON logging
@@ -1681,7 +1681,7 @@ See [examples/observability](examples/observability/main.go) for complete exampl
 
 ### Resilience Patterns with Fortify
 
-The library integrates with [fortify](https://github.com/felixgeelhaar/fortify) for production-grade resilience patterns:
+The library integrates with [fortify](https://github.com/klarlabs-studio/fortify) for production-grade resilience patterns:
 
 ```go
 import (
