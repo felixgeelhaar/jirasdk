@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.8.0] - 2026-07-21
+
 ### Security
 
 - **Fixed a JQL injection in `search.QueryBuilder`.** `quote()` escaped the double
@@ -34,12 +36,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so a rejected input is recorded here instead. Check it before using `Build()`
   with untrusted input.
 
-### Changed (BREAKING)
+### Changed
 
 - `quote()` now always quotes values, so generated JQL contains quoted literals
   where it previously emitted bare words (`project = "PROJ"` rather than
-  `project = PROJ`). Both are valid JQL and match the same issues, but tests
-  asserting on exact query strings will need updating.
+  `project = PROJ`). Both are valid JQL and select the same issues, so this is
+  not a compatibility break in the Go API — no signature or type changed — but
+  tests asserting on exact query strings will need updating.
 
 ## [v1.7.0] - 2026-05-09
 
@@ -1171,7 +1174,8 @@ MIT License - see LICENSE file for details
 
 ---
 
-[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.8.0...HEAD
+[v1.8.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.7.1...v1.8.0
 [1.6.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.5.2...v1.6.0
 [1.5.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.5.2
 [1.4.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
