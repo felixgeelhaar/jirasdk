@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/felixgeelhaar/jirasdk/core/issue"
@@ -275,8 +276,15 @@ func (r *SearchJQLResult) HasNextPage() bool {
 }
 
 // QueryBuilder provides a fluent API for building JQL queries.
+//
+// Values passed to the filter methods are escaped and quoted, so untrusted
+// input cannot break out of a string literal and alter the query. Field names
+// cannot be quoted, so a method taking one validates it instead and records an
+// error retrievable with Err. Raw is the deliberate escape hatch and applies no
+// escaping at all.
 type QueryBuilder struct {
 	parts []string
+	err   error
 }
 
 // NewQueryBuilder creates a new JQL query builder.
@@ -284,6 +292,15 @@ func NewQueryBuilder() *QueryBuilder {
 	return &QueryBuilder{
 		parts: make([]string, 0),
 	}
+}
+
+// Err returns the first error encountered while building the query, if any.
+//
+// The fluent methods cannot return an error without breaking chaining, so a
+// rejected input is recorded here and the offending clause is omitted from the
+// result. Check this before using Build's output with untrusted input.
+func (qb *QueryBuilder) Err() error {
+	return qb.err
 }
 
 // Project adds a project filter.
@@ -396,7 +413,22 @@ func (qb *QueryBuilder) Or() *QueryBuilder {
 }
 
 // OrderBy adds an ORDER BY clause.
+//
+// field must be an identifier or a custom field reference such as cf[10001].
+// A field name cannot be quoted, so anything else is rejected: the clause is
+// omitted and the reason is recorded on Err. Previously the field was
+// interpolated verbatim, which let a caller-supplied name append arbitrary JQL.
+//
+// direction is compared case-insensitively against "DESC"; anything else is
+// treated as ascending, so it cannot carry injected text either.
 func (qb *QueryBuilder) OrderBy(field, direction string) *QueryBuilder {
+	if !validJQLFieldName(field) {
+		if qb.err == nil {
+			qb.err = fmt.Errorf("invalid JQL field name %q in ORDER BY", field)
+		}
+		return qb
+	}
+
 	order := "ASC"
 	if strings.ToUpper(direction) == "DESC" {
 		order = "DESC"
@@ -416,15 +448,46 @@ func (qb *QueryBuilder) Build() string {
 	return strings.Join(qb.parts, " ")
 }
 
-// quote quotes a string value for JQL.
+// jqlValueEscaper escapes the characters that are significant inside a JQL
+// string literal.
+//
+// The backslash MUST be replaced first. Escaping the double quote first would
+// emit a backslash that the next pass could not distinguish from one already
+// present in the input, which is precisely how a value such as
+//
+//	a\" OR project = SECRET
+//
+// used to terminate the literal early and inject live JQL.
+var jqlValueEscaper = strings.NewReplacer(
+	`\`, `\\`,
+	`"`, `\"`,
+	"\n", `\n`,
+	"\r", `\r`,
+	"\t", `\t`,
+)
+
+// quote renders a string as a JQL string literal.
+//
+// The value is always quoted. Quoting conditionally — only when the value
+// happens to contain a space or punctuation — meant a bare word was emitted
+// unquoted, so reserved words (AND, OR, ORDER, EMPTY, NULL) and JQL functions
+// supplied as a value changed the meaning of the query. Always quoting removes
+// that class of problem outright, and Jira accepts a quoted literal anywhere a
+// bare one is valid.
 func quote(value string) string {
-	// If the value contains spaces or special characters, quote it
-	if strings.ContainsAny(value, " \t\n,()[]{}") || value == "" {
-		// Escape quotes in the value
-		escaped := strings.ReplaceAll(value, `"`, `\"`)
-		return fmt.Sprintf(`"%s"`, escaped)
-	}
-	return value
+	return `"` + jqlValueEscaper.Replace(value) + `"`
+}
+
+// jqlFieldNamePattern matches the field names that may be interpolated into a
+// query unquoted: an identifier, or a custom field reference such as cf[10001].
+var jqlFieldNamePattern = regexp.MustCompile(`^([A-Za-z][A-Za-z0-9_]*|cf\[[0-9]+\])$`)
+
+// validJQLFieldName reports whether field is safe to interpolate unquoted.
+//
+// Field names cannot be quoted the way values can, so the only safe handling of
+// a caller-supplied field name is to reject anything outside this grammar.
+func validJQLFieldName(field string) bool {
+	return jqlFieldNamePattern.MatchString(field)
 }
 
 // SearchIterator provides an iterator for paginated search results using the legacy endpoint.

@@ -238,7 +238,7 @@ func TestQueryBuilder(t *testing.T) {
 					Project("PROJ").
 					Build()
 			},
-			expected: "project = PROJ",
+			expected: "project = \"PROJ\"",
 		},
 		{
 			name: "project and status",
@@ -249,7 +249,7 @@ func TestQueryBuilder(t *testing.T) {
 					Status("Open").
 					Build()
 			},
-			expected: "project = PROJ AND status = Open",
+			expected: "project = \"PROJ\" AND status = \"Open\"",
 		},
 		{
 			name: "complex query",
@@ -263,7 +263,7 @@ func TestQueryBuilder(t *testing.T) {
 					OrderBy("created", "DESC").
 					Build()
 			},
-			expected: "project = PROJ AND status = Open AND assignee = john.doe ORDER BY created DESC",
+			expected: "project = \"PROJ\" AND status = \"Open\" AND assignee = \"john.doe\" ORDER BY created DESC",
 		},
 		{
 			name: "empty assignee",
@@ -274,7 +274,7 @@ func TestQueryBuilder(t *testing.T) {
 					Assignee("").
 					Build()
 			},
-			expected: "project = PROJ AND assignee is EMPTY",
+			expected: "project = \"PROJ\" AND assignee is EMPTY",
 		},
 		{
 			name: "text search",
@@ -285,7 +285,7 @@ func TestQueryBuilder(t *testing.T) {
 					Text("bug").
 					Build()
 			},
-			expected: "project = PROJ AND text ~ bug",
+			expected: "project = \"PROJ\" AND text ~ \"bug\"",
 		},
 		{
 			name: "labels filter",
@@ -296,7 +296,7 @@ func TestQueryBuilder(t *testing.T) {
 					Labels("urgent", "security").
 					Build()
 			},
-			expected: "project = PROJ AND labels = urgent AND labels = security",
+			expected: "project = \"PROJ\" AND labels = \"urgent\" AND labels = \"security\"",
 		},
 		{
 			name: "date filters",
@@ -309,7 +309,7 @@ func TestQueryBuilder(t *testing.T) {
 					UpdatedBefore("2025-12-31").
 					Build()
 			},
-			expected: "project = PROJ AND created >= 2025-01-01 AND updated <= 2025-12-31",
+			expected: "project = \"PROJ\" AND created >= \"2025-01-01\" AND updated <= \"2025-12-31\"",
 		},
 		{
 			name: "quoted values with spaces",
@@ -327,7 +327,7 @@ func TestQueryBuilder(t *testing.T) {
 					IssueType("Bug").
 					Build()
 			},
-			expected: "issuetype = Bug",
+			expected: "issuetype = \"Bug\"",
 		},
 		{
 			name: "reporter filter",
@@ -336,7 +336,7 @@ func TestQueryBuilder(t *testing.T) {
 					Reporter("john.doe").
 					Build()
 			},
-			expected: "reporter = john.doe",
+			expected: "reporter = \"john.doe\"",
 		},
 		{
 			name: "priority filter",
@@ -345,7 +345,7 @@ func TestQueryBuilder(t *testing.T) {
 					Priority("High").
 					Build()
 			},
-			expected: "priority = High",
+			expected: "priority = \"High\"",
 		},
 		{
 			name: "description search",
@@ -363,7 +363,7 @@ func TestQueryBuilder(t *testing.T) {
 					CreatedBefore("2025-12-31").
 					Build()
 			},
-			expected: "created <= 2025-12-31",
+			expected: "created <= \"2025-12-31\"",
 		},
 		{
 			name: "updated after filter",
@@ -372,7 +372,7 @@ func TestQueryBuilder(t *testing.T) {
 					UpdatedAfter("2025-01-01").
 					Build()
 			},
-			expected: "updated >= 2025-01-01",
+			expected: "updated >= \"2025-01-01\"",
 		},
 		{
 			name: "OR operator",
@@ -383,7 +383,7 @@ func TestQueryBuilder(t *testing.T) {
 					Status("In Progress").
 					Build()
 			},
-			expected: "status = Open OR status = \"In Progress\"",
+			expected: "status = \"Open\" OR status = \"In Progress\"",
 		},
 		{
 			name: "raw JQL",
@@ -402,7 +402,7 @@ func TestQueryBuilder(t *testing.T) {
 					OrderBy("created", "ASC").
 					Build()
 			},
-			expected: "project = PROJ ORDER BY created ASC",
+			expected: "project = \"PROJ\" ORDER BY created ASC",
 		},
 		{
 			name: "single label",
@@ -411,7 +411,7 @@ func TestQueryBuilder(t *testing.T) {
 					Labels("urgent").
 					Build()
 			},
-			expected: "labels = urgent",
+			expected: "labels = \"urgent\"",
 		},
 		{
 			name: "AND on empty builder",
@@ -421,7 +421,7 @@ func TestQueryBuilder(t *testing.T) {
 					Project("PROJ").
 					Build()
 			},
-			expected: "project = PROJ",
+			expected: "project = \"PROJ\"",
 		},
 		{
 			name: "OR on empty builder",
@@ -431,7 +431,7 @@ func TestQueryBuilder(t *testing.T) {
 					Project("PROJ").
 					Build()
 			},
-			expected: "project = PROJ",
+			expected: "project = \"PROJ\"",
 		},
 		{
 			name: "complex with OR and AND",
@@ -444,7 +444,7 @@ func TestQueryBuilder(t *testing.T) {
 					Priority("High").
 					Build()
 			},
-			expected: "status = Open OR status = Reopened AND priority = High",
+			expected: "status = \"Open\" OR status = \"Reopened\" AND priority = \"High\"",
 		},
 	}
 
@@ -463,9 +463,12 @@ func TestQuote(t *testing.T) {
 		expected string
 	}{
 		{
+			// Values are always quoted now. Quoting only when the value happened
+			// to contain punctuation meant a bare word went out unquoted, so a
+			// reserved word supplied as a value changed the query's meaning.
 			name:     "simple word",
 			input:    "test",
-			expected: "test",
+			expected: `"test"`,
 		},
 		{
 			name:     "with space",
@@ -481,6 +484,28 @@ func TestQuote(t *testing.T) {
 			name:     "empty string",
 			input:    "",
 			expected: `""`,
+		},
+		{
+			// The backslash must be escaped, and escaped first. Otherwise this
+			// input closes the literal early and the remainder executes as JQL.
+			name:     "backslash is escaped",
+			input:    `back\slash`,
+			expected: `"back\\slash"`,
+		},
+		{
+			name:     "injection attempt stays inside the literal",
+			input:    `a\" OR project = SECRET`,
+			expected: `"a\\\" OR project = SECRET"`,
+		},
+		{
+			name:     "reserved word is quoted",
+			input:    "AND",
+			expected: `"AND"`,
+		},
+		{
+			name:     "control characters are escaped",
+			input:    "line\nbreak\ttab",
+			expected: `"line\nbreak\ttab"`,
 		},
 	}
 
@@ -1009,4 +1034,80 @@ func TestParseURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestQueryBuilderInjection covers the JQL injection that the previous quote
+// implementation allowed. It escaped the double quote but not the backslash,
+// and quoted only conditionally, so a crafted value could terminate the string
+// literal and append its own clauses.
+func TestQueryBuilderInjection(t *testing.T) {
+	// countUnescapedQuotes walks the string the way a parser would, skipping the
+	// character after a backslash. A correctly escaped single-value query has
+	// exactly two: the ones opening and closing the literal.
+	countUnescapedQuotes := func(s string) int {
+		count := 0
+		for i := 0; i < len(s); i++ {
+			if s[i] == '\\' {
+				i++
+				continue
+			}
+			if s[i] == '"' {
+				count++
+			}
+		}
+		return count
+	}
+
+	payloads := []struct {
+		name  string
+		value string
+	}{
+		{"backslash then quote", `a\" OR project = SECRET`},
+		{"trailing backslash", `value\`},
+		{"double backslash then quote", `a\\" OR project = SECRET`},
+		{"plain quote", `a" OR project = SECRET`},
+		{"newline", "a\nOR project = SECRET"},
+	}
+
+	for _, p := range payloads {
+		t.Run(p.name, func(t *testing.T) {
+			jql := NewQueryBuilder().Assignee(p.value).Build()
+
+			assert.Equal(t, 2, countUnescapedQuotes(jql),
+				"payload escaped the string literal: %s", jql)
+			assert.NotContains(t, jql, "\n", "raw newline reached the query")
+		})
+	}
+}
+
+func TestQueryBuilderOrderByRejectsUnsafeFieldNames(t *testing.T) {
+	t.Run("accepts an identifier", func(t *testing.T) {
+		qb := NewQueryBuilder().Project("PROJ").OrderBy("created", "DESC")
+
+		require.NoError(t, qb.Err())
+		assert.Equal(t, `project = "PROJ" ORDER BY created DESC`, qb.Build())
+	})
+
+	t.Run("accepts a custom field reference", func(t *testing.T) {
+		qb := NewQueryBuilder().OrderBy("cf[10001]", "ASC")
+
+		require.NoError(t, qb.Err())
+		assert.Equal(t, "ORDER BY cf[10001] ASC", qb.Build())
+	})
+
+	t.Run("rejects an injected clause and omits it", func(t *testing.T) {
+		qb := NewQueryBuilder().Project("PROJ").OrderBy("created ASC, (SELECT 1)", "DESC")
+
+		require.Error(t, qb.Err())
+		assert.Equal(t, `project = "PROJ"`, qb.Build())
+		assert.NotContains(t, qb.Build(), "SELECT")
+	})
+
+	t.Run("direction cannot carry injected text", func(t *testing.T) {
+		qb := NewQueryBuilder().OrderBy("created", "DESC; DROP")
+
+		require.NoError(t, qb.Err())
+		// Anything that is not DESC falls back to ASC, so the extra text is lost.
+		assert.Equal(t, "ORDER BY created ASC", qb.Build())
+	})
 }
