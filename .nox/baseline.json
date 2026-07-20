@@ -424,6 +424,14 @@
       "severity": "medium",
       "reason": "RFC 2606 example email in user test fixtures",
       "created_at": "2026-02-21T18:57:54.641554Z"
+    },
+    {
+      "fingerprint": "2bbc2a633e777becdcb12826a2ed2cc55e55694a228c9b16365ae4ae80d7ac35",
+      "rule_id": "SEC-240",
+      "file_path": "env.go",
+      "severity": "high",
+      "reason": "False positive: EnvPassword names the JIRA_PASSWORD environment variable (a lookup key), not a hardcoded credential. Source already annotated //nolint:gosec G101.",
+      "created_at": "2026-07-11T00:00:00Z"
     }
   ]
 }
