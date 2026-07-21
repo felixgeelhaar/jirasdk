@@ -41,8 +41,8 @@ jobs:
       security-events: write
       pull-requests: write   # nox annotate
     env:
-      NOX_VERSION: "1.7.1"
-      NOX_SHA256: "3106ab3ce7197f43a45fc1128ea27112686421e8ec3eac9be356d4ca42ab4c89"
+      NOX_VERSION: "1.13.3"
+      NOX_SHA256: "52751ad494efb7074d8bf23d904998795084964052a380b1b718b94ff89645cf"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
