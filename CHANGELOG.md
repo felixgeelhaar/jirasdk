@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.8.0] - 2026-07-21
+
+### Security
+
+- **Fixed a JQL injection in `search.QueryBuilder`.** `quote()` escaped the double
+  quote but not the backslash, and quoted values only when they happened to
+  contain a space or punctuation. A value such as `a\" OR project = SECRET`
+  therefore terminated the string literal early and appended live JQL to the
+  query. Any caller passing untrusted input through `Project`, `Status`,
+  `IssueType`, `Assignee`, `Reporter`, `Priority`, `Labels`, `Text`, `Summary`,
+  `Description` or the date filters was affected.
+
+  `quote()` now always quotes, and escapes the backslash first, followed by the
+  double quote and the control characters. Always quoting also removes a second
+  problem: a bare reserved word (`AND`, `OR`, `EMPTY`) supplied as a value used
+  to be emitted unquoted and change the query's meaning.
+
+- **`QueryBuilder.OrderBy` no longer interpolates the field name verbatim.**
+  Field names cannot be quoted, so the name is validated against an identifier
+  or `cf[NNNNN]` grammar. A rejected name omits the clause and records the
+  reason on the new `QueryBuilder.Err()`.
+
+### Added
+
+- `QueryBuilder.Err()` returns the first error encountered while building a
+  query. The fluent methods cannot return an error without breaking chaining,
+  so a rejected input is recorded here instead. Check it before using `Build()`
+  with untrusted input.
+
+### Changed
+
+- `quote()` now always quotes values, so generated JQL contains quoted literals
+  where it previously emitted bare words (`project = "PROJ"` rather than
+  `project = PROJ`). Both are valid JQL and select the same issues, so this is
+  not a compatibility break in the Go API — no signature or type changed — but
+  tests asserting on exact query strings will need updating.
+
 ## [v1.7.0] - 2026-05-09
 
 ### Changed (BREAKING)
@@ -1137,7 +1174,8 @@ MIT License - see LICENSE file for details
 
 ---
 
-[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.8.0...HEAD
+[v1.8.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.7.1...v1.8.0
 [1.6.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.5.2...v1.6.0
 [1.5.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.5.2
 [1.4.0]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.4.0
