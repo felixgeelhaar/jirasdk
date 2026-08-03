@@ -75,36 +75,11 @@ jobs:
         version: v2.10.1
         args: --timeout=5m
 
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      contents: read
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-    - name: Set up Go
-      uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
-      with:
-        go-version: '1.26'
-        cache: true
-
-    - name: Install VerdictSec
-      run: go install github.com/felixgeelhaar/verdictsec/cmd/verdict@latest
-
-    - name: Run VerdictSec Security Scan
-      run: verdict scan --json -o verdict-results.json || true
-
-    - name: Upload VerdictSec results
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: security-scan-results
-        path: verdict-results.json
-        retention-days: 7
-      if: always()
+  # Security scanning lives in nox-scan.yml ("Security (nox)"), which runs on
+  # the same triggers as this workflow. The job that used to sit here installed
+  # VerdictSec from @latest and ran it under `|| true`: a scanner discontinued
+  # upstream, pulled unpinned, whose findings could never fail the build. It
+  # reported green whether it found nothing or never ran at all.
 
   dep-go-version-drift:
     name: Dependency Go-version drift

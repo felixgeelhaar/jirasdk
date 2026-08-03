@@ -7,11 +7,21 @@
 # constant, JIRA_PASSWORD, that reads as a credential) is a documented false
 # positive accepted via .nox/baseline.json, never by blinding a source dir.
 #
-# NOTE — go.sum is deliberately NOT excluded. nox 1.7.1 enumerates the Go
+# NOTE — go.sum is deliberately NOT excluded. nox enumerates the Go
 # dependency graph from go.sum for OSV CVE lookups; excluding it drops
 # dependency detection to zero (verified: 29 -> 0 deps) and would silently
 # disable the very dependency-CVE coverage that replaces dependabot. go.sum
 # also produces zero finding-noise in this repo, so there is no FP to suppress.
+
+plugins:
+  # Installing a plugin does NOT make it run. nox executes only the plugins
+  # listed here; anything installed but unlisted is reported as [degraded] and
+  # its findings are simply absent. CI installed nox/taint-analysis without
+  # this list, so every scan ran with no SAST coverage and reported the same
+  # green as a clean one.
+  required:
+    # Source-to-sink taint analysis: SSRF, injection, path traversal.
+    - nox/taint-analysis
 
 scan:
   exclude:
