@@ -41,8 +41,8 @@ jobs:
       security-events: write
       pull-requests: write   # nox annotate
     env:
-      NOX_VERSION: "1.13.3"
-      NOX_SHA256: "52751ad494efb7074d8bf23d904998795084964052a380b1b718b94ff89645cf"
+      NOX_VERSION: "1.26.0"
+      NOX_SHA256: "6879f8c7b523ebab9920d40919917b422bb952f9252fbadde9061cb37827793c"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -63,7 +63,18 @@ jobs:
         # nox owns code-level SAST: source-to-sink taint (SSRF, injection, path
         # traversal). The plugin is cosign-signed; with cosign present nox
         # promotes it to community trust and installs it (no bypass).
-        run: nox plugin install nox/taint-analysis
+        #
+        # Installing is not enough on its own: nox runs only the plugins listed
+        # under plugins.required in .nox.yaml, and reports the rest as
+        # [degraded] with their findings simply absent. The presence assertion
+        # below keeps a registry outage from producing a green scan with no
+        # SAST coverage, which reads exactly like a clean one.
+        run: |
+          nox plugin install nox/taint-analysis
+          nox plugin list | grep -q '^nox/taint-analysis' || {
+            echo "::error::taint-analysis plugin is not installed; this scan would have no SAST coverage."
+            exit 1
+          }
 
       - name: Scan
         run: nox scan . -format json,sarif -output nox-results || true

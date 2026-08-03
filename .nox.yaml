@@ -13,6 +13,16 @@
 # disable the very dependency-CVE coverage that replaces dependabot. go.sum
 # also produces zero finding-noise in this repo, so there is no FP to suppress.
 
+plugins:
+  # Installing a plugin does NOT make it run. nox executes only the plugins
+  # listed here; anything installed but unlisted is reported as [degraded] and
+  # its findings are simply absent. CI installed nox/taint-analysis without
+  # this list, so every scan ran with no SAST coverage and reported the same
+  # green as a clean one.
+  required:
+    # Source-to-sink taint analysis: SSRF, injection, path traversal.
+    - nox/taint-analysis
+
 scan:
   exclude:
     # Markdown is prose — README, CHANGELOG, docs/, migration guides. The
