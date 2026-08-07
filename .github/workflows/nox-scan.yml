@@ -103,22 +103,30 @@ jobs:
         run: nox annotate -input nox-results/findings.json || true
 
       - name: Gate on net-new critical/high findings
-        # Self-adjusting: report-only until the repo commits a nox baseline,
-        # then gates net-new critical/high. Adopting the workflow never breaks a
-        # red build on day one.
+        # Enforces unconditionally.
+        #
+        # This step used to be self-adjusting: report-only until at least one
+        # finding was marked "baselined", so that adopting nox could not turn a
+        # red build red on day one. That heuristic reads baseline entries as
+        # proof adoption finished, and it is wrong for a repo that waives
+        # findings with a `nox:ignore` directive at the site instead — waive
+        # everything inline and the baselined count stays zero, so the gate
+        # reports forever. A gate whose off-switch is "you cleaned up properly"
+        # is worse than no gate.
+        #
+        # A finding counts as live only when it carries no status at all, so an
+        # inline-suppressed finding is waived rather than fatal. Under the old
+        # condition a suppressed critical would have failed the build, since
+        # anything not literally "baselined" was treated as net-new.
         if: always() && hashFiles('nox-results/findings.json') != ''
         run: |
           f=nox-results/findings.json
-          baselined=$(jq '[.findings[]? | select(.Status=="baselined")] | length' "$f" 2>/dev/null || echo 0)
-          new=$(jq '[.findings[]? | select((.Severity=="critical" or .Severity=="high") and (.Status!="baselined"))] | length' "$f" 2>/dev/null || echo 0)
-          echo "net-new critical/high: $new (baselined findings: $baselined)"
-          if [ "$baselined" -eq 0 ]; then
-            echo "::notice::No nox baseline established — security gate is report-only. Run 'nox baseline add' and commit .nox/ to enforce net-new critical/high."
-            exit 0
-          fi
+          waived=$(jq '[.findings[]? | select(.Status=="baselined" or .Status=="suppressed")] | length' "$f" 2>/dev/null || echo 0)
+          new=$(jq '[.findings[]? | select((.Severity=="critical" or .Severity=="high") and ((.Status // "") == ""))] | length' "$f" 2>/dev/null || echo 0)
+          echo "net-new critical/high: $new (waived findings: $waived)"
           if [ "$new" -gt 0 ]; then
-            echo "::error::Net-new critical/high findings. Run 'nox baseline add' or remediate."
-            jq '.findings[] | select((.Severity=="critical" or .Severity=="high") and (.Status!="baselined")) | {severity:.Severity, rule:.RuleID, file:.Location.FilePath, line:.Location.StartLine}' "$f"
+            echo "::error::Net-new critical/high findings. Remediate, or waive at the site with a nox:ignore directive stating why."
+            jq '.findings[] | select((.Severity=="critical" or .Severity=="high") and ((.Status // "") == "")) | {severity:.Severity, rule:.RuleID, file:.Location.FilePath, line:.Location.StartLine}' "$f"
             exit 1
           fi
 
