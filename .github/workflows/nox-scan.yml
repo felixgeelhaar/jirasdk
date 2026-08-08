@@ -44,63 +44,37 @@ jobs:
       contents: read
       security-events: write
       pull-requests: write   # nox annotate
-    env:
-      NOX_VERSION: "1.26.0"
-      NOX_SHA256: "6879f8c7b523ebab9920d40919917b422bb952f9252fbadde9061cb37827793c"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install nox (pinned + sha256-verified binary)
-        run: |
-          curl -sL -o nox.tar.gz \
-            "https://github.com/nox-hq/nox/releases/download/v${NOX_VERSION}/nox_${NOX_VERSION}_linux_amd64.tar.gz"
-          echo "${NOX_SHA256}  nox.tar.gz" | sha256sum -c -
-          tar xzf nox.tar.gz && sudo mv nox /usr/local/bin/ && nox version
-
-      - name: Install cosign
-        # nox verifies plugin signatures by shelling out to cosign. Without it,
-        # signed plugins can't be promoted past "unverified" and install is
-        # blocked under the default community-trust policy.
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-
-      - name: Install taint-analysis plugin
-        # nox owns code-level SAST: source-to-sink taint (SSRF, injection, path
-        # traversal). The plugin is cosign-signed; with cosign present nox
-        # promotes it to community trust and installs it (no bypass).
-        #
-        # #89 added `continue-on-error: true` here on the reasoning that a
-        # plugin-registry 404 is not a security failure. The consequence was
-        # that a 404 produced a green scan with no SAST coverage, reported
-        # identically to a clean one — absence of coverage presented as absence
-        # of findings. The install is asserted instead; re-run the job if the
-        # registry is briefly unavailable.
-        #
-        # The 404 itself came from pinning @0.7.0; the pin is dropped and nox
-        # bumped to 1.26.0, where the lookup resolves.
-        #
-        # Installing is also not enough on its own: nox runs only the plugins
-        # listed under plugins.required in .nox.yaml.
-        run: |
-          nox plugin install nox/taint-analysis
-          nox plugin list | grep -q '^nox/taint-analysis' || {
-            echo "::error::taint-analysis plugin is not installed; this scan would have no SAST coverage."
-            exit 1
-          }
-
+      # Scanning is delegated to the SHA-pinned nox-hq/nox action, the same one
+      # roady and every plugin repository use. It replaces the tarball download,
+      # its sha256 verification, the cosign install, the plugin install and the
+      # scan — each a local reimplementation of what the action already does,
+      # and each a place where this repo could drift from the rest of the fleet.
+      #
+      # `nox install` inside the action reads plugins.required from .nox.yaml, so
+      # nox/taint-analysis still runs. That capability arrived in nox 1.27.0
+      # (nox-hq/nox#447); before it, adopting the action meant losing SAST.
+      #
+      # fail-on-degraded replaces grepping the scan output for "[degraded]": it
+      # is the tool's own signal and covers OSV lookups and lockfile parses too.
       - name: Scan
-        run: nox scan . -format json,sarif -output nox-results || true
+        uses: nox-hq/nox@6aba53ab68346f12e980a1ba5ebf69a21ba7a0c0 # v1.27.0
+        with:
+          path: .
+          format: json,sarif
+          output: nox-results
+          fail-on-findings: 'false'
+          fail-on-degraded: 'true'
+          annotate: ${{ github.event_name == 'pull_request' }}
 
       - name: Upload SARIF to code scanning
         if: always() && hashFiles('nox-results/results.sarif') != ''
-        uses: github/codeql-action/upload-sarif@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4
+        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         with:
           sarif_file: nox-results/results.sarif
 
-      - name: Annotate PR
-        if: github.event_name == 'pull_request' && hashFiles('nox-results/findings.json') != ''
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: nox annotate -input nox-results/findings.json || true
 
       - name: Gate on net-new critical/high findings
         # Enforces unconditionally.
