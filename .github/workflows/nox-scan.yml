@@ -60,7 +60,7 @@ jobs:
       # fail-on-degraded replaces grepping the scan output for "[degraded]": it
       # is the tool's own signal and covers OSV lookups and lockfile parses too.
       - name: Scan
-        uses: nox-hq/nox@6aba53ab68346f12e980a1ba5ebf69a21ba7a0c0 # v1.27.0
+        uses: nox-hq/nox@44788ecbc9e150398f6de53face82d90b454c9ab # v1.29.0
         with:
           path: .
           format: json,sarif
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload SARIF to code scanning
         if: always() && hashFiles('nox-results/results.sarif') != ''
-        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
           sarif_file: nox-results/results.sarif
 
