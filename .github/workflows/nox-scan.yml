@@ -60,7 +60,7 @@ jobs:
       # fail-on-degraded replaces grepping the scan output for "[degraded]": it
       # is the tool's own signal and covers OSV lookups and lockfile parses too.
       - name: Scan
-        uses: nox-hq/nox@34b37a31efe5eb37aeed015ec1ec3d394b8fe255 # v1.31.0
+        uses: nox-hq/nox@1adec27767672d9ad58bca56871522a74469bb04 # v1.34.0
         with:
           path: .
           format: json,sarif
