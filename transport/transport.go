@@ -45,6 +45,7 @@ type Transport struct {
 	logger          Logger
 	middlewares     []Middleware
 	roundTripper    RoundTripFunc
+	baseURLResolver BaseURLResolver
 }
 
 // Config holds transport configuration.
@@ -55,6 +56,7 @@ type Config struct {
 	userAgent       string
 	logger          Logger
 	middlewares     []Middleware
+	baseURLResolver BaseURLResolver
 }
 
 // TransportOption is a functional option for configuring Transport.
@@ -82,6 +84,7 @@ func New(client *http.Client, baseURL *url.URL, opts ...TransportOption) *Transp
 		userAgent:       cfg.userAgent,
 		logger:          cfg.logger,
 		middlewares:     cfg.middlewares,
+		baseURLResolver: cfg.baseURLResolver,
 	}
 
 	// Build middleware chain
@@ -193,10 +196,14 @@ func (t *Transport) Do(ctx context.Context, req *http.Request) (*http.Response, 
 
 // NewRequest creates a new HTTP request with the base URL.
 func (t *Transport) NewRequest(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
-	// Resolve path against base URL
-	u, err := t.baseURL.Parse(path)
+	base, err := t.BaseURL(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("invalid path: %w", err)
+		return nil, err
+	}
+
+	u, err := resolveURL(base, path)
+	if err != nil {
+		return nil, err
 	}
 
 	// Encode request body as JSON
@@ -220,6 +227,24 @@ func (t *Transport) NewRequest(ctx context.Context, method, path string, body in
 	}
 
 	return req, nil
+}
+
+// BaseURL returns the base URL requests are sent to, consulting the resolver
+// when one is configured.
+func (t *Transport) BaseURL(ctx context.Context) (*url.URL, error) {
+	if t.baseURLResolver != nil {
+		base, err := t.baseURLResolver.ResolveBaseURL(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve base URL: %w", err)
+		}
+		return base, nil
+	}
+
+	if t.baseURL == nil {
+		return nil, fmt.Errorf("base URL is required")
+	}
+
+	return t.baseURL, nil
 }
 
 // DecodeResponse decodes a JSON response into the target.
