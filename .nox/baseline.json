@@ -432,6 +432,38 @@
       "severity": "high",
       "reason": "False positive: EnvPassword names the JIRA_PASSWORD environment variable (a lookup key), not a hardcoded credential. Source already annotated //nolint:gosec G101.",
       "created_at": "2026-07-11T00:00:00Z"
+    },
+    {
+      "fingerprint": "3ffe5d32390853918417d8633189a75ace0d21ed33cee65f99b0f42c12212e31",
+      "rule_id": "CRYPTO-001",
+      "file_path": "auth/oauth1.go",
+      "severity": "medium",
+      "reason": "Acceptable Pattern (protocol-mandated): SHA-1 in auth/oauth1.go is fixed by the OAuth 1.0a RSA-SHA1 and HMAC-SHA1 signature methods (RFC 5849), which Jira Server/Data Center application links require. The algorithm is not a free choice; substituting SHA-256 produces signatures Jira rejects. Not used for password storage or collision-sensitive integrity. Reviewed: 2026-09-11",
+      "created_at": "2026-09-11T07:44:43.530411Z"
+    },
+    {
+      "fingerprint": "a1a95fa9abcf00a2c219bfc79b5f9540387e87dc710ed7465c22a2d53cdcb1a8",
+      "rule_id": "SEC-161",
+      "file_path": "auth/oauth1_test.go",
+      "severity": "medium",
+      "reason": "False positive (test fixtures): high-entropy strings in auth/oauth1_test.go are the expected OAuth 1.0a signature base strings in a table-driven test — percent-encoded URLs such as GET\u0026https%3A%2F%2Fjira.internal%2Frest%2F... They are literal assertion values, not credentials. Reviewed: 2026-09-11",
+      "created_at": "2026-09-11T07:44:49.130158Z"
+    },
+    {
+      "fingerprint": "2f39c996a473cc7f98366786b199007bc919a47201f18246b440c217f509d4c4",
+      "rule_id": "SEC-161",
+      "file_path": "auth/oauth1_test.go",
+      "severity": "medium",
+      "reason": "False positive (test fixtures): high-entropy strings in auth/oauth1_test.go are the expected OAuth 1.0a signature base strings in a table-driven test — percent-encoded URLs such as GET\u0026https%3A%2F%2Fjira.internal%2Frest%2F... They are literal assertion values, not credentials. Reviewed: 2026-09-11",
+      "created_at": "2026-09-11T07:44:49.130158Z"
+    },
+    {
+      "fingerprint": "0a51c7e6306228e8fb5ef00a3193eba9cf7d1ff0739c467274e9fdcd91c469dd",
+      "rule_id": "TAINT-004",
+      "file_path": "examples/oauth1/main.go",
+      "severity": "medium",
+      "reason": "Acceptable Pattern (example code, intended behaviour): examples/oauth1/main.go reads the RSA private key from the path in JIRA_OAUTH1_PRIVATE_KEY_FILE. Loading an operator-configured key file is the documented purpose of that variable, and the operator already controls the process environment, so there is no trust boundary to cross. Reviewed: 2026-09-11",
+      "created_at": "2026-09-11T07:44:56.408835Z"
     }
   ]
 }
