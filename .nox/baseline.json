@@ -464,6 +464,14 @@
       "severity": "medium",
       "reason": "Acceptable Pattern (example code, intended behaviour): examples/oauth1/main.go reads the RSA private key from the path in JIRA_OAUTH1_PRIVATE_KEY_FILE. Loading an operator-configured key file is the documented purpose of that variable, and the operator already controls the process environment, so there is no trust boundary to cross. Reviewed: 2026-09-11",
       "created_at": "2026-09-11T07:44:56.408835Z"
+    },
+    {
+      "fingerprint": "a329be961456c0b260f0864c1d521451429ecdd3c694f722a8a816309882d98b",
+      "rule_id": "TAINT-002",
+      "file_path": "scripts/lint.sh",
+      "severity": "high",
+      "reason": "False positive (argument-vector exec): scripts/lint.sh forwards \"$@\" to golangci-lint as a quoted argument vector, so each argument becomes one argv entry with no shell re-interpretation — the mitigation this rule's own remediation text prescribes. The source is the developer's own command line, which is not a trust boundary: anyone who can invoke the script already has shell access. The pass-through exists so scripts/lint.sh --fix and --build-tags live work. Note the config values read from .lint-toolchain, which this rule flagged separately, were fixed rather than waived: the file is now parsed instead of sourced and both values are validated against strict patterns. Reviewed: 2026-09-11",
+      "created_at": "2026-09-11T08:29:40.345675Z"
     }
   ]
 }

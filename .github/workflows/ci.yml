@@ -71,9 +71,15 @@ jobs:
       id: toolchain
       run: |
         set -euo pipefail
-        source .lint-toolchain
-        echo "golangci-lint=${GOLANGCI_LINT_VERSION}" >> "$GITHUB_OUTPUT"
-        echo "go=${GO_VERSION}" >> "$GITHUB_OUTPUT"
+        # Parsed, not sourced: sourcing would execute .lint-toolchain in the
+        # runner. Both values are validated before they reach a step output.
+        read_pin() { sed -n "s/^$1=\([^#]*\).*/\1/p" .lint-toolchain | tr -d '[:space:]' | head -n1; }
+        lint_version=$(read_pin GOLANGCI_LINT_VERSION)
+        go_version=$(read_pin GO_VERSION)
+        [[ "$lint_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::bad GOLANGCI_LINT_VERSION '$lint_version'"; exit 1; }
+        [[ "$go_version" =~ ^[0-9]+\.[0-9]+$ ]] || { echo "::error::bad GO_VERSION '$go_version'"; exit 1; }
+        echo "golangci-lint=${lint_version}" >> "$GITHUB_OUTPUT"
+        echo "go=${go_version}" >> "$GITHUB_OUTPUT"
 
     - name: Set up Go
       uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
