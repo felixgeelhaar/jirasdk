@@ -54,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/authentication.md`, plus runnable examples under `examples/connectjwt`,
   `examples/oauth1` and `examples/clientcredentials`.
 
+- Read-only live smoke tests behind the `live` build tag, covering every
+  authentication method against a real instance and Atlassian's real
+  authorization servers. The rest of the suite runs against stubs, which cannot
+  catch a signature that is wrong but self-consistent — the kind of defect that
+  only shows up as a 401 in production.
+
 ### Fixed
 
 - **OAuth 2.0 (3LO) authorization URLs were rejected by Atlassian.**
