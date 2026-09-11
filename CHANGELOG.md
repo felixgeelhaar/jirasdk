@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.9.0] - 2026-09-11
+
 ### Added
 
 - **Two-legged authentication, in all four forms.** The SDK previously had no
@@ -1276,7 +1278,8 @@ MIT License - see LICENSE file for details
 
 ---
 
-[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/felixgeelhaar/jirasdk/compare/v1.9.0...HEAD
+[v1.9.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.8.0...v1.9.0
 [v1.8.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.7.1...v1.8.0
 [1.6.0]: https://github.com/felixgeelhaar/jirasdk/compare/v1.5.2...v1.6.0
 [1.5.2]: https://github.com/felixgeelhaar/jirasdk/releases/tag/v1.5.2
