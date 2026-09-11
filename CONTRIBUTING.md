@@ -47,7 +47,9 @@ This library follows **Hexagonal Architecture** (Ports and Adapters):
 
 - Follow [Effective Go](https://golang.org/doc/effective_go)
 - Use `gofmt` for formatting
-- Run `golangci-lint` before submitting
+- Run `scripts/lint.sh` before submitting — **not** a `golangci-lint` from your
+  PATH, which is very likely a different version from CI's and therefore a
+  different set of rules
 - Maintain >80% test coverage for new code
 
 ## Testing
@@ -171,9 +173,11 @@ All pull requests and commits to `main` or `develop` branches trigger automated 
 - Uploads coverage to Codecov (on Go 1.23)
 
 #### Lint Job
-- Runs `golangci-lint` with all linters enabled
+- Runs `golangci-lint` at the version pinned in `.lint-toolchain`
 - 5-minute timeout for comprehensive analysis
 - Enforces code style and best practices
+
+Reproduce it exactly with `scripts/lint.sh`, which reads the same file.
 
 #### Security Job
 - Runs Gosec security scanner
@@ -196,8 +200,8 @@ Before pushing, run these checks locally:
 # Run tests
 go test -race ./...
 
-# Run linter
-golangci-lint run --timeout=5m
+# Run linter at CI's exact version (see "Linting" below)
+scripts/lint.sh
 
 # Run security scanner
 gosec ./...
@@ -209,11 +213,36 @@ go test -cover ./...
 go build ./...
 ```
 
+### Linting
+
+Run the linter through `scripts/lint.sh`, never a `golangci-lint` from your
+PATH. The script reads `.lint-toolchain` — the same file the Lint job reads — and
+downloads that exact version into `.tools/`, under the pinned Go toolchain.
+
+This matters more than it looks. golangci-lint bundles its linters, so **its
+version decides which rules exist at all**, and a newer version can report
+*fewer* problems than CI. A clean run from a newer local binary is not evidence
+that CI will pass: gosec's `G704` and `G117` fire on the pinned v2.10.1 and not
+on v2.13.1, which is exactly how PR #99 failed Lint after a clean local run.
+
+The Go version is pinned alongside it because a golangci-lint binary built
+against one Go release crashes analysing source under a much newer one.
+
+```bash
+scripts/lint.sh                    # what CI runs
+scripts/lint.sh --build-tags live  # include the live smoke tests
+scripts/lint.sh --fix              # apply what can be fixed automatically
+```
+
+To upgrade the linter, change the version in `.lint-toolchain`, run
+`scripts/lint.sh`, and commit the bump together with the fixes the new version
+asks for.
+
 ### CI/CD Best Practices
 
 1. **All tests must pass** before merging
 2. **Maintain >80% coverage** for all packages
-3. **Fix linting issues** before committing
+3. **Fix linting issues** before committing, using `scripts/lint.sh`
 4. **Address security findings** promptly
 5. **Ensure builds succeed** on all platforms
 
