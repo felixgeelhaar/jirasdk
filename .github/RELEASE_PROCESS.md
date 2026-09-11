@@ -201,7 +201,9 @@ For urgent bug fixes:
 
 If a release has critical issues:
 
-1. **Don't delete the tag** (breaks pkg.go.dev caching)
+1. **Don't delete or move the tag.** The module proxy and the checksum database
+   have already recorded the original permanently; see "Tag already exists"
+   under Troubleshooting for what actually happens if you try.
 2. Release a new patch version with fixes:
    - v1.0.1 fixes issues in v1.0.0
 3. Document the issue in CHANGELOG
@@ -220,17 +222,39 @@ If a release has critical issues:
 
 ### Tag already exists
 
+Which case you are in decides everything.
+
+**The tag exists only locally and was never pushed.** Delete it and start again;
+nothing outside your clone has seen it.
+
 ```bash
-# Delete local tag
-git tag -d v1.0.0
-
-# Delete remote tag (use carefully!)
-git push origin :refs/tags/v1.0.0
-
-# Create new tag
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
+git tag -d vX.Y.Z
 ```
+
+**The tag was pushed.** Treat that version number as spent and release the next
+one. Do not delete and recreate it.
+
+```bash
+# Fix the problem on main, then tag the next patch version.
+# If v1.9.0 is the spent one, that is v1.9.1:
+git tag -a v1.9.1 -m "Release v1.9.1"
+git push origin v1.9.1
+```
+
+Recreating a pushed tag does not do what it looks like it does. Two independent
+services have already recorded the original:
+
+- `proxy.golang.org` caches module content immutably. Consumers keep receiving
+  the original code no matter what the tag now points at, so the "fix" is
+  invisible to exactly the people it was meant for.
+- `sum.golang.org` is an append-only transparency log. Once a version's hash is
+  recorded it cannot be removed — check any published version with
+  `curl https://sum.golang.org/lookup/github.com/felixgeelhaar/jirasdk@vX.Y.Z`.
+
+So after a retag the tag and the published module disagree, and anyone fetching
+without a warm cache gets a checksum mismatch reported as a SECURITY ERROR —
+which reads like a supply-chain attack on your own library. A new patch version
+costs nothing by comparison.
 
 ### pkg.go.dev not updating
 
