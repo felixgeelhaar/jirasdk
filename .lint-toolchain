@@ -1,0 +1,20 @@
+# Single source of truth for the lint toolchain. CI reads this file, and so does
+# scripts/lint.sh, so a local run and the Lint job cannot drift apart.
+#
+# Why both versions are pinned, not just the linter:
+#
+# golangci-lint bundles its linters, so its version decides which rules exist at
+# all. A NEWER local version can report FEWER problems than CI — gosec's G704
+# and G117 checks fire on v2.10.1 and not on v2.13.1, so a clean local run said
+# nothing about whether the Lint job would pass.
+#
+# The Go version matters for the same reason in reverse: a golangci-lint binary
+# built against one Go release crashes when it analyses source under a much
+# newer one. v2.10.1 is built with Go 1.26 and panics under Go 1.27, so pinning
+# the linter alone is not enough to reproduce CI.
+#
+# To upgrade: change a version here, run scripts/lint.sh, fix what the new
+# version reports, and commit both the version bump and the fixes together.
+
+GOLANGCI_LINT_VERSION=v2.10.1
+GO_VERSION=1.26
