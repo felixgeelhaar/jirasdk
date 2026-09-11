@@ -57,7 +57,7 @@ func FetchAccessibleResources(ctx context.Context, httpClient *http.Client, acce
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 
-	resp, err := httpClient.Do(req)
+	resp, err := httpClient.Do(req) //nolint:gosec // G704: the URL is the AccessibleResourcesURL constant, not tainted input
 	if err != nil {
 		return nil, fmt.Errorf("accessible resources request failed: %w", err)
 	}
@@ -215,7 +215,7 @@ func (r *CloudIDResolver) fetch(ctx context.Context) ([]AccessibleResource, erro
 		return nil, fmt.Errorf("failed to authenticate accessible resources request: %w", err)
 	}
 
-	resp, err := r.httpClient.Do(req)
+	resp, err := r.httpClient.Do(req) //nolint:gosec // G704: the URL is the AccessibleResourcesURL constant, not tainted input
 	if err != nil {
 		return nil, fmt.Errorf("accessible resources request failed: %w", err)
 	}
