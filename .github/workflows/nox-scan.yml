@@ -61,7 +61,26 @@ jobs:
       #
       # fail-on-degraded replaces grepping the scan output for "[degraded]": it
       # is the tool's own signal and covers OSV lookups and lockfile parses too.
+      # Retried up to three times, because the nox-intelligence endpoint
+      # intermittently times out its TLS handshake from GitHub runners. It
+      # failed five times on 2026-09-11 between 08:14 and 09:42 UTC, each time
+      # recovering within minutes, and each time costing a manual re-run of a
+      # required check. Measured at the time: the endpoint served 40/40
+      # handshakes from a runner and 25/25 concurrent from a workstation, so
+      # this is a transient path problem rather than the service being
+      # overloaded.
+      #
+      # Every attempt keeps fail-on-degraded true, so the guarantee is
+      # unchanged: a source that is genuinely unreachable still fails the job,
+      # just after three tries instead of one. The semantics are not relaxed;
+      # only the patience is. "Verify a scan completed" below is what enforces
+      # that, and it fails closed.
+      #
+      # Attempts 2 and 3 are skipped when the first succeeds, so a healthy run
+      # costs nothing.
       - name: Scan
+        id: scan1
+        continue-on-error: true
         uses: nox-hq/nox@1adec27767672d9ad58bca56871522a74469bb04 # v1.34.0
         with:
           path: .
@@ -70,6 +89,59 @@ jobs:
           fail-on-findings: 'false'
           fail-on-degraded: 'true'
           annotate: ${{ github.event_name == 'pull_request' }}
+
+      - name: Back off before retry
+        if: steps.scan1.outcome == 'failure'
+        run: |
+          echo "::warning::nox scan did not complete; retrying in 60s. See the [degraded] lines above."
+          sleep 60
+
+      - name: Scan (attempt 2)
+        id: scan2
+        if: steps.scan1.outcome == 'failure'
+        continue-on-error: true
+        uses: nox-hq/nox@1adec27767672d9ad58bca56871522a74469bb04 # v1.34.0
+        with:
+          path: .
+          format: json,sarif
+          output: nox-results
+          fail-on-findings: 'false'
+          fail-on-degraded: 'true'
+          annotate: 'false'
+
+      - name: Back off before final retry
+        if: steps.scan1.outcome == 'failure' && steps.scan2.outcome == 'failure'
+        run: |
+          echo "::warning::nox scan did not complete on the second attempt; retrying in 120s."
+          sleep 120
+
+      - name: Scan (attempt 3)
+        id: scan3
+        if: steps.scan1.outcome == 'failure' && steps.scan2.outcome == 'failure'
+        continue-on-error: true
+        uses: nox-hq/nox@1adec27767672d9ad58bca56871522a74469bb04 # v1.34.0
+        with:
+          path: .
+          format: json,sarif
+          output: nox-results
+          fail-on-findings: 'false'
+          fail-on-degraded: 'true'
+          annotate: 'false'
+
+      # The step that preserves fail-on-degraded across the retries. A skipped
+      # attempt has outcome "skipped", not "success", so this fails unless some
+      # attempt actually completed — three degraded scans still fail the job.
+      - name: Verify a scan completed
+        if: always()
+        run: |
+          for o in "${{ steps.scan1.outcome }}" "${{ steps.scan2.outcome }}" "${{ steps.scan3.outcome }}"; do
+            if [ "$o" = "success" ]; then
+              echo "a scan completed without degradation"
+              exit 0
+            fi
+          done
+          echo "::error::No nox scan completed after 3 attempts. A scan that could not look is not a scan that found nothing — see the [degraded] lines above and meta.degradations in nox-results/findings.json."
+          exit 1
 
       - name: Upload SARIF to code scanning
         if: always() && hashFiles('nox-results/results.sarif') != ''
