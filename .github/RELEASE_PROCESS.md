@@ -96,7 +96,8 @@ can use the new version is the Go module proxy, so check that too:
    A version that resolves here is live for every consumer. Note that the proxy
    caches immutably: a published version can never be changed or withdrawn, so
    a mistake is fixed by releasing another version, never by retagging.
-3. Check pkg.go.dev: https://pkg.go.dev/github.com/felixgeelhaar/jirasdk
+3. Check pkg.go.dev at the version you released:
+   https://pkg.go.dev/github.com/felixgeelhaar/jirasdk@vX.Y.Z
    Documentation can lag the proxy by a few minutes.
 
 ## Manual Release (Alternative)
@@ -157,10 +158,15 @@ Before creating a release:
 
 After release is published:
 
-1. **Verify pkg.go.dev**: Check documentation appears correctly
-2. **Test Installation**: Verify users can install with `go get`
+1. **Verify pkg.go.dev**: check the new version renders, substituting the
+   version you released:
+   https://pkg.go.dev/github.com/felixgeelhaar/jirasdk@vX.Y.Z
+   The bare URL https://pkg.go.dev/github.com/felixgeelhaar/jirasdk shows
+   whatever pkg.go.dev considers latest, which is not proof this release
+   indexed.
+2. **Test Installation**: verify users can install it
    ```bash
-   go get github.com/felixgeelhaar/jirasdk@v1.0.0
+   go get github.com/felixgeelhaar/jirasdk@vX.Y.Z
    ```
 3. **Monitor Issues**: Watch for bug reports from new version
 4. **Update Examples**: Ensure all examples work with new version
@@ -229,11 +235,11 @@ git push origin v1.0.0
 ### pkg.go.dev not updating
 
 1. Wait 15-30 minutes (can take time)
-2. Manually trigger:
+2. Manually trigger, substituting the version you released:
    ```bash
-   curl "https://proxy.golang.org/github.com/felixgeelhaar/jirasdk/@v/v1.0.0.info"
+   curl "https://proxy.golang.org/github.com/felixgeelhaar/jirasdk/@v/vX.Y.Z.info"
    ```
-3. Check https://pkg.go.dev/github.com/felixgeelhaar/jirasdk
+3. Check https://pkg.go.dev/github.com/felixgeelhaar/jirasdk@vX.Y.Z
 
 ## Getting Help
 
