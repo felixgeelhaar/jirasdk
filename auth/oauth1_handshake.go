@@ -133,7 +133,7 @@ func (a *OAuth1Auth) handshakeCall(ctx context.Context, endpoint string, params 
 	signed["oauth_signature"] = signature
 	req.Header.Set("Authorization", authorizationHeader(signed))
 
-	resp, err := a.httpClient.Do(req)
+	resp, err := a.httpClient.Do(req) //nolint:gosec // G704: the URL is the operator-configured Jira base URL, not tainted input
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}

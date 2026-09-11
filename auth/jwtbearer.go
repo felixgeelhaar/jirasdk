@@ -204,7 +204,7 @@ func (a *JWTBearerAuth) exchange(ctx context.Context) (*oauth2.Token, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := a.httpClient.Do(req)
+	resp, err := a.httpClient.Do(req) //nolint:gosec // G704: the URL is the operator-configured token endpoint, not tainted input
 	if err != nil {
 		return nil, fmt.Errorf("JWT bearer token request failed: %w", err)
 	}
@@ -220,7 +220,7 @@ func (a *JWTBearerAuth) exchange(ctx context.Context) (*oauth2.Token, error) {
 	}
 
 	var payload struct {
-		AccessToken string `json:"access_token"`
+		AccessToken string `json:"access_token"` //nolint:gosec // G117: field of a token response, not a hardcoded secret
 		TokenType   string `json:"token_type"`
 		ExpiresIn   int64  `json:"expires_in"`
 		Scope       string `json:"scope"`
