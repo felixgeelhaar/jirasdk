@@ -62,24 +62,42 @@ The workflow will:
 
 Once the tag is pushed, the release workflow automatically:
 
-1. **Runs Tests**: Full test suite on the Go versions in `.github/workflows/ci.yml`
-2. **Builds Artifacts**: Multi-platform binaries
-   - Linux: amd64, arm64
-   - macOS: amd64 (Intel), arm64 (Apple Silicon)
-   - Windows: amd64
-3. **Creates Release**: GitHub Release with:
-   - Changelog from CHANGELOG.md
-   - Binary artifacts (.tar.gz, .zip)
-   - SHA256 checksums
-4. **Updates pkg.go.dev**: Triggers documentation update
+1. **Verifies the tag is on `main`**: every later job is skipped if it is not,
+   so a tag pushed from a branch produces no release
+2. **Runs Tests**: full test suite on the Go versions in
+   `.github/workflows/release.yml`
+3. **Creates Release**: a GitHub Release whose body is this version's section
+   extracted from CHANGELOG.md, marked as a prerelease when the tag contains
+   `-rc`, `-beta` or `-alpha`
+4. **Updates pkg.go.dev**: requests the new version from the Go module proxy,
+   which is what makes it appear on pkg.go.dev
+
+**No binaries are built, and the release carries no attached assets.** jirasdk
+is a library, so there is nothing to compile for a user to download — they
+consume it with `go get`. A release with zero assets is correct and is not a
+sign that something failed.
 
 #### 4. Verify Release
 
-After the workflow completes:
+The release itself is only half of it. What actually determines whether people
+can use the new version is the Go module proxy, so check that too:
 
-1. Check release page: https://github.com/felixgeelhaar/jirasdk/releases
-2. Verify artifacts are attached
-3. Check pkg.go.dev: https://pkg.go.dev/github.com/felixgeelhaar/jirasdk@v1.0.0
+1. Check the release page: https://github.com/felixgeelhaar/jirasdk/releases —
+   the body should be this version's changelog section. There will be no
+   attached assets; see above.
+2. Confirm the module is fetchable, which is the real test of a library
+   release:
+
+   ```bash
+   cd "$(mktemp -d)" && go mod init verify
+   go get github.com/felixgeelhaar/jirasdk@vX.Y.Z
+   ```
+
+   A version that resolves here is live for every consumer. Note that the proxy
+   caches immutably: a published version can never be changed or withdrawn, so
+   a mistake is fixed by releasing another version, never by retagging.
+3. Check pkg.go.dev: https://pkg.go.dev/github.com/felixgeelhaar/jirasdk
+   Documentation can lag the proxy by a few minutes.
 
 ## Manual Release (Alternative)
 
