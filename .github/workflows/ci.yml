@@ -8,11 +8,13 @@ on:
       - 'docs/**'
       - 'LICENSE'
   pull_request:
+    # No paths-ignore here, deliberately. Lint, Build, Test and Security (nox)
+    # are required status checks on main, so a filtered-out pull_request never
+    # reports them: they sit as "Expected" forever and the PR can never be
+    # merged. That silently blocked every documentation-only PR from #71 until
+    # it surfaced releasing v1.9.0. The push trigger above keeps its filter,
+    # where skipping costs nothing because the PR already verified the commits.
     branches: [ main, develop ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'LICENSE'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
