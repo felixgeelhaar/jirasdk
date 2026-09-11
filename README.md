@@ -1,6 +1,6 @@
 # jirasdk - Enterprise Jira Client for Go
 
-[![Go Version](https://img.shields.io/badge/go-1.21+-blue.svg)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/go-1.25+-blue.svg)](https://golang.org)
 [![Go Reference](https://pkg.go.dev/badge/github.com/felixgeelhaar/jirasdk.svg)](https://pkg.go.dev/github.com/felixgeelhaar/jirasdk)
 [![Go Report Card](https://goreportcard.com/badge/github.com/felixgeelhaar/jirasdk)](https://goreportcard.com/report/github.com/felixgeelhaar/jirasdk)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -74,6 +74,13 @@ client, err := jira.NewClient(
     jira.WithPAT("your-personal-access-token"),
 )
 ```
+
+### Other authentication methods
+
+The two above are the simplest. For an app acting on behalf of users, an
+Atlassian Connect app, a Jira Server application link, or Jira behind a
+gateway, see **[docs/authentication.md](docs/authentication.md)** — it maps each
+deployment and desired identity to the right method.
 
 ## Type Usage Patterns & Best Practices
 

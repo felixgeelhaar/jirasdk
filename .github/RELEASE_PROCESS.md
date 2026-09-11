@@ -62,7 +62,7 @@ The workflow will:
 
 Once the tag is pushed, the release workflow automatically:
 
-1. **Runs Tests**: Full test suite on Go 1.21, 1.22, 1.23
+1. **Runs Tests**: Full test suite on the Go versions in `.github/workflows/ci.yml`
 2. **Builds Artifacts**: Multi-platform binaries
    - Linux: amd64, arm64
    - macOS: amd64 (Intel), arm64 (Apple Silicon)
