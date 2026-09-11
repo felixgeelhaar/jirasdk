@@ -214,17 +214,20 @@ type Client struct {
 
 // Config holds the client configuration.
 type Config struct {
-	baseURL           *url.URL
-	authenticator     auth.Authenticator
-	httpClient        *http.Client
-	timeout           time.Duration
-	maxRetries        int
-	rateLimitBuffer   time.Duration
-	middlewares       []transport.Middleware
-	userAgent         string
-	enableCompression bool
-	logger            Logger
-	resilience        Resilience
+	baseURL             *url.URL
+	authenticator       auth.Authenticator
+	httpClient          *http.Client
+	timeout             time.Duration
+	maxRetries          int
+	rateLimitBuffer     time.Duration
+	middlewares         []transport.Middleware
+	userAgent           string
+	enableCompression   bool
+	logger              Logger
+	resilience          Resilience
+	baseURLResolver     transport.BaseURLResolver
+	cloudID             string
+	disableCloudResolve bool
 }
 
 // Option is a functional option for configuring the Client.
@@ -260,20 +263,28 @@ func NewClient(opts ...Option) (*Client, error) {
 		}
 	}
 
-	// Validate required configuration
-	if cfg.baseURL == nil {
-		return nil, fmt.Errorf("base URL is required")
-	}
-
 	if cfg.authenticator == nil {
 		return nil, fmt.Errorf("authentication method is required")
 	}
 
-	// Create HTTP client if not provided
+	// Create HTTP client if not provided. This happens before cloud ID
+	// resolution is configured so the lookup shares the client's timeout.
 	if cfg.httpClient == nil {
 		cfg.httpClient = &http.Client{
 			Timeout: cfg.timeout,
 		}
+	}
+
+	// Jira Cloud OAuth 2.0 (3LO) tokens are only accepted at
+	// https://api.atlassian.com/ex/jira/{cloudID}, and the cloud ID is
+	// discoverable only once a token exists. Resolve it on first use.
+	if err := cfg.configureCloudResolver(); err != nil {
+		return nil, err
+	}
+
+	// Validate required configuration
+	if cfg.baseURL == nil && cfg.baseURLResolver == nil {
+		return nil, fmt.Errorf("base URL is required")
 	}
 
 	// Create transport with middleware
@@ -286,6 +297,7 @@ func NewClient(opts ...Option) (*Client, error) {
 		transport.WithUserAgent(cfg.userAgent),
 		transport.WithLogger(cfg.logger),
 		transport.WithMiddlewares(cfg.middlewares...),
+		transport.WithBaseURLResolver(cfg.baseURLResolver),
 	)
 
 	client := &Client{
