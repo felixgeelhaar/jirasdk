@@ -7,6 +7,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Two-legged authentication, in all four forms.** The SDK previously had no
+  2LO support at all.
+
+  - `WithConnectJWT` — Atlassian Connect JWT for Jira Cloud. A Connect app
+    authenticates as itself with the shared secret from the `installed`
+    lifecycle callback. Each request carries a freshly signed HS256 token whose
+    `qsh` claim is a SHA-256 hash of the canonical request, binding it to that
+    exact method, path and query string. `ContextPath` supports instances
+    served under a path. `auth.CanonicalRequest` and `auth.QueryStringHash` are
+    exported, as is `(*ConnectJWTAuth).Sign` for requests this SDK does not
+    model.
+
+  - `WithJWTBearer` — Atlassian's OAuth 2.0 JWT bearer grant, letting an
+    installed Connect app act as a named user with no authorization redirect.
+    Access tokens are cached and renewed before expiry.
+
+  - `WithOAuth1` — OAuth 1.0a for Jira Server and Data Center, signing with
+    RSA-SHA1 (or HMAC-SHA1). Two-legged by default, with `ImpersonateUser` for
+    Jira's signed `user_id` impersonation. `RequestToken`, `AuthorizationURL`
+    and `AccessToken` on `auth.OAuth1Auth` walk the three-legged handshake and
+    install the resulting token.
+
+  - `WithClientCredentials` — the OAuth 2.0 client credentials grant, for Jira
+    behind an API gateway or in-house identity provider.
+
+- **Automatic cloud ID resolution for OAuth 2.0 (3LO).** A 3LO token is only
+  accepted at `https://api.atlassian.com/ex/jira/{cloudID}`, and the cloud ID is
+  discoverable only once a token exists. The client now looks it up via
+  `/oauth/token/accessible-resources` on the first request and caches the
+  result. `WithCloudID` pins a site and skips the lookup, `WithBaseURL` selects
+  between several accessible sites, and `WithoutCloudIDResolution` disables it.
+  `(*OAuth2Authenticator).AccessibleResources` lists what a token can reach.
+
+- `WithAuthenticator` for any custom `auth.Authenticator`, and
+  `WithBaseURLResolver` plus `transport.BaseURLResolver` for controlling the
+  base URL per request.
+
+- Environment support for every new method: `JIRA_CLOUD_ID`,
+  `JIRA_OAUTH_SCOPES`, `JIRA_OAUTH_ACCESS_TOKEN`, `JIRA_OAUTH_REFRESH_TOKEN`,
+  `JIRA_OAUTH_TOKEN_URL`, `JIRA_OAUTH_AUDIENCE`, `JIRA_CONNECT_*` and
+  `JIRA_OAUTH1_*`. `JIRA_BASE_URL` is now optional when `JIRA_CLOUD_ID` is set.
+
+- `docs/authentication.md`, plus runnable examples under `examples/connectjwt`,
+  `examples/oauth1` and `examples/clientcredentials`.
+
+### Fixed
+
+- **OAuth 2.0 (3LO) authorization URLs were rejected by Atlassian.**
+  `GetAuthURL` emitted `access_type=offline`, a Google convention, and omitted
+  the `audience` and `prompt=consent` parameters Atlassian requires. The flow
+  could not complete. It now sends `audience=api.atlassian.com` and
+  `prompt=consent`, with the audience configurable.
+
+- **No refresh token was ever issued.** Atlassian grants one only when
+  `offline_access` is among the requested *scopes*. It is now appended
+  automatically; set `DisableOfflineAccess` to opt out.
+
+- **3LO requests were sent to the wrong host.** `examples/oauth2` directed
+  callers to pass their `*.atlassian.net` site URL, which rejects 3LO tokens
+  with 401. Requests now route through the API gateway with the resolved cloud
+  ID. See the note under *Changed*.
+
+- **`OAuth2Authenticator` was not safe for concurrent use.** `Authenticate`
+  read and refreshed the token with no lock while `SetToken` and `GetToken`
+  wrote and read it, so concurrent requests raced on refresh. All token access
+  is now mutex-guarded.
+
+- **Refreshed tokens were silently discarded.** `OAuth2TokenStore` was declared
+  but never referenced, so a refresh token was lost when the process exited.
+  Pass a store as `OAuth2Config.TokenStore` and tokens are written after every
+  exchange and refresh; `LoadToken` restores one at startup.
+
+- **Base URLs with a path prefix lost that prefix.** `Transport.NewRequest`
+  resolved service paths with `url.URL.Parse`, whose RFC 3986 reference
+  resolution discards the base path whenever the reference is absolute — and
+  every service in this SDK builds absolute paths such as `/rest/api/3/myself`.
+  A Jira Server instance deployed under a context path (`https://host/jira`)
+  therefore had requests sent to `https://host/rest/api/3/myself`. Paths are now
+  joined rather than resolved.
+
+### Changed
+
+- `WithBaseURL` combined with `WithOAuth2` now selects which Atlassian site to
+  use rather than setting the request host, since 3LO requests must travel
+  through `api.atlassian.com`. Behaviour for every other authentication method
+  is unchanged. Pass `WithoutCloudIDResolution` to restore the previous
+  behaviour for a gateway that accepts 3LO tokens directly.
+
+- `NewClient` no longer requires a base URL when the site can be determined
+  another way, such as from `WithCloudID` or a single accessible resource.
+
+- `auth.OAuth2Config.Scopes` is copied rather than retained, so the caller's
+  slice is not mutated when `offline_access` is appended.
+
 ## [v1.8.0] - 2026-07-21
 
 ### Security

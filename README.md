@@ -16,7 +16,9 @@ A production-grade, idiomatic Go client library for Jira Cloud and Server/Data C
 - ✅ **Rate Limiting** - Automatic handling of rate limits
 - ✅ **Type Safe** - Strongly typed domain models
 - ✅ **Middleware** - Extensible request/response pipeline
-- ✅ **Multiple Auth** - OAuth 2.0, API Tokens, PAT, Basic Auth
+- ✅ **Every Auth Method** - API tokens, PAT, OAuth 2.0 (3LO), Connect JWT and
+  JWT bearer (2LO) for Cloud, OAuth 1.0a (2LO and 3LO) for Server/Data Center,
+  client credentials, and Basic Auth
 - ✅ **Enterprise Ready** - Production-grade error handling and logging
 - 🚀 **High Performance** - 40-60% faster search, 30-50% faster expressions (v1.2.0+)
 
@@ -309,6 +311,10 @@ See the [examples directory](examples/) for complete, runnable examples:
 - [**Custom Fields**](examples/customfields/) - Working with custom fields
 - [**Comments**](examples/comments/) - Adding and managing comments
 - [**Workflow**](examples/workflow/) - Issue transitions and workflow states
+- [**OAuth 2.0 (3LO)**](examples/oauth2/) - Full consent flow, token storage, cloud ID resolution
+- [**Connect JWT**](examples/connectjwt/) - Two-legged Connect app auth and user impersonation
+- [**OAuth 1.0a**](examples/oauth1/) - Server/Data Center, two-legged and three-legged
+- [**Client Credentials**](examples/clientcredentials/) - Jira behind a gateway or custom IdP
 
 ## ⚠️ Migration Notice (v1.2.0)
 
@@ -336,6 +342,20 @@ export JIRA_API_TOKEN="your-api-token"
 # Jira Server/Data Center (PAT)
 export JIRA_BASE_URL="https://jira.company.com"
 export JIRA_PAT="your-personal-access-token"
+
+# Jira Cloud (OAuth 2.0 3LO)
+export JIRA_OAUTH_CLIENT_ID="your-client-id"
+export JIRA_OAUTH_CLIENT_SECRET="your-client-secret"
+export JIRA_OAUTH_REDIRECT_URL="https://app.example.com/callback"
+export JIRA_CLOUD_ID="1324a887-..."   # optional: skips the site lookup
+
+# Jira Cloud (Connect app, two-legged)
+export JIRA_CONNECT_APP_KEY="com.example.my-app"
+export JIRA_CONNECT_SHARED_SECRET="from-the-install-callback"
+
+# Jira Server/Data Center (OAuth 1.0a, two-legged)
+export JIRA_OAUTH1_CONSUMER_KEY="my-consumer-key"
+export JIRA_OAUTH1_PRIVATE_KEY_FILE="jira.pem"
 
 # Optional configuration
 export JIRA_TIMEOUT="60"              # Timeout in seconds (default: 30)
@@ -378,15 +398,59 @@ client, err := jira.NewClient(
 ### Authentication (Programmatic)
 
 ```go
-// API Token (Jira Cloud - Recommended)
+// --- Jira Cloud ---
+
+// API Token (Recommended)
 jira.WithAPIToken("email@example.com", "token")
 
-// Personal Access Token (Server/Data Center - Recommended)
+// OAuth 2.0 (3LO) - acts on behalf of a user who granted consent
+jira.WithOAuth2(oauth)
+
+// Connect JWT (2LO) - a Connect app acting as itself
+jira.WithConnectJWT(&auth.ConnectJWTConfig{
+    AppKey:       "com.example.my-app",
+    SharedSecret: install.SharedSecret,
+})
+
+// JWT bearer grant (2LO) - a Connect app acting as a user, no redirect
+jira.WithJWTBearer(&auth.JWTBearerConfig{
+    OAuthClientID: install.OAuthClientID,
+    SharedSecret:  install.SharedSecret,
+    AccountID:     "5b10ac8d82e05b22cc7d4ef5",
+    SiteURL:       "https://your-domain.atlassian.net",
+})
+
+// --- Jira Server / Data Center ---
+
+// Personal Access Token (Recommended)
 jira.WithPAT("token")
+
+// OAuth 1.0a - two-legged by default; add Token/TokenSecret for three-legged
+jira.WithOAuth1(&auth.OAuth1Config{
+    ConsumerKey:   "my-consumer-key",
+    PrivateKeyPEM: privateKey,
+})
+
+// --- Behind a gateway or custom IdP ---
+
+jira.WithClientCredentials(&auth.ClientCredentialsConfig{
+    ClientID:     "service-account",
+    ClientSecret: os.Getenv("CLIENT_SECRET"),
+    TokenURL:     "https://idp.internal/oauth2/token",
+})
+
+// --- Other ---
 
 // Basic Auth (Legacy)
 jira.WithBasicAuth("username", "password")
+
+// Any custom auth.Authenticator
+jira.WithAuthenticator(myAuthenticator)
 ```
+
+See **[docs/authentication.md](docs/authentication.md)** for a full guide: which
+method to pick, the Connect installation handshake, the OAuth 1.0a application
+link setup, and token persistence.
 
 ### HTTP Client Configuration
 
@@ -414,32 +478,44 @@ jira.WithMaxRetries(5)
 jira.WithRateLimitBuffer(10 * time.Second)
 ```
 
-### OAuth 2.0 Authentication
+### OAuth 2.0 (3LO) Authentication
 
 ```go
-// Create OAuth 2.0 authenticator
 oauth := auth.NewOAuth2Authenticator(&auth.OAuth2Config{
     ClientID:     "your-client-id",
     ClientSecret: "your-client-secret",
-    RedirectURL:  "http://localhost:8080/callback",
+    RedirectURL:  "https://app.example.com/callback",
     Scopes:       []string{"read:jira-work", "write:jira-work"},
+    TokenStore:   myTokenStore, // optional: persist across restarts
 })
 
-// Get authorization URL
-authURL := oauth.GetAuthURL("state-string")
-fmt.Println("Visit:", authURL)
+// Send the user here. The URL carries the audience and prompt parameters
+// Atlassian requires, and offline_access is added so a refresh token is issued.
+authURL := oauth.GetAuthURL(state)
 
-// Exchange authorization code for token
+// Exchange the code your callback receives.
 token, err := oauth.Exchange(ctx, authorizationCode)
 
-// Create client with OAuth 2.0
+// No base URL needed: a 3LO token is only accepted at
+// https://api.atlassian.com/ex/jira/{cloudID}, and the client resolves the
+// cloud ID on the first request and caches it.
+client, err := jira.NewClient(jira.WithOAuth2(oauth))
+
+// When the token can reach several sites, name one:
 client, err := jira.NewClient(
-    jira.WithBaseURL("https://your-domain.atlassian.net"),
     jira.WithOAuth2(oauth),
+    jira.WithBaseURL("https://your-domain.atlassian.net"),
+    // or jira.WithCloudID("1324a887-...") to skip the lookup
 )
 
-// Token is automatically refreshed when expired
+// Tokens are refreshed automatically when they expire.
 ```
+
+> **Upgrading?** A 3LO token authenticates only against
+> `https://api.atlassian.com/ex/jira/{cloudID}`, never your `*.atlassian.net`
+> site URL. Earlier versions sent 3LO requests to the site URL, where they fail
+> with 401. Passing `WithBaseURL` alongside `WithOAuth2` now selects which site
+> to use rather than setting the request host.
 
 ### Custom Middleware
 
