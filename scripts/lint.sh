@@ -19,11 +19,26 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$REPO_ROOT"
 
-# shellcheck source=/dev/null
-source .lint-toolchain
+# Read the pinned versions by parsing, never by sourcing. Sourcing would
+# execute .lint-toolchain, so anyone able to edit it would gain arbitrary code
+# execution in every contributor's shell and in CI. Both values then go into a
+# download URL and a command line, so each is validated against a strict shape
+# before use; anything unexpected stops the script rather than reaching a sink.
+read_pin() {
+    local key=$1
+    sed -n "s/^${key}=\([^#]*\).*/\1/p" .lint-toolchain | tr -d '[:space:]' | head -n1
+}
 
-if [[ -z "${GOLANGCI_LINT_VERSION:-}" || -z "${GO_VERSION:-}" ]]; then
-    echo "ERROR: .lint-toolchain must set GOLANGCI_LINT_VERSION and GO_VERSION" >&2
+GOLANGCI_LINT_VERSION=$(read_pin GOLANGCI_LINT_VERSION)
+GO_VERSION=$(read_pin GO_VERSION)
+
+if [[ ! "$GOLANGCI_LINT_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "ERROR: GOLANGCI_LINT_VERSION in .lint-toolchain must look like v1.2.3, got '${GOLANGCI_LINT_VERSION}'" >&2
+    exit 2
+fi
+
+if [[ ! "$GO_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    echo "ERROR: GO_VERSION in .lint-toolchain must look like 1.26, got '${GO_VERSION}'" >&2
     exit 2
 fi
 
