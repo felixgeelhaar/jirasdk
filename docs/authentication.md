@@ -313,3 +313,64 @@ type Authenticator interface {
 
 To control the base URL per request — a sharded gateway, say — implement
 `transport.BaseURLResolver` and pass it to `jira.WithBaseURLResolver`.
+
+---
+
+## Live smoke tests
+
+The normal test suite verifies this SDK against stub servers, which cannot catch
+a disagreement with Atlassian — a signature can be wrong but self-consistent and
+still pass. `live_test.go` closes that gap by talking to a real instance and to
+Atlassian's real authorization servers. It is excluded by the `live` build tag:
+
+```bash
+go test -tags live -run TestLive -v .
+```
+
+Every test skips with a note naming the variables it needs, so a partial set
+exercises only what you have credentials for. Use `-v` — the findings are
+logged, not asserted. **Every request is read-only**; nothing creates, updates
+or deletes anything.
+
+Set the variables for whichever flows you want to cover:
+
+```bash
+# Jira Cloud, and Jira Server, can be exercised in one run.
+export JIRA_LIVE_CLOUD_BASE_URL="https://your-domain.atlassian.net"
+export JIRA_LIVE_SERVER_BASE_URL="https://jira.example.com"
+# Both fall back to JIRA_BASE_URL when unset.
+
+# API token
+export JIRA_EMAIL="user@example.com" JIRA_API_TOKEN="..."
+
+# OAuth 2.0 (3LO). The refresh probe additionally needs the client credentials.
+export JIRA_OAUTH_ACCESS_TOKEN="..." JIRA_OAUTH_REFRESH_TOKEN="..."
+export JIRA_OAUTH_CLIENT_ID="..." JIRA_OAUTH_CLIENT_SECRET="..."
+export JIRA_OAUTH_REDIRECT_URL="https://app.example.com/callback"  # must be registered
+
+# Connect JWT, and the JWT bearer grant
+export JIRA_CONNECT_APP_KEY="com.example.my-app"
+export JIRA_CONNECT_SHARED_SECRET="..."
+export JIRA_CONNECT_OAUTH_CLIENT_ID="..." JIRA_CONNECT_ACCOUNT_ID="..."
+
+# Jira Server
+export JIRA_PAT="..."
+export JIRA_OAUTH1_CONSUMER_KEY="my-consumer-key" JIRA_OAUTH1_PRIVATE_KEY_FILE="jira.pem"
+export JIRA_OAUTH1_IMPERSONATE_USER="jsmith"                      # optional
+export JIRA_OAUTH1_TOKEN="..." JIRA_OAUTH1_TOKEN_SECRET="..."     # optional, 3LO
+```
+
+### What it proves that the offline suite cannot
+
+| Probe | Catches |
+| --- | --- |
+| Connect JWT, repeated query parameters | A `qsh` that disagrees with Jira's. This is where the `%2C`-vs-`,` bug lived; the SDK emits repeated `expand` parameters on many endpoints. |
+| Connect JWT, value needing encoding | Spaces encoded as `+` rather than `%20`, and sort-order drift. |
+| Connect JWT, POST with a JSON body | A body wrongly folded into the hash. |
+| OAuth 2.0, accessible-resources + gateway request | Cloud ID routing. A 3LO token fails at a site URL with a bare 401. |
+| OAuth 2.0, refresh | That `offline_access` was actually granted, so a refresh token exists. |
+| OAuth 2.0, authorize endpoint | A missing `audience` or `prompt`, which Atlassian rejects up front. |
+| JWT bearer | Assertion claim shapes, and that `oauthClientId` was used rather than the app key. |
+| OAuth 1.0a, with and without query parameters | A signature base string that omits or misencodes query parameters. |
+| OAuth 1.0a, impersonation | That `user_id` is inside the signature. |
+| OAuth 1.0a, request-token | Consumer key and RSA key registration on the application link. |
