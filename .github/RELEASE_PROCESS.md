@@ -19,7 +19,7 @@ The repository includes automated GitHub Actions workflows for releasing new ver
 Add a new section for your release:
 
 ```markdown
-## [v1.0.0] - 2025-01-08
+## [v1.9.1] - YYYY-MM-DD
 
 ### Added
 - New feature X
@@ -35,20 +35,33 @@ Add a new section for your release:
 - Changed API signature for method Foo
 ```
 
-Commit and push:
+**The `v` prefix is load-bearing.** The release workflow extracts the release
+notes by matching `^## [<tag>]`, and tags carry a `v`, so a heading written
+`## [1.9.1]` does not match its own tag. The release is still created, but its
+body silently falls back to "See CHANGELOG.md for details" — which is how some
+older versions in this repo ended up with no notes.
+
+Open a pull request with the change; `main` requires one:
+
 ```bash
+git checkout -b docs/changelog-v1.9.1
 git add CHANGELOG.md
-git commit -m "docs: Update CHANGELOG for v1.0.0"
-git push
+git commit -m "docs: update CHANGELOG for v1.9.1"
+git push -u origin docs/changelog-v1.9.1
+gh pr create --fill
 ```
+
+Direct pushes to `main` are rejected. Branch protection requires a pull request
+and the `Lint`, `Build`, `Test (1.26)` and `Security (nox)` checks, and it
+applies to administrators too.
 
 #### 2. Create Release Tag (Via GitHub UI)
 
 1. Go to: https://github.com/felixgeelhaar/jirasdk/actions/workflows/tag.yml
 2. Click "Run workflow"
 3. Fill in the form:
-   - **Version**: Enter version (e.g., `v1.0.0`, `v1.0.1-rc.1`)
-   - **Prerelease**: Check if this is a prerelease (alpha, beta, rc)
+   - **Version**: Enter version (e.g., `v1.9.1`, `v1.10.0-rc.1`)
+   - **Prerelease**: annotates the tag message only — see below
 4. Click "Run workflow"
 
 The workflow will:
@@ -57,6 +70,13 @@ The workflow will:
 - ✅ Run full test suite
 - ✅ Create and push the tag
 - ✅ Trigger the release workflow automatically
+
+**The "Prerelease" checkbox does not mark the GitHub Release as a prerelease.**
+It only adds a note to the tag message. The release flag is derived from the tag
+*name*: `release.yml` marks a release as a prerelease when the version contains
+`-rc`, `-beta` or `-alpha`. So `v2.0.0` with the box ticked publishes a full
+release, and `v2.0.0-rc.1` with it unticked publishes a prerelease. Name the tag
+correctly and the checkbox does not matter.
 
 #### 3. Automatic Release Creation
 
@@ -175,9 +195,9 @@ After release is published:
 
 For urgent bug fixes:
 
-1. Create hotfix branch from tag:
+1. Create hotfix branch from the tag being fixed:
    ```bash
-   git checkout -b hotfix/v1.0.1 v1.0.0
+   git checkout -b hotfix/v1.9.1 v1.9.0
    ```
 
 2. Apply fixes and test:
@@ -187,15 +207,22 @@ For urgent bug fixes:
    git commit -m "fix: Critical bug in feature X"
    ```
 
-3. Merge to main:
+3. Merge to main through a pull request. A direct push is rejected, including
+   for administrators, so the hotfix branch goes through review and checks like
+   anything else:
    ```bash
-   git checkout main
-   git merge --no-ff hotfix/v1.0.1
-   git push
+   git push -u origin hotfix/v1.9.1
+   gh pr create --fill --base main
+   # once the required checks pass:
+   gh pr merge --rebase --delete-branch
    ```
 
+   If the urgency is such that waiting on checks is itself the problem, the
+   checks are the thing to make faster — not the gate to route around. There is
+   no supported way to bypass it.
+
 4. Create patch release:
-   - Use "Tag Release" workflow with v1.0.1
+   - Use the "Tag Release" workflow with v1.9.1
 
 ## Rollback
 
@@ -273,4 +300,4 @@ costs nothing by comparison.
 
 ---
 
-**Last Updated**: 2025-01-08
+**Last Updated**: 2026-09-11
