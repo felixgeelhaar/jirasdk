@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -82,26 +83,37 @@ func canonicalPath(escapedPath, contextPath string) string {
 
 // canonicalQuery sorts and encodes the query parameters. The "jwt" parameter is
 // excluded because it cannot be part of the hash it is carried in.
+//
+// Names and values are sorted before encoding, not after. The two orders differ
+// whenever a name or value contains a character that percent-encodes: "%" is
+// 0x25, below every unreserved character, so encoding first would sort ":"
+// ahead of "0" where Atlassian sorts it after.
 func canonicalQuery(values map[string][]string) string {
-	pairs := make([]string, 0, len(values))
-
-	for name, vals := range values {
+	names := make([]string, 0, len(values))
+	for name := range values {
 		if name == "jwt" {
 			continue
 		}
+		names = append(names, name)
+	}
+	sort.Strings(names)
 
-		encoded := make([]string, 0, len(vals))
-		for _, v := range vals {
+	pairs := make([]string, 0, len(names))
+	for _, name := range names {
+		raw := slices.Clone(values[name])
+		sort.Strings(raw)
+
+		encoded := make([]string, 0, len(raw))
+		for _, v := range raw {
 			encoded = append(encoded, percentEncode(v))
 		}
-		sort.Strings(encoded)
 
-		// Repeated parameters collapse into one comma-separated value, with the
-		// separating comma itself encoded.
-		pairs = append(pairs, percentEncode(name)+"="+strings.Join(encoded, "%2C"))
+		// Repeated parameters collapse into one value separated by a literal
+		// comma. A comma inside a value encodes to %2C, which is what keeps the
+		// separator and the content distinguishable.
+		pairs = append(pairs, percentEncode(name)+"="+strings.Join(encoded, ","))
 	}
 
-	sort.Strings(pairs)
 	return strings.Join(pairs, "&")
 }
 
