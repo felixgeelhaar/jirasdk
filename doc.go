@@ -16,7 +16,9 @@
 //   - Structured logging with bolt integration
 //   - Type-safe domain models
 //   - Environment variable configuration
-//   - Multiple authentication methods (API Token, PAT, Basic Auth, OAuth 2.0)
+//   - Every Jira authentication method: API Token, PAT, Basic Auth, OAuth 2.0
+//     (3LO), Connect JWT and JWT bearer (2LO), OAuth 1.0a (2LO and 3LO), and
+//     the client credentials grant
 //
 // # Installation
 //
@@ -82,31 +84,87 @@
 //	    jira.WithBasicAuth("username", "password"),
 //	)
 //
-// OAuth 2.0:
+// OAuth 2.0 (3LO), for acting on behalf of a user who granted consent:
 //
 //	oauth := auth.NewOAuth2Authenticator(&auth.OAuth2Config{
 //	    ClientID:     "your-client-id",
 //	    ClientSecret: "your-client-secret",
-//	    RedirectURL:  "http://localhost:8080/callback",
+//	    RedirectURL:  "https://app.example.com/callback",
 //	    Scopes:       []string{"read:jira-work", "write:jira-work"},
 //	})
+//	// Send the user to oauth.GetAuthURL(state), then:
+//	token, err := oauth.Exchange(ctx, code)
+//
+//	// No base URL is needed. A 3LO token is only accepted at
+//	// https://api.atlassian.com/ex/jira/{cloudID}, so the client looks the
+//	// cloud ID up on the first request and caches it. Pass WithBaseURL to
+//	// choose between several accessible sites, or WithCloudID to skip the
+//	// lookup.
+//	client, err := jira.NewClient(jira.WithOAuth2(oauth))
+//
+// Connect JWT (two-legged), for a Connect app calling Jira as itself:
+//
+//	client, err := jira.NewClient(
+//	    jira.WithBaseURL(install.BaseURL),
+//	    jira.WithConnectJWT(&auth.ConnectJWTConfig{
+//	        AppKey:       "com.example.my-app",
+//	        SharedSecret: install.SharedSecret,
+//	    }),
+//	)
+//
+// JWT bearer grant (two-legged), for a Connect app acting as a named user
+// without a redirect:
+//
 //	client, err := jira.NewClient(
 //	    jira.WithBaseURL("https://your-domain.atlassian.net"),
-//	    jira.WithOAuth2(oauth),
+//	    jira.WithJWTBearer(&auth.JWTBearerConfig{
+//	        OAuthClientID: install.OAuthClientID, // not the app key
+//	        SharedSecret:  install.SharedSecret,
+//	        AccountID:     "5b10ac8d82e05b22cc7d4ef5",
+//	        SiteURL:       "https://your-domain.atlassian.net",
+//	    }),
 //	)
+//
+// OAuth 1.0a (Jira Server/Data Center). Two-legged with no Token set; supply
+// Token and TokenSecret, or run the handshake helpers on auth.OAuth1Auth, for
+// three-legged:
+//
+//	client, err := jira.NewClient(
+//	    jira.WithBaseURL("https://jira.company.com"),
+//	    jira.WithOAuth1(&auth.OAuth1Config{
+//	        ConsumerKey:   "my-consumer-key",
+//	        PrivateKeyPEM: privateKey,
+//	    }),
+//	)
+//
+// Client credentials, for Jira behind a gateway or custom identity provider:
+//
+//	client, err := jira.NewClient(
+//	    jira.WithBaseURL("https://jira.internal"),
+//	    jira.WithClientCredentials(&auth.ClientCredentialsConfig{
+//	        ClientID:     "service-account",
+//	        ClientSecret: os.Getenv("CLIENT_SECRET"),
+//	        TokenURL:     "https://idp.internal/oauth2/token",
+//	    }),
+//	)
+//
+// See docs/authentication.md for a full guide to choosing between these.
 //
 // # Environment Variable Configuration
 //
 // The library follows AWS SDK and Azure SDK patterns for environment-based configuration:
 //
 // Required variables:
-//   - JIRA_BASE_URL: Your Jira instance URL
+//   - JIRA_BASE_URL: Your Jira instance URL. Optional when JIRA_CLOUD_ID is set.
 //
-// Authentication (choose one):
+// Authentication, tried in this order:
 //   - JIRA_EMAIL + JIRA_API_TOKEN: API token authentication (Jira Cloud)
 //   - JIRA_PAT: Personal Access Token (Jira Server/Data Center)
 //   - JIRA_USERNAME + JIRA_PASSWORD: Basic authentication (legacy)
-//   - JIRA_OAUTH_CLIENT_ID + JIRA_OAUTH_CLIENT_SECRET + JIRA_OAUTH_REDIRECT_URL: OAuth 2.0
+//   - JIRA_OAUTH_CLIENT_ID + JIRA_OAUTH_CLIENT_SECRET + JIRA_OAUTH_REDIRECT_URL: OAuth 2.0 (3LO)
+//   - JIRA_CONNECT_APP_KEY + JIRA_CONNECT_SHARED_SECRET: Connect JWT (2LO)
+//   - JIRA_OAUTH1_CONSUMER_KEY + JIRA_OAUTH1_PRIVATE_KEY: OAuth 1.0a
+//   - JIRA_OAUTH_CLIENT_ID + JIRA_OAUTH_CLIENT_SECRET + JIRA_OAUTH_TOKEN_URL: client credentials
 //
 // Optional configuration:
 //   - JIRA_TIMEOUT: HTTP timeout in seconds (default: 30)
@@ -236,7 +294,10 @@
 //   - examples/advanced: Advanced features and pagination
 //   - examples/resilience: Resilience patterns with fortify
 //   - examples/observability: Structured logging with bolt
-//   - examples/oauth2: OAuth 2.0 authentication flow
+//   - examples/oauth2: OAuth 2.0 (3LO) authentication flow
+//   - examples/connectjwt: Connect JWT and JWT bearer grant (two-legged)
+//   - examples/oauth1: OAuth 1.0a for Jira Server/Data Center
+//   - examples/clientcredentials: client credentials grant
 //
 // For more information, visit: https://github.com/felixgeelhaar/jirasdk
 package jirasdk
