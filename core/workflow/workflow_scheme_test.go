@@ -368,7 +368,7 @@ func TestSetWorkflowSchemeIssueType(t *testing.T) {
 			schemeID: 10000,
 			input: &WorkflowSchemeIssueType{
 				IssueType: "10001",
-				Workflow:   "software-simplified-workflow",
+				Workflow:  "software-simplified-workflow",
 			},
 			wantErr: false,
 		},
@@ -377,7 +377,7 @@ func TestSetWorkflowSchemeIssueType(t *testing.T) {
 			schemeID: 0,
 			input: &WorkflowSchemeIssueType{
 				IssueType: "10001",
-				Workflow:   "software-simplified-workflow",
+				Workflow:  "software-simplified-workflow",
 			},
 			wantErr: true,
 			errMsg:  "workflow scheme ID is required",

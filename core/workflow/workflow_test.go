@@ -456,10 +456,10 @@ func TestGetStatusCategories(t *testing.T) {
 
 func TestGetStatusCategory(t *testing.T) {
 	tests := []struct {
-		name     string
-		idOrKey  string
-		wantErr  bool
-		errMsg   string
+		name    string
+		idOrKey string
+		wantErr bool
+		errMsg  string
 	}{
 		{
 			name:    "success",
