@@ -14,8 +14,12 @@ commands:
   # failure, so this CHECKS formatting (run `gofmt -w .` to fix).
   gofmt: gofmt -l .
   govet: go vet ./...
-  # Repo ships .golangci.yml; run the same linter CI runs.
-  golangcilint: golangci-lint run ./...
+  # Via scripts/lint.sh, NOT a bare `golangci-lint`, which would resolve to
+  # whatever is on PATH. A linter version is a rule set: a newer local binary
+  # reports FEWER problems than CI, so a bare invocation passes locally and
+  # fails the Lint job. The script reads .lint-toolchain — the same file the
+  # Lint job reads — so this gate enforces exactly what CI enforces.
+  golangcilint: scripts/lint.sh
   gotest: go test -race ./...
   gobuild: go build ./...
 steps:
