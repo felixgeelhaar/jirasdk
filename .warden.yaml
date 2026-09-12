@@ -10,9 +10,12 @@ hooks:
   pre_commit: true
   pre_push: true
 commands:
-  # gofmt -l lists mis-formatted files; warden treats non-empty output as a
-  # failure, so this CHECKS formatting (run `gofmt -w .` to fix).
-  gofmt: gofmt -l .
+  # `gofmt -l` only PRINTS mis-formatted files - it exits 0 either way, and
+  # warden gates on exit code. As `gofmt -l .` this step could never fail, so
+  # the gate reported "passed" on a deliberately mis-formatted file. Wrapping
+  # it in `test -z` turns a non-empty listing into a non-zero exit.
+  # (Run `gofmt -w .` to fix what it reports.)
+  gofmt: 'test -z "$(gofmt -l .)"'
   govet: go vet ./...
   # Via scripts/lint.sh, NOT a bare `golangci-lint`, which would resolve to
   # whatever is on PATH. A linter version is a rule set: a newer local binary
