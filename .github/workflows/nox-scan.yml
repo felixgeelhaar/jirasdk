@@ -81,7 +81,7 @@ jobs:
       - name: Scan
         id: scan1
         continue-on-error: true
-        uses: nox-hq/nox@e3c8fcd645f462400e5f6f7a0c7a225334ed8a9a # v1.43.0
+        uses: nox-hq/nox@f2436fa5f6d2fbc3459f120178b253aa3c05ba12 # v1.48.1
         with:
           path: .
           format: json,sarif
@@ -100,7 +100,7 @@ jobs:
         id: scan2
         if: steps.scan1.outcome == 'failure'
         continue-on-error: true
-        uses: nox-hq/nox@e3c8fcd645f462400e5f6f7a0c7a225334ed8a9a # v1.43.0
+        uses: nox-hq/nox@f2436fa5f6d2fbc3459f120178b253aa3c05ba12 # v1.48.1
         with:
           path: .
           format: json,sarif
@@ -119,7 +119,7 @@ jobs:
         id: scan3
         if: steps.scan1.outcome == 'failure' && steps.scan2.outcome == 'failure'
         continue-on-error: true
-        uses: nox-hq/nox@e3c8fcd645f462400e5f6f7a0c7a225334ed8a9a # v1.43.0
+        uses: nox-hq/nox@f2436fa5f6d2fbc3459f120178b253aa3c05ba12 # v1.48.1
         with:
           path: .
           format: json,sarif
