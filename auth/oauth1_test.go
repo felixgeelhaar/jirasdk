@@ -288,7 +288,7 @@ func TestSignatureBaseString(t *testing.T) {
 			name:   "host is lower-cased",
 			method: "get",
 			rawURL: "https://JIRA.Internal/rest/api/2/myself",
-			want:   "GET&https%3A%2F%2Fjira.internal%2Frest%2Fapi%2F2%2Fmyself&oauth_consumer_key%3Dck",
+			want:   "GET&https%3A%2F%2Fjira.internal%2Frest%2Fapi%2F2%2Fmyself" + "&oauth_consumer_key%3Dck",
 		},
 	}
 
