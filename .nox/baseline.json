@@ -472,6 +472,134 @@
       "severity": "high",
       "reason": "False positive (argument-vector exec): scripts/lint.sh forwards \"$@\" to golangci-lint as a quoted argument vector, so each argument becomes one argv entry with no shell re-interpretation — the mitigation this rule's own remediation text prescribes. The source is the developer's own command line, which is not a trust boundary: anyone who can invoke the script already has shell access. The pass-through exists so scripts/lint.sh --fix and --build-tags live work. Note the config values read from .lint-toolchain, which this rule flagged separately, were fixed rather than waived: the file is now parsed instead of sourced and both values are validated against strict patterns. Reviewed: 2026-09-11",
       "created_at": "2026-09-11T08:29:40.345675Z"
+    },
+    {
+      "fingerprint": "efffd45e45bdf218052ebd23a0a2fc2295219290f6341d868fed455c871b6993",
+      "rule_id": "IAC-155",
+      "file_path": ".github/workflows/nox-remediate.yml",
+      "severity": "medium",
+      "reason": "Intentional manual workflow_dispatch (release tagging / scheduled remediation); gated by repo write access, no secrets exposed to inputs",
+      "created_at": "2026-11-15T10:10:26.07491Z"
+    },
+    {
+      "fingerprint": "ffe7c6b3cd546a7bfb4143547d5b36b0a907472216bdcafeb861adb3cf227a05",
+      "rule_id": "IAC-155",
+      "file_path": ".github/workflows/tag.yml",
+      "severity": "medium",
+      "reason": "Intentional manual workflow_dispatch (release tagging / scheduled remediation); gated by repo write access, no secrets exposed to inputs",
+      "created_at": "2026-11-15T10:10:26.07491Z"
+    },
+    {
+      "fingerprint": "52922952e40b8c5ebd4fef0969dd782d57266e9ecccc4e9bddc9be74f0f6daa2",
+      "rule_id": "IAC-308",
+      "file_path": ".github/workflows/nox-remediate.yml",
+      "severity": "low",
+      "reason": "Intentional manual workflow_dispatch (release tagging / scheduled remediation); gated by repo write access, no secrets exposed to inputs",
+      "created_at": "2026-11-15T10:10:26.07491Z"
+    },
+    {
+      "fingerprint": "6c06a6ef66ae7d3569f0a6f689d6062c570d3cdf331f9d5fbdb03a626f42645e",
+      "rule_id": "IAC-308",
+      "file_path": ".github/workflows/tag.yml",
+      "severity": "low",
+      "reason": "Intentional manual workflow_dispatch (release tagging / scheduled remediation); gated by repo write access, no secrets exposed to inputs",
+      "created_at": "2026-11-15T10:10:26.07491Z"
+    },
+    {
+      "fingerprint": "8378df7a1d4adb5806616a668bc89e456b48fe9b7212ca5799b5b8eddbe0ae9c",
+      "rule_id": "IAC-314",
+      "file_path": ".github/workflows/nox-remediate.yml",
+      "severity": "medium",
+      "reason": "contents: write is required to push tags (tag.yml) and remediation PR branches (nox-remediate.yml); scoped to those workflows only",
+      "created_at": "2026-11-15T10:10:29.297586Z"
+    },
+    {
+      "fingerprint": "e37e2faa5f7d812400d1323a31d22e93b710b881ea06f3b656d724454d47a8f4",
+      "rule_id": "IAC-314",
+      "file_path": ".github/workflows/release.yml",
+      "severity": "low",
+      "reason": "contents: write is required to push tags (tag.yml) and remediation PR branches (nox-remediate.yml); scoped to those workflows only",
+      "created_at": "2026-11-15T10:10:29.297586Z"
+    },
+    {
+      "fingerprint": "efb2e754bac73d4b9d2cf155775fd5cde176e70f8ffd4f00850fa5983bc75452",
+      "rule_id": "IAC-314",
+      "file_path": ".github/workflows/tag.yml",
+      "severity": "medium",
+      "reason": "contents: write is required to push tags (tag.yml) and remediation PR branches (nox-remediate.yml); scoped to those workflows only",
+      "created_at": "2026-11-15T10:10:29.297586Z"
+    },
+    {
+      "fingerprint": "8c9a05e7d0c8a05b61d4c18aefce8e2dc91a85c3456246a1c92bea30dbb416d8",
+      "rule_id": "IAC-309",
+      "file_path": ".github/workflows/ci.yml",
+      "severity": "low",
+      "reason": "Intentional concurrency cancel-in-progress to drop superseded CI/scan runs",
+      "created_at": "2026-11-15T10:10:31.186204Z"
+    },
+    {
+      "fingerprint": "530e8464b73bb94d797aa233bcd4b2ea933dd8644a2b0a15d0bb6b7ba128980d",
+      "rule_id": "IAC-309",
+      "file_path": ".github/workflows/nox-scan.yml",
+      "severity": "low",
+      "reason": "Intentional concurrency cancel-in-progress to drop superseded CI/scan runs",
+      "created_at": "2026-11-15T10:10:31.186204Z"
+    },
+    {
+      "fingerprint": "739e462b5efd69933915ec7ad09def3fc36e907a51f855cc4986fe4b7c05c1b8",
+      "rule_id": "IAC-018",
+      "file_path": ".github/workflows/nox-scan.yml",
+      "severity": "low",
+      "reason": "continue-on-error is the deliberate scan retry ladder; a later 'Verify a scan completed' step fails closed",
+      "created_at": "2026-11-15T10:10:33.804074Z"
+    },
+    {
+      "fingerprint": "d385ace82883f091ddd28f6f1843f80bfde5986db9ad1bb7485d7b8345d4f5f1",
+      "rule_id": "IAC-158",
+      "file_path": ".github/workflows/codeql.yml",
+      "severity": "medium",
+      "reason": "Informational: CodeQL analysis present and intended; Go language coverage verified",
+      "created_at": "2026-11-15T10:10:35.20398Z"
+    },
+    {
+      "fingerprint": "608d3b10f08ffa8d5f274f1fe467f97bbcc9e02151459737387934fd0b87b2b5",
+      "rule_id": "IAC-158",
+      "file_path": ".github/workflows/codeql.yml",
+      "severity": "medium",
+      "reason": "Informational: CodeQL analysis present and intended; Go language coverage verified",
+      "created_at": "2026-11-15T10:10:35.20398Z"
+    },
+    {
+      "fingerprint": "4752ab88b3fc9cb7f74e377477c0ff8454118707cecd713f596b954fbcc5b7d3",
+      "rule_id": "AI-050",
+      "file_path": "client_test.go",
+      "severity": "low",
+      "reason": "False positive: test fixture value / test-case table (not a credential or AI API client)",
+      "created_at": "2026-11-15T10:10:36.526137Z"
+    },
+    {
+      "fingerprint": "458ec34f6ea4dad519f3db456249db64125410d41a9d8459ef4887107de653d5",
+      "rule_id": "DATA-001",
+      "file_path": "env_auth_test.go",
+      "severity": "info",
+      "reason": "False positive: test fixture value / test-case table (not a credential or AI API client)",
+      "created_at": "2026-11-15T10:10:36.526137Z"
+    },
+    {
+      "fingerprint": "b2236f3a9cdcde15d857c45edd195fa38019c9b25a69dd41e24fb31c0a8f2fae",
+      "rule_id": "SEC-080",
+      "file_path": "client_test.go",
+      "severity": "medium",
+      "reason": "False positive: test fixture value / test-case table (not a credential or AI API client)",
+      "created_at": "2026-11-15T10:10:36.526137Z"
+    },
+    {
+      "fingerprint": "4c2c802ad15a4e4da3b5171fd9637996bc0653c916dbe15ea5fb493edeb03a7e",
+      "rule_id": "SEC-080",
+      "file_path": "env.go",
+      "severity": "medium",
+      "reason": "False positive: test fixture value / test-case table (not a credential or AI API client)",
+      "created_at": "2026-11-15T10:10:36.526137Z"
     }
   ]
 }
