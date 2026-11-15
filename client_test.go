@@ -357,7 +357,7 @@ func TestWithBasicAuth(t *testing.T) {
 		{
 			name:     "empty username",
 			username: "",
-			password: "password123",
+			password: "pw",
 			wantErr:  true,
 		},
 		{
