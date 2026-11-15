@@ -99,7 +99,7 @@ jobs:
       - name: Scan (attempt 2)
         id: scan2
         if: steps.scan1.outcome == 'failure'
-        continue-on-error: ${{ true }}
+        continue-on-error: true
         uses: nox-hq/nox@f2436fa5f6d2fbc3459f120178b253aa3c05ba12 # v1.48.1
         with:
           path: .
@@ -118,7 +118,7 @@ jobs:
       - name: Scan (attempt 3)
         id: scan3
         if: steps.scan1.outcome == 'failure' && steps.scan2.outcome == 'failure'
-        continue-on-error: ${{ true }}
+        continue-on-error: true
         uses: nox-hq/nox@f2436fa5f6d2fbc3459f120178b253aa3c05ba12 # v1.48.1
         with:
           path: .

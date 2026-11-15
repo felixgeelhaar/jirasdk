@@ -600,6 +600,38 @@
       "severity": "medium",
       "reason": "False positive: test fixture value / test-case table (not a credential or AI API client)",
       "created_at": "2026-11-15T10:10:36.526137Z"
+    },
+    {
+      "fingerprint": "a1a95fa9abcf00a2c219bfc79b5f9540387e87dc710ed7465c22a2d53cdcb1a8",
+      "rule_id": "SEC-161",
+      "file_path": "auth/oauth1_test.go",
+      "severity": "medium",
+      "reason": "False positive (test fixtures): high-entropy strings in auth/oauth1_test.go are the expected OAuth 1.0a signature base strings in a table-driven test — percent-encoded URLs such as GET\u0026https%3A%2F%2Fjira.internal%2Frest%2F... They are literal assertion values, not credentials. Reviewed: 2026-09-11",
+      "created_at": "2026-09-11T07:44:49.130158Z"
+    },
+    {
+      "fingerprint": "739e462b5efd69933915ec7ad09def3fc36e907a51f855cc4986fe4b7c05c1b8",
+      "rule_id": "IAC-018",
+      "file_path": ".github/workflows/nox-scan.yml",
+      "severity": "low",
+      "reason": "continue-on-error is the deliberate scan retry ladder; a later 'Verify a scan completed' step fails closed",
+      "created_at": "2026-11-15T10:10:33.804074Z"
+    },
+    {
+      "fingerprint": "739e462b5efd69933915ec7ad09def3fc36e907a51f855cc4986fe4b7c05c1b8",
+      "rule_id": "IAC-018",
+      "file_path": ".github/workflows/nox-scan.yml",
+      "severity": "low",
+      "reason": "continue-on-error is the deliberate scan retry ladder; a later 'Verify a scan completed' step fails closed",
+      "created_at": "2026-11-15T10:10:33.804074Z"
+    },
+    {
+      "fingerprint": "685a2f4b9461897e460c17088ff2b04ee85d6586cb4442b69adf3ec2c8e9ee21",
+      "rule_id": "IAC-153",
+      "file_path": ".github/workflows/nox-scan.yml",
+      "severity": "medium",
+      "reason": "Informational (low confidence) heuristic under nox 1.48.1 (CI pin); reviewed workflow step in nox-scan.yml",
+      "created_at": "2026-11-15T10:14:56.101748Z"
     }
   ]
 }
